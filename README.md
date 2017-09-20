@@ -124,7 +124,7 @@ class UserMutation(graphene.mutation):
 
 ```python
 import graphene
-from graphene_django_extras import DjangoObjectField, DjangoListObjectField
+from graphene_django_extras import DjangoObjectField, DjangoListObjectField, DjangoFilterPaginateListField, DjangoFilterListField
 from .types import UserType, UserListType
 from .mutations import UserMutation, UserSerializerMutation
 
