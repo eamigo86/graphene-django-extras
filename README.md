@@ -18,24 +18,24 @@ pip install graphene-django-extras
 ## Documentation
 
 ### Extra functionalities:
-    ** Fields: **
+    __Fields:__
         1.	DjangoListField
         2.	DjangoFilterListField
         3.	DjangoFilterPaginateListField
         4.	DjangoListObjectField
 
-    ** Mutations: **
+    __Mutations:__
         1.	DjangoSerializerMutation
 
-    ** Types: **
+    __Types:__
         1.  DjangoObjectTypeExtra
         2.	DjangoInputObjectType
         3.	DjangoPaginatedObjectListType
 
-    ** Pagination: **
+    __Pagination:__
         1.	LimitOffsetGraphqlPagination
         2.	PageGraphqlPagination
-        3.	CursosGraphqlPagination *(cooming soon)*
+        3.	CursosGraphqlPagination _(cooming soon)_
 
 
 ### Examples
