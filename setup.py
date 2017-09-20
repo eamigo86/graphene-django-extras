@@ -23,7 +23,7 @@ setup(
     description='Graphene Django extras',
     long_description=open('README.rst').read(),
 
-    url='',
+    url='https://github.com/eamigo86/graphene-django-extras',
 
     author='Ernesto Perez Amigo',
     author_email='eamigo@nauta.cu',
