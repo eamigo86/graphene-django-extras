@@ -40,7 +40,7 @@ pip install graphene-django-extras
 
 ### Examples
 
-Here is a use of graphene-django-extras:
+Here is a simple example of graphene-django-extras usage:
 
 #### 1- Types Definition:
 
@@ -129,14 +129,22 @@ from .types import UserType, UserListType
 from .mutations import UserMutation, UserSerializerMutation
 
 class Queries(graphene.ObjectType):
-    # Posible User list queries definitions
-    all_users = DjangoListObjectField(UserListType, description=_('All Usersquery'))
+    # List of users with separate filter and paginate options
+    all_users = DjangoListObjectField(UserListType, description=_('List of users'))
+    
+    # List of users with filter and paginate options, passing the pagination here
     all_users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
+    
+    # List of users with only filter options
     all_users2 = DjangoFilterListField(UserType)
+    
+    # List of users with only filter options, passing the FilterClass here.
     all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
 
     # Single user queries definitions
     user = DjangoObjectField(UserType, description=_('Single User query'))  
+    
+    # Other way to define a query to a single user
     other_way_user = DjangoObjectField(UserListType.getOne(), description=_('Other way to query a single User query'))  
 
 class Mutations(graphene.ObjectType):
