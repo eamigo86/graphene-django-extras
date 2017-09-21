@@ -17,32 +17,32 @@ pip install graphene-django-extras
 
 ## Documentation
 
-###Extra functionalities:
-    **Fields:**
-        1.	DjangoListField
-        2.	DjangoFilterListField
-        3.	DjangoFilterPaginateListField
-        4.	DjangoListObjectField
+### Extra functionalities:
+ **Fields:**
+  1.	DjangoListField
+  2.	DjangoFilterListField
+  3.	DjangoFilterPaginateListField
+  4.	DjangoListObjectField
 
-    **Mutations:**
-        1.	DjangoSerializerMutation
+ **Mutations:**
+  1.	DjangoSerializerMutation
 
-    **Types:**
-        1.  DjangoObjectTypeExtra
-        2.	DjangoInputObjectType
-        3.	DjangoPaginatedObjectListType
+ **Types:** 
+  1.  DjangoObjectTypeExtra
+  2.	DjangoInputObjectType
+  3.	DjangoPaginatedObjectListType
 
-    **Pagination:**
-        1.	LimitOffsetGraphqlPagination
-        2.	PageGraphqlPagination
-        3.	CursosGraphqlPagination *(cooming soon)*
+ **Pagination:** 
+  1.	LimitOffsetGraphqlPagination
+  2.	PageGraphqlPagination
+  3.	CursosGraphqlPagination *(cooming soon)*
 
 
 ### Examples
 
 Here is a use of graphene-django-extras:
 
-####1- Types Definition:
+#### 1- Types Definition:
 
 ```python
 from django.contrib.auth.models import User
@@ -72,7 +72,7 @@ class UserListType(DjangoPaginatedObjectListType):
         pagination = LimitOffsetGraphqlPagination(page_size=20)
 ```
 
-####2- Input Types can be defined for use on mutations:
+#### 2- Input Types can be defined for use on mutations:
 
 ```python
 from graphene_django_extras import DjangoInputObjectType
@@ -83,7 +83,7 @@ class UserInput(DjangoInputObjectType):
         model = User
 ```
 
-####3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+#### 3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
 
 ```python
 import graphene
@@ -120,7 +120,7 @@ class UserMutation(graphene.mutation):
         ...
 ```
 
-####4- Defining the Scheme file:
+#### 4- Defining the Scheme file:
 
 ```python
 import graphene
@@ -147,7 +147,7 @@ class Mutations(graphene.ObjectType):
     traditional_user_mutation = UserMutation.Field()
 ```
 
-####5- Examples of queries:
+#### 5- Examples of queries:
 ```js
 {
   allUsers(username_Icontains:"john"){
@@ -182,7 +182,7 @@ class Mutations(graphene.ObjectType):
 }
 ```
 
-####6- Examples of Mutations:
+#### 6- Examples of Mutations:
 
 ```js
 mutation{
