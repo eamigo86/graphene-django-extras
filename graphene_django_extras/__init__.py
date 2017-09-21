@@ -5,7 +5,7 @@ from .fields import DjangoObjectField, DjangoListField, DjangoFilterListField, D
     DjangoListObjectField
 from .mutation import DjangoSerializerMutation
 from .pagination import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
-from .types import DjangoObjectTypeExtra, DjangoInputObjectType, DjangoPaginatedObjectListType
+from .types import DjangoObjectType, DjangoInputObjectType, DjangoPaginatedObjectListType
 
 VERSION = (0, 0, 1, 'alpha', 20170920004)
 
@@ -30,7 +30,7 @@ __all__ = (
     # 'CursorGraphqlPagination',  # Not implemented yet
 
     # TYPES
-    'DjangoObjectTypeExtra',
+    'DjangoObjectType',
     'DjangoInputObjectType',
     'DjangoPaginatedObjectListType',
 )
