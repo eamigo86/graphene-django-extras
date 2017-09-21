@@ -149,7 +149,7 @@ Here is a simple use of graphene-django-extras:
 
 5- Examples of queries:
 
-.. code:: javascript
+.. code:: python
 
     {
         allUsers(username_Icontains:"john"){
@@ -186,7 +186,7 @@ Here is a simple use of graphene-django-extras:
 
 6- Examples of Mutations:
 
-.. code:: javascript
+.. code:: python
 
     mutation{
         userCreate(newUser:{password:"test*123", email: "test@test.com", username:"test"}){

@@ -11,14 +11,13 @@ class Registry(object):
         self._registry_models = {}
 
     def register(self, cls, for_input=False):
-        from ISN.utils.graphql.types import DjangoInputObjectType, DjangoObjectType
+        from .types import DjangoInputObjectType, DjangoObjectType
         assert issubclass(
             cls, (DjangoInputObjectType, DjangoObjectType)), 'Only DjangoInputObjectType or DjangoObjectType can be' \
                                                              ' registered, received "{}"'.format(cls.__name__)
+                                                             
         assert cls._meta.registry == self, 'Registry for a Model have to match.'
-        # assert self.get_type_for_model(cls._meta.model) == cls, (
-        #     'Multiple DjangoObjectTypes registered for "{}"'.format(cls._meta.model)
-        # )
+
         if not getattr(cls._meta, 'skip_registry', False):
             key = '{}_Input'.format(cls._meta.model.__name__.lower()) \
                 if for_input else cls._meta.model.__name__.lower()

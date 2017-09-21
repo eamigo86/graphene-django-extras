@@ -17,32 +17,32 @@ pip install graphene-django-extras
 
 ## Documentation
 
-### Extra functionalities:
-    Fields:
+###Extra functionalities:
+    **Fields:**
         1.	DjangoListField
         2.	DjangoFilterListField
         3.	DjangoFilterPaginateListField
         4.	DjangoListObjectField
 
-    Mutations:
+    **Mutations:**
         1.	DjangoSerializerMutation
 
-    Types:
+    **Types:**
         1.  DjangoObjectTypeExtra
         2.	DjangoInputObjectType
         3.	DjangoPaginatedObjectListType
 
-    Pagination:
+    **Pagination:**
         1.	LimitOffsetGraphqlPagination
         2.	PageGraphqlPagination
-        3.	CursosGraphqlPagination (cooming soon)
+        3.	CursosGraphqlPagination *(cooming soon)*
 
 
 ### Examples
 
-Here is a simple example of graphene-django-extras usage:
+Here is a use of graphene-django-extras:
 
-#### 1- Types Definition:
+####1- Types Definition:
 
 ```python
 from django.contrib.auth.models import User
@@ -72,7 +72,7 @@ class UserListType(DjangoPaginatedObjectListType):
         pagination = LimitOffsetGraphqlPagination(page_size=20)
 ```
 
-#### 2- Input Types can be defined for use on mutations:
+####2- Input Types can be defined for use on mutations:
 
 ```python
 from graphene_django_extras import DjangoInputObjectType
@@ -83,7 +83,7 @@ class UserInput(DjangoInputObjectType):
         model = User
 ```
 
-#### 3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+####3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
 
 ```python
 import graphene
@@ -120,7 +120,7 @@ class UserMutation(graphene.mutation):
         ...
 ```
 
-#### 4- Defining the Scheme file:
+####4- Defining the Scheme file:
 
 ```python
 import graphene
@@ -129,22 +129,14 @@ from .types import UserType, UserListType
 from .mutations import UserMutation, UserSerializerMutation
 
 class Queries(graphene.ObjectType):
-    # List of users with separate filter and paginate options
-    all_users = DjangoListObjectField(UserListType, description=_('List of users'))
-    
-    # List of users with filter and paginate options, passing the pagination here
+    # Posible User list queries definitions
+    all_users = DjangoListObjectField(UserListType, description=_('All Usersquery'))
     all_users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
-    
-    # List of users with only filter options
     all_users2 = DjangoFilterListField(UserType)
-    
-    # List of users with only filter options, passing the FilterClass here.
     all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
 
     # Single user queries definitions
     user = DjangoObjectField(UserType, description=_('Single User query'))  
-    
-    # Other way to define a query to a single user
     other_way_user = DjangoObjectField(UserListType.getOne(), description=_('Other way to query a single User query'))  
 
 class Mutations(graphene.ObjectType):
@@ -155,7 +147,7 @@ class Mutations(graphene.ObjectType):
     traditional_user_mutation = UserMutation.Field()
 ```
 
-#### 5- Examples of queries:
+####5- Examples of queries:
 ```js
 {
   allUsers(username_Icontains:"john"){
@@ -190,7 +182,7 @@ class Mutations(graphene.ObjectType):
 }
 ```
 
-#### 6- Examples of Mutations:
+####6- Examples of Mutations:
 
 ```js
 mutation{

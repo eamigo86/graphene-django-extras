@@ -10,8 +10,9 @@ from graphene import (Field, ID, Boolean, Dynamic, Enum, Float, Int, List, NonNu
 from graphene.types.datetime import DateTime, Time
 from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case, to_const
-from graphene_django.utils import import_single_dispatch, get_model_fields, get_related_model
+from graphene_django.utils import import_single_dispatch, get_model_fields
 from rest_framework.fields import JSONField
+from rest_framework.compat import get_related_model
 
 from .fields import DjangoFilterListField
 from .fields import DjangoListField
@@ -178,7 +179,7 @@ def convert_onetoone_field_to_djangomodel(field, registry=None, input_flag=None)
 
     def dynamic_type():
         if input_flag:
-            return ID(description=field.help_text, required=input_flag == 'create')
+            return ID(required=input_flag == 'create')
 
         _type = registry.get_type_for_model(model)
         if not _type:

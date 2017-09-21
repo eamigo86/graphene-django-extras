@@ -20,7 +20,7 @@ setup(
     name='graphene-django-extras',
     version=version,
 
-    description='This package add some extra funcionalities to graphene-django to facilitate the graphql use without Relay and allow pagination and filtering integration.',
+    description='Graphene-Django-Extras add some extra funcionalities to graphene-django to facilitate the graphql use without Relay and allow pagination and filtering integration',
     long_description=open('README.rst').read(),
 
     url='https://github.com/eamigo86/graphene-django-extras',
