@@ -175,7 +175,7 @@ def convert_time_to_string(field, registry=None, input_flag=False):
 
 @convert_django_field.register(models.OneToOneRel)
 def convert_onetoone_field_to_djangomodel(field, registry=None, input_flag=None):
-    model = get_related_model(field)
+    model = field.related_model
 
     def dynamic_type():
         if input_flag:
@@ -218,7 +218,7 @@ def convert_field_to_list_or_connection(field, registry=None, input_flag=None):
 @convert_django_field.register(models.ManyToManyRel)
 @convert_django_field.register(models.ManyToOneRel)
 def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None):
-    model = get_related_model(field)
+    model = field.related_model
     if isinstance(field, models.ManyToManyRel):
         for f in field.related_model._meta.many_to_many:
             if f.rel.name == field.name and f.rel.model == field.model:
