@@ -47,12 +47,12 @@ Examples:
     .. code:: python
 
         from django.contrib.auth.models import User
-        from graphene_django_extras import DjangoObjectTypeExtra, DjangoPaginatedObjectListType    
+        from graphene_django_extras import DjangoObjectType, DjangoPaginatedObjectListType    
         from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
 
-        class UserType(DjangoObjectTypeExtra):
+        class UserType(DjangoObjectType):
             """
-                The DjangoObjectTypeExtra have a ID field to filter to avoid resolve method definition on Queries 
+                The DjangoObjectType have a ID field to filter to avoid resolve method definition on Queries 
             """
 
             class Meta:
