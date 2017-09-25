@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from graphene import get_version
 
-from .fields import DjangoObjectField, DjangoListField, DjangoFilterListField, DjangoFilterPaginateListField, \
+from .fields import DjangoObjectField, DjangoFilterListField, DjangoFilterPaginateListField, \
     DjangoListObjectField
 from .mutation import DjangoSerializerMutation
 from .pagination import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
-from .types import DjangoObjectType, DjangoInputObjectType, DjangoPaginatedObjectListType
+from .types import DjangoObjectType, DjangoInputObjectType, DjangoListObjectType
 
-VERSION = (0, 0, 1, 'beta', 5)
+VERSION = (0, 0, 1, 'beta', 6)
 
 __version__ = get_version(VERSION)
 
@@ -16,7 +16,6 @@ __all__ = (
     
     # FIELDS
     'DjangoObjectField',
-    'DjangoListField',
     'DjangoFilterListField',
     'DjangoFilterPaginateListField',
     'DjangoListObjectField',
@@ -31,6 +30,6 @@ __all__ = (
 
     # TYPES
     'DjangoObjectType',
-    'DjangoInputObjectType',
-    'DjangoPaginatedObjectListType',
+    'DjangoListObjectType',
+    'DjangoInputObjectType',    
 )

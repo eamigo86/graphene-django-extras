@@ -6,14 +6,14 @@ from graphene import Field, InputField, ObjectType, Int
 from graphene.types.base import BaseOptions
 from graphene.types.inputobjecttype import InputObjectType, InputObjectTypeContainer
 from graphene.types.utils import yank_fields_from_attrs
+from graphene_django.fields import DjangoListField
 from graphene_django.utils import is_valid_django_model, DJANGO_FILTER_INSTALLED
 
 from .base_types import generic_django_object_type_factory
 from .converter import construct_fields
-from .fields import DjangoListField
 from .registry import get_global_registry, Registry
 
-__all__ = ('DjangoObjectType', 'DjangoInputObjectType', 'DjangoPaginatedObjectListType')
+__all__ = ('DjangoObjectType', 'DjangoInputObjectType', 'DjangoListObjectType')
 
 
 class DjangoObjectOptions(BaseOptions):
@@ -156,7 +156,7 @@ class DjangoInputObjectType(InputObjectType):
         return cls
 
 
-class DjangoPaginatedObjectListType(ObjectType):
+class DjangoListObjectType(ObjectType):
 
     class Meta:
         abstract = True
@@ -201,7 +201,7 @@ class DjangoPaginatedObjectListType(ObjectType):
             ('count', Field(Int, name='totalCount', required=True, description="Total count of matches elements"))
         ])
 
-        super(DjangoPaginatedObjectListType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
+        super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
 
     @classmethod
     def getOne(cls):

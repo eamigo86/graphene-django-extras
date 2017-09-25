@@ -2,6 +2,11 @@
 from django.db.models import QuerySet, Manager
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
+from django.db.models import NOT_PROVIDED
+
+
+def is_required(field, input_flag):
+    return not field.blank and field.default == NOT_PROVIDED and input_flag == 'create'
 
 
 def _get_queryset(klass):

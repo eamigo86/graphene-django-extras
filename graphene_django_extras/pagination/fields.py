@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from functools import partial
+from math import fabs
 
 from django.utils.translation import ugettext_lazy as _
-from graphene import Field, Int, List, NonNull, String
+from graphene import Field, Int, List, NonNull, String, Argument
 from graphene_django.utils import maybe_queryset
 
 from ..base_types import DjangoListObjectBase
@@ -35,15 +36,20 @@ class LimitOffsetPaginationField(Field):
         return self.type.of_type._meta.node._meta.model
 
     def list_resolver(self, manager, root, info, **kwargs):
-        offset = kwargs.pop(self.offset_query_param, 0)
-
         if isinstance(root, DjangoListObjectBase):
             limit = kwargs.pop(self.limit_query_param, root.count)
-            return root.results[offset:offset + limit]
+            results = root.results
         else:
             qs = manager.get_queryset()
             limit = kwargs.pop(self.limit_query_param, qs.count())
-            return maybe_queryset(qs[offset:offset + limit])
+            results = maybe_queryset(qs)
+
+        if limit < 0:
+            offset = kwargs.pop(self.offset_query_param, None) or results.count()
+            return results[offset - fabs(limit):offset]
+
+        offset = kwargs.pop(self.offset_query_param, 0)
+        return results[offset:offset + limit]
 
     def get_resolver(self, parent_resolver):
         return partial(self.list_resolver, self.type.of_type._meta.model._default_manager)
@@ -55,14 +61,16 @@ class PagePaginationField(Field):
 
         kwargs.setdefault('args', {})
 
-        self.page_query_param = page_query_param
+        self.page_query_param = page_query_param or 'page'
         self.page_size = page_size
+        self.page_size_query_param = page_size_query_param or 'page_size'
 
-        kwargs[page_query_param] = NonNull(Int, default_value=1,
-                                           description=_('A page number within the paginated result set.'))
-        if page_size_query_param and not page_size:
-            self.page_size_query_param = page_size_query_param
-            kwargs[page_size_query_param] = NonNull(Int, description=_('Number of results to return per page.'))
+        kwargs[self.page_query_param] = Int(default_value=1,
+                                            description=_('A page number within the paginated result set.'))
+        if not page_size:
+            kwargs[self.page_size_query_param] = NonNull(Int, description=_('Number of results to return per page.'))
+        else:
+            kwargs[self.page_size_query_param] = Int(description=_('Number of results to return per page.'))
 
         super(PagePaginationField, self).__init__(List(_type), *args, **kwargs)
 
@@ -72,19 +80,23 @@ class PagePaginationField(Field):
 
     def list_resolver(self, manager, root, info, **kwargs):
         page = kwargs.pop(self.page_query_param, 1)
+        page_size = kwargs.pop(self.page_size_query_param, self.page_size)
 
-        if getattr(self, 'page_size_query_param', None):
-            page_size = kwargs.pop(self.page_size_query_param, self.page_size)
-        else:
-            page_size = self.page_size
-
-        offset = page_size * (page - 1)
+        assert page != 0, ValueError('Page value for PageGraphqlPagination must be '
+                                     'greater than or leater than that cero')
 
         if isinstance(root, DjangoListObjectBase):
-            return root.results[offset:offset + page_size]
+            result = root.results
         else:
-            qs = manager.get_queryset()
-            return maybe_queryset(qs[offset:offset + page_size])
+            result = maybe_queryset(manager.get_queryset())
+
+        if page < 0:
+            total = result.count()
+            offset = int(total - fabs(page_size * page))
+        else:
+            offset = page_size * (page - 1)
+
+        return result[offset:offset + page_size]
 
     def get_resolver(self, parent_resolver):
         return partial(self.list_resolver, self.type.of_type._meta.model._default_manager)

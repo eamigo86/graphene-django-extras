@@ -1,8 +1,8 @@
-from setuptools import find_packages, setup
-import sys
 import ast
-import re
 import os
+import re
+
+from setuptools import setup
 
 _version_re = re.compile(r'VERSION\s+=\s+(.*)')
 
@@ -50,8 +50,8 @@ setup(
     install_requires=[        
         'graphene-django>=2.0.dev',
         'Django>=1.8.0',
-        'django-filter', 
-        'djangorestframework>=3.6.3',       
+        'django-filter==1.0.2',
+        'djangorestframework>=3.6.3',
     ],    
     include_package_data=True,
     zip_safe=False,

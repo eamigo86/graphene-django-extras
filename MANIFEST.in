@@ -1,3 +1,2 @@
 include README.md
 include README.rst
-recursive-exclude .vscode *

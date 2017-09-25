@@ -28,14 +28,14 @@ pip install graphene-django-extras
   1.	DjangoSerializerMutation
 
  **Types:** 
-  1.  DjangoObjectTypeExtra
-  2.	DjangoInputObjectType
-  3.	DjangoPaginatedObjectListType
+  1.  DjangoObjectType
+  2.	DjangoListObjectType
+  3.	DjangoInputObjectType
 
  **Pagination:** 
   1.	LimitOffsetGraphqlPagination
   2.	PageGraphqlPagination
-  3.	CursosGraphqlPagination *(cooming soon)*
+  3.	CursorGraphqlPagination *(cooming soon)*
 
 
 ### Examples
@@ -46,16 +46,16 @@ Here is a use of graphene-django-extras:
 
 ```python
 from django.contrib.auth.models import User
-from graphene_django_extras import DjangoObjectType, DjangoPaginatedObjectListType    
+from graphene_django_extras import DjangoObjectType, DjangoListObjectType 
 from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
 
 class UserType(DjangoObjectType):
     """
-        This DjangoObjectType have a ID field to filter to avoid resolve method definition on Queries 
+        This DjangoObjectType have a ID field, that allow filter by id and resolve method definition on Queries is not necesary
     """
     class Meta:
         model = User
-        description = "Type for User Model"
+        description = " Type definition for single User model object "
         filter_fields = {
             'id': ['exact', ],
             'first_name': ['icontains', 'iexact'],
@@ -65,9 +65,9 @@ class UserType(DjangoObjectType):
         }
 
 
-class UserListType(DjangoPaginatedObjectListType):
+class UserListType(DjangoListObjectType):
     class Meta:
-        description = "User list query definition"
+        description = " Type definition for List of users "
         model = User
         pagination = LimitOffsetGraphqlPagination(page_size=20)
 ```
@@ -79,7 +79,7 @@ from graphene_django_extras import DjangoInputObjectType
 
 class UserInput(DjangoInputObjectType):
     class Meta:
-        description = " Input Type for User Model "
+        description = " User Input Type for used as input on Argumments classes on traditional Mutations "
         model = User
 ```
 
@@ -87,7 +87,7 @@ class UserInput(DjangoInputObjectType):
 
 ```python
 import graphene
-from graphene_django_extras import DjangoSerializerMutation 
+from graphene_django_extras import DjangoSerializerMutation
     
 from .serializers import UserSerializer
 from .types import UserType
@@ -104,7 +104,7 @@ class UserSerializerMutation(DjangoSerializerMutation):
 
 class UserMutation(graphene.mutation):
     """
-        You must implement the mutate function
+         On traditional graphene mutation classes definition you must implement the mutate function
     """
 
     user = graphene.Field(UserType, required=False)
@@ -113,7 +113,7 @@ class UserMutation(graphene.mutation):
         new_user = graphene.Argument(UserInput)
 
     class Meta:
-        description = "Normal mutation for Users"
+        description = " Traditional graphene mutation for Users "
 
     @classmethod
     def mutate(cls, info, **kwargs):
@@ -130,14 +130,16 @@ from .mutations import UserMutation, UserSerializerMutation
 
 class Queries(graphene.ObjectType):
     # Posible User list queries definitions
-    all_users = DjangoListObjectField(UserListType, description=_('All Usersquery'))
+    all_users = DjangoListObjectField(UserListType, description=_('All Users query'))
     all_users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
     all_users2 = DjangoFilterListField(UserType)
     all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
 
-    # Single user queries definitions
-    user = DjangoObjectField(UserType, description=_('Single User query'))  
-    other_way_user = DjangoObjectField(UserListType.getOne(), description=_('Other way to query a single User query'))  
+    # Defining the petition to a user
+    user = DjangoObjectField(UserType, description=_('Single User query'))
+
+    # Another way to define a single user query
+    other_way_user = DjangoObjectField(UserListType.getOne(), description=_('User List with pagination and filtering'))
 
 class Mutations(graphene.ObjectType):
     user_create = UserSerializerMutation.CreateField(deprecation_reason='Deprecation message')
@@ -159,21 +161,21 @@ class Mutations(graphene.ObjectType):
     }
     totalCount
   }
-  
+
   allUsers1(lastName_Iexact:"Doe", limit:5, offset:0){
     id
     username
     firstName
-    lastName    
+    lastName
   }
-  
+
   allUsers2(firstName_Icontains: "J"){
     id
     username
     firstName
     lastName
   }
-  
+
   user(id:2){
     id
     username
@@ -186,7 +188,7 @@ class Mutations(graphene.ObjectType):
 
 ```js
 mutation{
-  userCreate(newUser:{password:"test*123", email: "test@test.com", username:"test"}){
+  userCreate(newUser:{username:"test", password:"test*123"}){
     user{
       id
       username
@@ -199,7 +201,7 @@ mutation{
       messages
     }
   }
-  
+
   userDelete(id:1){
     ok
     errors{
@@ -207,7 +209,7 @@ mutation{
       messages
     }
   }
-  
+
   userUpdate(newUser:{id:1, username:"John"}){
     user{
       id
