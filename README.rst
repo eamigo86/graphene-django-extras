@@ -3,7 +3,7 @@
 Graphene-Django-Extras
 ======================
 
-This package add some extra funcionalities to graphene-django to facilitate the graphql use without Relay and 
+This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay and
 allow pagination and filtering integration.
 
 Installation:
@@ -19,10 +19,9 @@ Documentation:
 --------------
 Extra functionalities:
     Fields:
-        1.	DjangoListField
-        2.	DjangoFilterListField
-        3.	DjangoFilterPaginateListField
-        4.	DjangoListObjectField
+      1. DjangoFilterListField
+      2. DjangoFilterPaginateListField
+      3. DjangoListObjectField (Recommended)
 
     Mutations:
         1.	DjangoSerializerMutation
@@ -35,7 +34,7 @@ Extra functionalities:
     Pagination:
         1.	LimitOffsetGraphqlPagination
         2.	PageGraphqlPagination
-        3.	CursorGraphqlPagination (cooming soon)
+        3.	CursorGraphqlPagination (coming soon)
 
 Examples:
 ---------
@@ -52,7 +51,7 @@ Here is a simple use of graphene-django-extras:
 
     class UserType(DjangoObjectType):
         """
-            This DjangoObjectType have a ID field, that allow filter by id and resolve method definition on Queries is not necesary
+            This DjangoObjectType have a ID field, that allow filter by id and resolve method definition on Queries is not necessary
         """
 
         class Meta:
@@ -81,7 +80,7 @@ Here is a simple use of graphene-django-extras:
 
     class UserInput(DjangoInputObjectType):
         class Meta:
-            description = " User Input Type for used as input on Argumments classes on traditional Mutations "
+            description = " User Input Type for used as input on Arguments classes on traditional Mutations "
             model = User
 
 
@@ -96,6 +95,9 @@ Here is a simple use of graphene-django-extras:
     from .input_types import UserInputType
 
     class UserSerializerMutation(DjangoSerializerMutation):
+        """
+            DjangoSerializerMutation auto implement Create, Delete and Update function
+        """
         class Meta:
             description = " Serializer based Mutation for Users "
             serializer_class = UserSerializer
@@ -103,7 +105,7 @@ Here is a simple use of graphene-django-extras:
 
     class UserMutation(graphene.mutation):
         """
-            On traditional graphene mutation classes definition you must implement the mutate function
+            To traditional graphene's mutation classes definition you must implement the mutate function
         """
 
         user = graphene.Field(UserType, required=False)
@@ -129,7 +131,7 @@ Here is a simple use of graphene-django-extras:
     from .mutations import UserMutation, UserSerializerMutation
 
     class Queries(graphene.ObjectType):
-        # Posible User list queries definitions
+        # Possible User list queries definitions
         all_users = DjangoListObjectField(UserListType, description=_('All Users query'))
         all_users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
         all_users2 = DjangoFilterListField(UserType)
