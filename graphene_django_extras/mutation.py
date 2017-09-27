@@ -194,6 +194,7 @@ class DjangoSerializerMutation(ObjectType):
             if old_obj:
                 old_obj.delete()
                 old_obj.id = pk
+
                 return cls.perform_mutate(old_obj, info)
             else:
                 errors = [
