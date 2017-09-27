@@ -62,17 +62,24 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None):
             if input_flag \
             else to_camel_case('{}_{}'.format(meta.object_name, field.name))
 
-        choices = list(get_choices(choices))
-        named_choices = [(c[0], c[1]) for c in choices]
-        named_choices_descriptions = {c[0]: c[2] for c in choices}
+        enum_type = registry.get_type_for_enum(name)
+        if enum_type:
+            return enum_type
+        else:
+            choices = list(get_choices(choices))
+            named_choices = [(c[0], c[1]) for c in choices]
+            named_choices_descriptions = {c[0]: c[2] for c in choices}
 
-        class EnumWithDescriptionsType(object):
-            @property
-            def description(self):
-                return named_choices_descriptions[self.name]
+            class EnumWithDescriptionsType(object):
+                @property
+                def description(self):
+                    return named_choices_descriptions[self.name]
 
-        enum = Enum(name, list(named_choices), type=EnumWithDescriptionsType)
-        return enum(description=field.help_text, required=is_required(field, input_flag))
+            enum = Enum(name, list(named_choices), type=EnumWithDescriptionsType)
+
+            registry.register_enum(enum, key=name)
+
+            return enum(description=field.help_text, required=is_required(field, input_flag))
     return convert_django_field(field, registry, input_flag)
 
 
