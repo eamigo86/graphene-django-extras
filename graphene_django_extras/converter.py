@@ -96,7 +96,8 @@ def construct_fields(model, registry, only_fields, exclude_fields, input_flag=No
             is_excluded = name in exclude_fields  # or is_already_created
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith('+')
-            if is_not_in_only or is_excluded or is_no_backref or not field.editable or field.hidden:
+            # if is_not_in_only or is_excluded or is_no_backref or not field.editable or field.hidden:
+            if is_not_in_only or is_excluded or is_no_backref:
                 # We skip this field if we specify only_fields and is not
                 # in there. Or when we exclude this field in exclude_fields.
                 # Or when there is no back reference.
