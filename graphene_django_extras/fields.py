@@ -225,7 +225,8 @@ class DjangoListObjectField(Field):
 
     def list_resolver(self, manager, filterset_class, filtering_args, root, info, **kwargs):
 
-        qs = queryset_factory(manager, info.field_asts, filtering_args, **kwargs)
+        qs = queryset_factory(manager, info.field_asts, info.fragments, filtering_args, **kwargs)
+
         # filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
 
         # qs = manager.get_queryset()

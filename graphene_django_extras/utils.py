@@ -3,6 +3,29 @@ from django.db.models import QuerySet, Manager
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
 from django.db.models import NOT_PROVIDED
+from graphql import GraphQLList, GraphQLNonNull
+from graphql.language.ast import FragmentSpread
+
+
+def get_type(_type):
+    if isinstance(_type, (GraphQLList, GraphQLNonNull)):
+        return get_type(_type.of_type)
+    return _type
+
+
+def get_fields(info):
+    fragments = info.fragments
+    field_asts = info.field_asts[0].selection_set.selections
+    _type = get_type(info.return_type)
+
+    for field_ast in field_asts:
+        field_name = field_ast.name.value
+        if isinstance(field_ast, FragmentSpread):
+            for field in fragments[field_name].selection_set.selections:
+                yield field.name.value
+            continue
+
+        yield field_name
 
 
 def is_required(field, input_flag):
@@ -86,9 +109,16 @@ def find_field(field, fields_dict):
     return temp
 
 
-def recursive_params(selection_set, available_related_fields, select_related, prefetch_related):
+def recursive_params(selection_set, fragments, available_related_fields, select_related, prefetch_related):
 
     for field in selection_set.selections:
+
+        if isinstance(field, FragmentSpread) and fragments:
+            a, b = recursive_params(fragments[field.name.value].selection_set, fragments, available_related_fields,
+                                    select_related, prefetch_related)
+            [select_related.append(x) for x in a if x not in select_related]
+            [prefetch_related.append(x) for x in b if x not in prefetch_related]
+            continue
 
         temp = available_related_fields.get(
             field.name.value,
@@ -102,15 +132,16 @@ def recursive_params(selection_set, available_related_fields, select_related, pr
                 prefetch_related.append(temp.name)
             elif temp.name not in select_related:
                 select_related.append(temp.name)
-        elif field.selection_set:
-            a, b = recursive_params(field.selection_set, available_related_fields, select_related, prefetch_related)
+        elif getattr(field, 'selection_set', None):
+            a, b = recursive_params(field.selection_set, fragments, available_related_fields,
+                                    select_related, prefetch_related)
             [select_related.append(x) for x in a if x not in select_related]
             [prefetch_related.append(x) for x in b if x not in prefetch_related]
 
     return select_related, prefetch_related
 
 
-def queryset_factory(manager, fields_asts=None, filtering_args=None, **kwargs):
+def queryset_factory(manager, fields_asts=None, fragments=None, filtering_args=None, **kwargs):
 
     if filtering_args is None:
         filtering_args = {}
@@ -128,7 +159,11 @@ def queryset_factory(manager, fields_asts=None, filtering_args=None, **kwargs):
                 select_related.append(temp.name)
 
     if fields_asts:
-        select_related, prefetch_related = recursive_params(fields_asts[0].selection_set, available_related_fields, select_related, prefetch_related)
+        select_related, prefetch_related = recursive_params(fields_asts[0].selection_set,
+                                                            fragments,
+                                                            available_related_fields,
+                                                            select_related,
+                                                            prefetch_related)
 
     if select_related and prefetch_related:
         return manager.filter(**filter_kwargs).select_related(*select_related).prefetch_related(*prefetch_related)
