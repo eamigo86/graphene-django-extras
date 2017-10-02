@@ -58,9 +58,9 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None):
     if choices:
         meta = field.model._meta
 
-        name = to_camel_case('{}_{}_{}'.format(meta.object_name, field.name, 'Input')) \
+        name = to_camel_case('{}_{}_{}_{}'.format(meta.object_name, field.name, 'Enum', 'Input')) \
             if input_flag \
-            else to_camel_case('{}_{}'.format(meta.object_name, field.name))
+            else to_camel_case('{}_{}_{}'.format(meta.object_name, field.name, 'Enum'))
 
         enum_type = registry.get_type_for_enum(name)
         if enum_type:
@@ -101,7 +101,7 @@ def construct_fields(model, registry, only_fields, exclude_fields, input_flag=No
             is_excluded = name in exclude_fields  # or is_already_created
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith('+')
-            if is_not_in_only or is_excluded or is_no_backref:
+            if is_not_in_only or is_excluded or is_no_backref or not field.editable or field.hidden:
                 # We skip this field if we specify only_fields and is not
                 # in there. Or when we exclude this field in exclude_fields.
                 # Or when there is no back reference.
@@ -284,12 +284,12 @@ def convert_postgres_array_to_list(field, registry=None, input_flag=None):
 
 @convert_django_field.register(HStoreField)
 @convert_django_field.register(JSONField)
-def convert_posgres_field_to_string(field, registry=None, input_flag=None):
+def convert_postgres_field_to_string(field, registry=None, input_flag=None):
     return JSONString(description=field.help_text, required=is_required(field, input_flag))
 
 
 @convert_django_field.register(RangeField)
-def convert_posgres_range_to_string(field, registry=None, input_flag=None):
+def convert_postgres_range_to_string(field, registry=None, input_flag=None):
     inner_type = convert_django_field(field.base_field)
     if not isinstance(inner_type, (List, NonNull)):
         inner_type = type(inner_type)

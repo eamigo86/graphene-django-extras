@@ -173,8 +173,7 @@ class DjangoListObjectType(ObjectType):
         if not DJANGO_FILTER_INSTALLED and filter_fields:
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
-        if not results_field_name:
-            results_field_name = 'results'
+        results_field_name = results_field_name or 'results'
 
         baseType = get_global_registry().get_type_for_model(model)
 

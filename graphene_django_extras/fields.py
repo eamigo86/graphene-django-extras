@@ -97,8 +97,7 @@ class DjangoFilterListField(Field):
         return qs
 
     @staticmethod
-    def list_resolver(manager, filterset_class, filtering_args,
-                      root, info, **kwargs):
+    def list_resolver(manager, filterset_class, filtering_args, root, info, **kwargs):
         qs = None
         available_related_fields = get_related_fields(root._meta.model)
         field = find_field(info.field_asts[0], available_related_fields)
