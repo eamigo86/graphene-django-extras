@@ -1,158 +1,242 @@
 Metadata-Version: 1.1
-Name: graphene-django
-Version: 2.0.dev2017083101
-Summary: Graphene Django integration
-Home-page: https://github.com/graphql-python/graphene-django
-Author: Syrus Akbary
-Author-email: me@syrusakbary.com
+Name: graphene-django-extras
+Version: 0.0.1b8
+Summary: Graphene-Django-Extras add some extra funcionalities to graphene-django to facilitate the graphql use without Relay and allow pagination and filtering integration
+Home-page: https://github.com/eamigo86/graphene-django-extras
+Author: Ernesto Perez Amigo
+Author-email: eamigo@nauta.cu
 License: MIT
-Description: Please read
-        `UPGRADE-v1.0.md <https://github.com/graphql-python/graphene/blob/master/UPGRADE-v1.0.md>`__
-        to learn how to upgrade to Graphene ``1.0``.
-        
-        --------------
-        
-        |Graphene Logo| Graphene-Django |Build Status| |PyPI version| |Coverage Status|
-        ===============================================================================
-        
-        A `Django <https://www.djangoproject.com/>`__ integration for
-        `Graphene <http://graphene-python.org/>`__.
-        
-        Installation
-        ------------
-        
-        For instaling graphene, just run this command in your shell
-        
+Description:
+
+        Graphene-Django-Extras
+        ======================
+
+        This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay and
+        allow pagination and filtering integration.
+
+        Installation:
+        -------------
+
+        For installing graphene-django-extras, just run this command in your shell:
+
         .. code:: bash
-        
-            pip install "graphene-django>=1.0"
-        
-        Settings
-        ~~~~~~~~
-        
+
+            pip install "graphene-django-extras"
+
+        Documentation:
+        --------------
+        Extra functionalities:
+            Fields:
+              1. DjangoFilterListField
+              2. DjangoFilterPaginateListField
+              3. DjangoListObjectField (Recommended)
+
+            Mutations:
+                1.	DjangoSerializerMutation
+
+            Types:
+                1.  DjangoObjectTypeExtra
+                2.	DjangoListObjectType
+                3.	DjangoInputObjectType
+
+            Pagination:
+                1.	LimitOffsetGraphqlPagination
+                2.	PageGraphqlPagination
+                3.	CursorGraphqlPagination (coming soon)
+
+        Examples:
+        ---------
+
+        Here is a simple use of graphene-django-extras:
+
+        1- Types Definition:
+
         .. code:: python
-        
-            INSTALLED_APPS = (
-                # ...
-                'graphene_django',
-            )
-        
-            GRAPHENE = {
-                'SCHEMA': 'app.schema.schema' # Where your Graphene schema lives
-            }
-        
-        Urls
-        ~~~~
-        
-        We need to set up a ``GraphQL`` endpoint in our Django app, so we can
-        serve the queries.
-        
-        .. code:: python
-        
-            from django.conf.urls import url
-            from graphene_django.views import GraphQLView
-        
-            urlpatterns = [
-                # ...
-                url(r'^graphql', GraphQLView.as_view(graphiql=True)),
-            ]
-        
-        Examples
-        --------
-        
-        Here is a simple Django model:
-        
-        .. code:: python
-        
-            from django.db import models
-        
-            class UserModel(models.Model):
-                name = models.CharField(max_length=100)
-                last_name = models.CharField(max_length=100)
-        
-        To create a GraphQL schema for it you simply have to write the
-        following:
-        
-        .. code:: python
-        
-            from graphene_django import DjangoObjectType
-            import graphene
-        
-            class User(DjangoObjectType):
+
+            from django.contrib.auth.models import User
+            from graphene_django_extras import DjangoObjectType, DjangoListObjectType
+            from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
+
+            class UserType(DjangoObjectType):
+                """
+                    This DjangoObjectType have a ID field, that allow filter by id and resolve method definition on Queries is not necessary
+                """
+
                 class Meta:
-                    model = UserModel
-        
-            class Query(graphene.ObjectType):
-                users = graphene.List(User)
-        
-                @graphene.resolve_only_args
-                def resolve_users(self):
-                    return UserModel.objects.all()
-        
-            schema = graphene.Schema(query=Query)
-        
-        Then you can simply query the schema:
-        
+                    model = User
+                    description = " Type definition for single User model object "
+                    filter_fields = {
+                        'id': ['exact', ],
+                        'first_name': ['icontains', 'iexact'],
+                        'last_name': ['icontains', 'iexact'],
+                        'username': ['icontains', 'iexact'],
+                        'email': ['icontains', 'iexact']
+                    }
+
+            class UserListType(DjangoListObjectType):
+                class Meta:
+                    description = " Type definition for List of users "
+                    model = User
+                    pagination = LimitOffsetGraphqlPagination()
+
+
+        2- Input Types can be defined for use on mutations:
+
         .. code:: python
-        
-            query = '''
-                query {
-                  users {
-                    name,
-                    lastName
-                  }
+
+            from graphene_django_extras import DjangoInputObjectType
+
+            class UserInput(DjangoInputObjectType):
+                class Meta:
+                    description = " User Input Type for used as input on Arguments classes on traditional Mutations "
+                    model = User
+
+
+        3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+
+        .. code:: python
+
+            import graphene
+            from .serializers import UserSerializer
+            from graphene_django_extras import DjangoSerializerMutation
+            from .types import UserType
+            from .input_types import UserInputType
+
+            class UserSerializerMutation(DjangoSerializerMutation):
+                """
+                    DjangoSerializerMutation auto implement Create, Delete and Update function
+                """
+                class Meta:
+                    description = " Serializer based Mutation for Users "
+                    serializer_class = UserSerializer
+
+
+            class UserMutation(graphene.mutation):
+                """
+                    To traditional graphene's mutation classes definition you must implement the mutate function
+                """
+
+                user = graphene.Field(UserType, required=False)
+
+                class Arguments:
+                    new_user = graphene.Argument(UserInput)
+
+                class Meta:
+                    description = " Traditional graphene mutation for Users "
+
+                @classmethod
+                def mutate(cls, info, **kwargs):
+                    ...
+
+
+        4- Defining schemes:
+
+        .. code:: python
+
+            import graphene
+            from graphene_django_extras import DjangoObjectField, DjangoListObjectField
+            from .types import UserType, UserListType
+            from .mutations import UserMutation, UserSerializerMutation
+
+            class Queries(graphene.ObjectType):
+                # Possible User list queries definitions
+                all_users = DjangoListObjectField(UserListType, description=_('All Users query'))
+                all_users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
+                all_users2 = DjangoFilterListField(UserType)
+                all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
+
+                # Defining the petition to a user
+                user = DjangoObjectField(UserType, description=_('Only one user'))
+
+                # Another way to define a single user query
+                other_way_user = DjangoObjectField(UserListType.getOne(), description=_('User List with pagination and filtering'))
+
+            class Mutations(graphene.ObjectType):
+                user_create = UserSerializerMutation.CreateField(deprecation_reason='Deprecation message')
+                user_delete = UserSerializerMutation.DeleteField()
+                user_update = UserSerializerMutation.UpdateField()
+
+                traditional_user_mutation = UserMutation.Field()
+
+
+        5- Examples of queries:
+
+        .. code:: python
+
+            {
+                allUsers(username_Icontains:"john"){
+                    results(limit:5, offset:5){
+                        id
+                        username
+                        firstName
+                        lastName
+                    }
+                    totalCount
                 }
-            '''
-            result = schema.execute(query)
-        
-        To learn more check out the following `examples <examples/>`__:
-        
-        -  **Schema with Filtering**: `Cookbook example <examples/cookbook>`__
-        -  **Relay Schema**: `Starwars Relay example <examples/starwars>`__
-        
-        Contributing
-        ------------
-        
-        After cloning this repo, ensure dependencies are installed by running:
-        
-        .. code:: sh
-        
-            pip install -e ".[test]"
-        
-        After developing, the full test suite can be evaluated by running:
-        
-        .. code:: sh
-        
-            py.test graphene_django --cov=graphene_django # Use -v -s for verbose mode
-        
-        Documentation
-        ~~~~~~~~~~~~~
-        
-        The `documentation <http://docs.graphene-python.org/projects/django/en/latest/>`__ is generated using the excellent
-        `Sphinx <http://www.sphinx-doc.org/>`__ and a custom theme.
-        
-        The documentation dependencies are installed by running:
-        
-        .. code:: sh
-        
-            cd docs
-            pip install -r requirements.txt
-        
-        Then to produce a HTML version of the documentation:
-        
-        .. code:: sh
-        
-            make html
-        
-        .. |Graphene Logo| image:: http://graphene-python.org/favicon.png
-        .. |Build Status| image:: https://travis-ci.org/graphql-python/graphene-django.svg?branch=master
-           :target: https://travis-ci.org/graphql-python/graphene-django
-        .. |PyPI version| image:: https://badge.fury.io/py/graphene-django.svg
-           :target: https://badge.fury.io/py/graphene-django
-        .. |Coverage Status| image:: https://coveralls.io/repos/graphql-python/graphene-django/badge.svg?branch=master&service=github
-           :target: https://coveralls.io/github/graphql-python/graphene-django?branch=master
-        
-Keywords: api graphql protocol rest relay graphene
+
+                allUsers1(lastName_Iexact:"Doe", limit:5, offset:0){
+                    id
+                    username
+                    firstName
+                    lastName
+                }
+
+                allUsers2(firstName_Icontains: "J"){
+                    id
+                    username
+                    firstName
+                    lastName
+                }
+
+                user(id:2){
+                    id
+                    username
+                    firstName
+                }
+            }
+
+
+        6- Examples of Mutations:
+
+        .. code:: python
+
+            mutation{
+                userCreate(newUser:{password:"test*123", email: "test@test.com", username:"test"}){
+                    user{
+                        id
+                        username
+                        firstName
+                        lastName
+                    }
+                    ok
+                    errors{
+                        field
+                        messages
+                    }
+                }
+
+                userDelete(id:1){
+                    ok
+                    errors{
+                        field
+                        messages
+                    }
+                }
+
+                userUpdate(newUser:{id:1, username:"John"}){
+                    user{
+                        id
+                        username
+                    }
+                    ok
+                    errors{
+                        field
+                        messages
+                    }
+                }
+            }
+
+Keywords: api graphql protocol rest graphene django
 Platform: any
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers

@@ -141,13 +141,10 @@ def recursive_params(selection_set, fragments, available_related_fields, select_
     return select_related, prefetch_related
 
 
-def queryset_factory(manager, fields_asts=None, fragments=None, filtering_args=None, **kwargs):
+def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
 
-    if filtering_args is None:
-        filtering_args = {}
     select_related = []
     prefetch_related = []
-    filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
     available_related_fields = get_related_fields(manager.model)
 
     for f in kwargs.keys():
@@ -166,9 +163,9 @@ def queryset_factory(manager, fields_asts=None, fragments=None, filtering_args=N
                                                             prefetch_related)
 
     if select_related and prefetch_related:
-        return manager.filter(**filter_kwargs).select_related(*select_related).prefetch_related(*prefetch_related)
+        return manager.select_related(*select_related).prefetch_related(*prefetch_related)
     elif not select_related and prefetch_related:
-        return manager.filter(**filter_kwargs).prefetch_related(*prefetch_related)
+        return manager.prefetch_related(*prefetch_related)
     elif select_related and not prefetch_related:
-        return manager.filter(**filter_kwargs).select_related(*select_related)
-    return manager.filter(**filter_kwargs)
+        return manager.select_related(*select_related)
+    return manager

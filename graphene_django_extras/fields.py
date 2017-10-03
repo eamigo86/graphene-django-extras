@@ -83,12 +83,12 @@ class DjangoFilterListField(Field):
         return self.type.of_type._meta.node._meta.model
 
     @staticmethod
-    def list_resolver1(manager, filterset_class, filtering_args,
-                       root, info, **kwargs):
+    def list_resolver1(manager, filterset_class, filtering_args, root, info, **kwargs):
         qs = find_field(info.field_asts[0], root._prefetched_objects_cache)
 
         if not qs:
-            qs = queryset_factory(manager, info.field_asts, filtering_args, **kwargs)
+            qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs).get_queryset()
+            qs = filterset_class(data=filter_kwargs, queryset=qs).qs
 
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
@@ -116,14 +116,15 @@ class DjangoFilterListField(Field):
             except AttributeError:
                 qs = None
 
-        if qs is None:
-            qs = queryset_factory(manager, info.field_asts, filtering_args, **kwargs)
+        if not qs:
+            qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs).get_queryset()
+            qs = filterset_class(data=filter_kwargs, queryset=qs).qs
 
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
                 qs = qs.filter(**extra_filters)
 
-        return qs
+        return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
         return partial(self.list_resolver, self.type.of_type._meta.model._default_manager,
@@ -131,6 +132,7 @@ class DjangoFilterListField(Field):
 
 
 class DjangoFilterPaginateListField(Field):
+
     def __init__(self, _type, pagination=None, fields=None, extra_filter_meta=None,
                  filterset_class=None, preprocess_kwargs=None, *args, **kwargs):
 
@@ -171,10 +173,12 @@ class DjangoFilterPaginateListField(Field):
     def list_resolver(self, manager, filterset_class, filtering_args,
                       root, info, **kwargs):
 
-        filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
-        # qs = manager.get_queryset()
-        # qs = filterset_class(data=filter_kwargs, queryset=qs).qs
-        qs = manager.get_queryset().filter(**filter_kwargs)
+        qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs).get_queryset()
+        qs = filterset_class(data=filter_kwargs, queryset=qs).qs
+
+        if root and is_valid_django_model(root._meta.model):
+            extra_filters = get_extra_filters(root, manager.model)
+            qs = qs.filter(**extra_filters)
 
         if getattr(self, 'pagination', None):
             qs = self.pagination.paginate_queryset(qs, **kwargs)
@@ -225,18 +229,16 @@ class DjangoListObjectField(Field):
 
     def list_resolver(self, manager, filterset_class, filtering_args, root, info, **kwargs):
 
-        qs = queryset_factory(manager, info.field_asts, info.fragments, filtering_args, **kwargs)
+        qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs).get_queryset()
 
-        # filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
+        filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
 
-        # qs = manager.get_queryset()
-        # qs = filterset_class(data=filter_kwargs, queryset=qs).qs
-        # qs = manager.get_queryset().filter(**filter_kwargs)
+        qs = filterset_class(data=filter_kwargs, queryset=qs).qs
         count = qs.count()
 
         return DjangoListObjectBase(
             count=count,
-            results=qs,
+            results=maybe_queryset(qs),
             results_field_name=self.type._meta.results_field_name
         )
 
