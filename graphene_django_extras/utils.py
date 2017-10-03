@@ -168,4 +168,4 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
         return manager.prefetch_related(*prefetch_related)
     elif select_related and not prefetch_related:
         return manager.select_related(*select_related)
-    return manager
+    return manager.get_queryset()
