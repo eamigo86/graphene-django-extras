@@ -8,7 +8,7 @@ _version_re = re.compile(r'VERSION\s+=\s+(.*)')
 
 with open('graphene_django_extras/__init__.py', 'rb') as f:
     version = ast.literal_eval(_version_re.search(
-        f.read().decode('utf-8')).group(1))    
+        f.read().decode('utf-8')).group(1))
     version = ".".join([str(v) for v in version])
 
 def get_packages():
@@ -40,6 +40,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
 
@@ -47,12 +48,12 @@ setup(
 
     packages=get_packages(),
 
-    install_requires=[        
+    install_requires=[
         'graphene-django>=2.0.dev',
         'Django>=1.8.0',
-        'django-filter==1.0.2',
+        'django-filter>=1.0.4',
         'djangorestframework>=3.6.3',
-    ],    
+    ],
     include_package_data=True,
     zip_safe=False,
     platforms='any',
