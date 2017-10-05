@@ -2,6 +2,7 @@
 from collections import OrderedDict
 
 from django.utils.functional import SimpleLazyObject
+from django.utils.translation import ugettext_lazy as _
 from graphene import Field, InputField, ObjectType, Int
 from graphene.types.base import BaseOptions
 from graphene.types.inputobjecttype import InputObjectType, InputObjectTypeContainer
@@ -12,6 +13,7 @@ from graphene_django.utils import is_valid_django_model, DJANGO_FILTER_INSTALLED
 from .base_types import generic_django_object_type_factory
 from .converter import construct_fields
 from .registry import get_global_registry, Registry
+from .settings import graphql_api_settings
 
 __all__ = ('DjangoObjectType', 'DjangoInputObjectType', 'DjangoListObjectType')
 
@@ -181,11 +183,21 @@ class DjangoListObjectType(ObjectType):
             baseType = generic_django_object_type_factory(DjangoObjectType, model, only_fields,
                                                           exclude_fields, filter_fields)
         filter_fields = filter_fields or baseType._meta.filter_fields
-
+        """
         if pagination:
             result_container = pagination.get_pagination_field(baseType)
         else:
             result_container = DjangoListField(baseType)
+
+        """
+        if pagination:
+            result_container = pagination.get_pagination_field(baseType)
+        else:
+            global_paginator = graphql_api_settings.DEFAULT_PAGINATION_CLASS
+            if global_paginator:
+                result_container = global_paginator().get_field(baseType)
+            else:
+                result_container = DjangoListField(baseType)
 
         _meta = DjangoObjectOptions(cls)
         _meta.model = model
@@ -196,7 +208,7 @@ class DjangoListObjectType(ObjectType):
         _meta.only_fields = only_fields
         _meta.fields = OrderedDict([
             (results_field_name, result_container),
-            ('count', Field(Int, name='totalCount', required=True, description="Total count of matches elements"))
+            ('count', Field(Int, name='totalCount', required=True, description=_("Total count of matches elements")))
         ])
 
         super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
