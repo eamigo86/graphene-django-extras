@@ -42,10 +42,6 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
         self._field = LimitOffsetPaginationField
 
-        if not default_limit:
-            raise ValueError(_('You must specify a value for \'default_limit\' on LimitOffsetGraphqlPagination object '
-                               'or set global \'PAGE_SIZE\' on GRAPHENE_DJANGO_EXTRAS dict on your settings.py'))
-
         # A numeric value indicating the limit to use if one is not provided by the client in a query parameter.
         self.default_limit = default_limit
 
