@@ -18,23 +18,23 @@ For installing graphene-django-extras, just run this command in your shell:
 Documentation:
 --------------
 Extra functionalities:
-    Fields:
-      1. DjangoFilterListField
-      2. DjangoFilterPaginateListField
-      3. DjangoListObjectField (Recommended)
+  Fields:
+    1. DjangoFilterListField
+    2. DjangoFilterPaginateListField
+    3. DjangoListObjectField (Recommended)
 
-    Mutations:
-        1.	DjangoSerializerMutation
+  Mutations:
+    1.	DjangoSerializerMutation
 
-    Types:
-        1.  DjangoObjectTypeExtra
-        2.	DjangoListObjectType
-        3.	DjangoInputObjectType
+  Types:
+    1.  DjangoObjectTypeExtra
+    2.	DjangoListObjectType
+    3.	DjangoInputObjectType
 
-    Pagination:
-        1.	LimitOffsetGraphqlPagination
-        2.	PageGraphqlPagination
-        3.	CursorGraphqlPagination (coming soon)
+  Pagination:
+    1.	LimitOffsetGraphqlPagination
+    2.	PageGraphqlPagination
+    3.	CursorGraphqlPagination (coming soon)
 
 Examples:
 ---------
@@ -103,7 +103,7 @@ Here is a simple use of graphene-django-extras:
             serializer_class = UserSerializer
 
 
-    class UserMutation(graphene.mutation):
+    class UserMutation(graphene.Mutation):
         """
             To traditional graphene's mutation classes definition you must implement the mutate function
         """
@@ -117,7 +117,7 @@ Here is a simple use of graphene-django-extras:
             description = " Traditional graphene mutation for Users "
 
         @classmethod
-        def mutate(cls, info, **kwargs):
+        def mutate(cls, root, info, *args, **kwargs):
             ...
 
 

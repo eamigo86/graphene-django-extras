@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from graphene import Int, NonNull, String
 
 from .fields import LimitOffsetPaginationField, PagePaginationField, CursorPaginationField
-from .utils import _get_count, GenericPaginationField, _positive_int
+from .utils import _get_count, GenericPaginationField, _nonzero_int
 from ..settings import graphql_api_settings
 
 __all__ = ('LimitOffsetGraphqlPagination', 'PageGraphqlPagination', 'CursorGraphqlPagination')
@@ -75,7 +75,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
     def paginate_queryset(self, qs, **kwargs):
         count = _get_count(qs)
-        limit = _positive_int(
+        limit = _nonzero_int(
             kwargs.get(self.limit_query_param, None),
             strict=True,
             cutoff=self.max_limit
@@ -145,7 +145,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         count = _get_count(qs)
         page = kwargs.pop(self.page_query_param, 1)
         if self.page_size_query_param:
-            page_size = _positive_int(
+            page_size = _nonzero_int(
                 kwargs.get(self.page_size_query_param, None),
                 strict=True,
                 cutoff=self.max_page_size

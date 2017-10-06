@@ -51,6 +51,20 @@ def _positive_int(integer_string, strict=False, cutoff=None):
     return ret
 
 
+def _nonzero_int(integer_string, strict=False, cutoff=None):
+    """
+    Cast a string to a strictly non-zero integer.
+    """
+    if integer_string:
+        ret = int(integer_string)
+    else:
+        return integer_string
+    if ret == 0 and strict:
+        raise ValueError()
+    if cutoff:
+        return min(ret, cutoff)
+    return ret
+
 def _get_count(queryset):
     """
     Determine an object count, supporting either querysets or regular lists.

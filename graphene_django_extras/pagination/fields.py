@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from graphene import Field, Int, List, NonNull, String, Argument
 from graphene_django.utils import maybe_queryset
 
-from .utils import _positive_int
+from .utils import _nonzero_int, _get_count
 from ..base_types import DjangoListObjectBase
 from ..settings import graphql_api_settings
 
@@ -52,10 +52,15 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
     def list_resolver(self, manager, root, info, **kwargs):
         qs = manager.get_queryset()
-        limit = kwargs.pop(self.limit_query_param, qs.count())
+        count = _get_count(qs)
+        limit = _nonzero_int(
+            kwargs.get(self.limit_query_param, None),
+            strict=True,
+            cutoff=self.max_limit
+        )
 
         if limit < 0:
-            offset = kwargs.pop(self.offset_query_param, None) or qs.count()
+            offset = kwargs.pop(self.offset_query_param, None) or count
             return qs[offset - fabs(limit):offset]
 
         offset = kwargs.pop(self.offset_query_param, 0)
@@ -101,7 +106,7 @@ class PagePaginationField(AbstractPaginationField):
         count = _get_count(qs)
         page = kwargs.pop(self.page_query_param, 1)
         if self.page_size_query_param:
-            page_size = _positive_int(
+            page_size = _nonzero_int(
                 kwargs.get(self.page_size_query_param, None),
                 strict=True,
                 cutoff=self.max_page_size
@@ -136,11 +141,11 @@ class CursorPaginationField(AbstractPaginationField):
 
         kwargs[self.cursor_query_param] = NonNull(String, description=self.cursor_query_description)
 
-        if page_size_query_param:
-            if not page_size:
-                kwargs[page_size_query_param] = NonNull(Int, description=self.page_size_query_description)
+        if self.page_size_query_param:
+            if not self.page_size:
+                kwargs[self.page_size_query_param] = NonNull(Int, description=self.page_size_query_description)
             else:
-                kwargs[page_size_query_param] = Int(description=self.page_size_query_description)
+                kwargs[self.page_size_query_param] = Int(description=self.page_size_query_description)
 
         super(CursorPaginationField, self).__init__(List(_type), *args, **kwargs)
 

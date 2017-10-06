@@ -43,7 +43,7 @@ class DjangoSerializerMutation(ObjectType):
     def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), exclude_fields=(),
                                     create_resolver=None, delete_resolver=None, update_resolver=None,
                                     input_field_name=None, output_field_name=None, preprocess_kwargs=None,
-                                    **options):
+                                    nested_fields=False, **options):
 
         if not serializer_class:
             raise Exception('serializer_class is required on all DjangoSerializerMutation')
@@ -91,7 +91,7 @@ class DjangoSerializerMutation(ObjectType):
             global_arguments.update({operation: OrderedDict()})
 
             input_fields = yank_fields_from_attrs(
-                construct_fields(model, registry, only_fields, exclude_fields, operation),
+                construct_fields(model, registry, only_fields, exclude_fields, operation, nested_fields),
                 _as=InputField
             )
 

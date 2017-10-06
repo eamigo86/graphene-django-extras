@@ -10,21 +10,22 @@ class Registry(object):
         self._registry = {}
         self._registry_models = {}
 
-    def register(self, cls, for_input=False):
+    def register(self, cls, for_input=None):
         from .types import DjangoInputObjectType, DjangoObjectType
         assert issubclass(
             cls, (DjangoInputObjectType, DjangoObjectType)), 'Only DjangoInputObjectType or DjangoObjectType can be' \
                                                              ' registered, received "{}"'.format(cls.__name__)
-                                                             
+
         assert cls._meta.registry == self, 'Registry for a Model have to match.'
 
         if not getattr(cls._meta, 'skip_registry', False):
-            key = '{}_Input'.format(cls._meta.model.__name__.lower()) \
+            key = '{}_{}'.format(cls._meta.model.__name__.lower(), for_input) \
                 if for_input else cls._meta.model.__name__.lower()
             self._registry[to_camel_case(key)] = cls
 
-    def get_type_for_model(self, model):
-        return self._registry.get(model.__name__.lower())
+    def get_type_for_model(self, model, for_input=None):
+        key = '{}_{}'.format(model.__name__.lower(), for_input) if for_input else model.__name__.lower()
+        return self._registry.get(to_camel_case(key))
 
 
 registry = None

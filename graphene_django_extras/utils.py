@@ -1,10 +1,46 @@
 # -*- coding: utf-8 -*-
+from django.apps import apps
+from django.core.exceptions import ValidationError
+from django.db.models import NOT_PROVIDED
 from django.db.models import QuerySet, Manager
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
-from django.db.models import NOT_PROVIDED
+from graphene_django.utils import is_valid_django_model
 from graphql import GraphQLList, GraphQLNonNull
 from graphql.language.ast import FragmentSpread
+from six import string_types
+
+
+def create_obj(model, new_obj_key=None, *args, **kwargs):
+    """
+    Function used by my on traditional Mutations to create objs
+    :param model: A valid Django Model or a string with format: <app_label>.<model_name>
+    :param new_obj_key: Key into kwargs that contains de data
+    :param args:
+    :param kwargs: Dict with model attributes values
+    :return: instance of model after saved it
+    """
+
+    try:
+        if isinstance(model, string_types):
+            model = apps.get_model(model)
+        assert is_valid_django_model(model), (
+            'You need to pass a valid Django Model or a string with format: <app_label>.<model_name> to "create_obj"'
+            ' function, received "{}".').format(model)
+
+        data = kwargs.get(new_obj_key, None) if new_obj_key else kwargs
+        new_obj = model(**data)
+        new_obj.full_clean()
+        new_obj.save()
+        return new_obj
+    except LookupError as e:
+        pass
+    except ValidationError as e:
+        raise ValidationError(e.__str__())
+    except TypeError as e:
+        raise TypeError(e.message)
+    except Exception as e:
+        return e.message
 
 
 def get_type(_type):

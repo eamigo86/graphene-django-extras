@@ -101,7 +101,7 @@ class UserSerializerMutation(DjangoSerializerMutation):
         serializer_class = UserSerializer
 
 
-class UserMutation(graphene.mutation):
+class UserMutation(graphene.Mutation):
     """
          To traditional graphene's mutation classes definition you must implement the mutate function
     """
@@ -115,7 +115,7 @@ class UserMutation(graphene.mutation):
         description = " Traditional graphene mutation for Users "
 
     @classmethod
-    def mutate(cls, info, **kwargs):
+    def mutate(cls, root, info, *args, **kwargs):
         ...
 ```
 
