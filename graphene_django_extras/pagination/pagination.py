@@ -54,9 +54,9 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         # A string value indicating the name of the "offset" query parameter.
         self.offset_query_param = offset_query_param
 
-        self.limit_query_description = _('Number of results to return per page. Actual \'default_limit\': {}, and '
+        self.limit_query_description = _('Number of results to return per page. Default \'default_limit\': {}, and '
                                          '\'max_limit\': {}').format(self.default_limit, self.max_limit)
-        self.offset_query_description = _('The initial index from which to return the results.')
+        self.offset_query_description = _('The initial index from which to return the results. Default: 0')
 
     def to_dict(self):
         return {
@@ -116,7 +116,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         # Only relevant if 'page_size_query_param' has also been set.
         self.max_page_size = max_page_size
 
-        self.page_size_query_description = _('Number of results to return per page. Actual \'page_size\': {}').format(
+        self.page_size_query_description = _('Number of results to return per page. Default \'page_size\': {}').format(
             self.page_size)
 
         self.page_query_description = _('A page number within the paginated result set. Default: 1')
@@ -155,13 +155,13 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
         assert page != 0, ValueError('Page value for PageGraphqlPagination must be a non-zero value')
         if page_size is None:
-            return None
             """
             raise ValueError('Page_size value for PageGraphqlPagination must be a non-null value, you must set global'
                              ' PAGE_SIZE on GRAPHENE_DJANGO_EXTRAS dict on your settings.py or specify a '
                              'page_size_query_param value on pagination declaration to specify a custom page size '
                              'value through a query parameters')
             """
+            return None
 
         offset = max(0, int(count + page_size * page)) if page < 0 else page_size * (page - 1)
 
