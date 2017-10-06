@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
-from abc import ABCMeta, abstractmethod
 from functools import partial
 from math import fabs
 
 from django.utils.translation import ugettext_lazy as _
-
-from graphene import Field, Int, List, NonNull, String, Argument
-from graphene_django.utils import maybe_queryset
+from graphene import Field, Int, List, NonNull, String
 
 from .utils import _nonzero_int, _get_count
-from ..base_types import DjangoListObjectBase
 from ..settings import graphql_api_settings
+
+__all__ = ('LimitOffsetPaginationField', 'PagePaginationField', 'CursorPaginationField')
 
 
 class AbstractPaginationField(Field):
-    __metaclass__ = ABCMeta
-
     @property
     def model(self):
         return self.type.of_type._meta.node._meta.model
