@@ -10,6 +10,12 @@ class Registry(object):
         self._registry = {}
         self._registry_models = {}
 
+    def register_enum(self, key, enum):
+        self._registry[key] = enum
+
+    def get_type_for_enum(self, key):
+        return self._registry.get(key)
+
     def register(self, cls, for_input=None):
         from .types import DjangoInputObjectType, DjangoObjectType
         assert issubclass(

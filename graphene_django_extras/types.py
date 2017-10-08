@@ -95,9 +95,8 @@ class DjangoObjectType(ObjectType):
 class DjangoInputObjectType(InputObjectType):
     @classmethod
     def __init_subclass_with_meta__(cls, model=None, container=None, registry=None, skip_registry=False,
-                                    connection=None, use_connection=None, for_update=False,
-                                    only_fields=(), exclude_fields=(), filter_fields=None,
-                                    input_for="create", interfaces=(), nested_fields=False, **options):
+                                    connection=None, use_connection=None, only_fields=(), exclude_fields=(),
+                                    filter_fields=None, input_for="create", nested_fields=False, **options):
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -121,12 +120,12 @@ class DjangoInputObjectType(InputObjectType):
 
         django_fields = yank_fields_from_attrs(
             construct_fields(model, registry, only_fields, exclude_fields, None, nested_fields),
-            _as=Field,
+            _as=Field, sort=False
         )
 
         django_input_fields = yank_fields_from_attrs(
             construct_fields(model, registry, only_fields, exclude_fields, input_for, nested_fields),
-            _as=InputField,
+            _as=InputField, sort=False
         )
 
         if container is None:
@@ -144,7 +143,7 @@ class DjangoInputObjectType(InputObjectType):
         _meta.connection = connection
         _meta.input_for = input_for
 
-        super(InputObjectType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
+        super(InputObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
         if not skip_registry:
             registry.register(cls, for_input=input_for)

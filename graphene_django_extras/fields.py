@@ -83,28 +83,14 @@ class DjangoFilterListField(Field):
         return self.type.of_type._meta.node._meta.model
 
     @staticmethod
-    def list_resolver1(manager, filterset_class, filtering_args, root, info, **kwargs):
-        qs = find_field(info.field_asts[0], root._prefetched_objects_cache)
-
-        if not qs:
-            qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-            qs = filterset_class(data=filter_kwargs, queryset=qs).qs
-
-            if root and is_valid_django_model(root._meta.model):
-                extra_filters = get_extra_filters(root, manager.model)
-                qs = qs.filter(**extra_filters)
-
-        return qs
-
-    @staticmethod
     def list_resolver(manager, filterset_class, filtering_args, root, info, **kwargs):
         qs = None
         available_related_fields = get_related_fields(root._meta.model)
         field = find_field(info.field_asts[0], available_related_fields)
+        filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
 
         if field:
             try:
-                filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
                 if filter_kwargs:
                     qs = operator.attrgetter(
                         '{}.filter'.format(
@@ -173,6 +159,7 @@ class DjangoFilterPaginateListField(Field):
     def list_resolver(self, manager, filterset_class, filtering_args,
                       root, info, **kwargs):
 
+        filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
         qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
         qs = filterset_class(data=filter_kwargs, queryset=qs).qs
 
@@ -192,8 +179,8 @@ class DjangoFilterPaginateListField(Field):
 
 class DjangoListObjectField(Field):
 
-    def __init__(self, _type, fields=None, extra_filter_meta=None,
-                 filterset_class=None, preprocess_kwargs=None, *args, **kwargs):
+    def __init__(self, _type, fields=None, extra_filter_meta=None, filterset_class=None, preprocess_kwargs=None,
+                 *args, **kwargs):
 
         if DJANGO_FILTER_INSTALLED:
             _fields = _type._meta.filter_fields
@@ -211,9 +198,9 @@ class DjangoListObjectField(Field):
             kwargs['args'].update(self.filtering_args)
 
             if 'id' not in kwargs['args'].keys():
-                self.filtering_args.update({'id': Argument(ID,
-                                                           description=_('Django object unique identification field'))})
-                kwargs['args'].update({'id': Argument(ID, description=_('Django object unique identification field'))})
+                id_description = _('Django object unique identification field')
+                self.filtering_args.update({'id': Argument(ID, description=id_description)})
+                kwargs['args'].update({'id': Argument(ID, description=id_description)})
 
         if not kwargs.get('description', None):
             kwargs['description'] = _('List of {} objects').format(_type._meta.model.__name__)

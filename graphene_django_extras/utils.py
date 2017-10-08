@@ -64,8 +64,26 @@ def get_fields(info):
         yield field_name
 
 
-def is_required(field, input_flag):
-    return not field.blank and field.default == NOT_PROVIDED and input_flag == 'create'
+def is_required(field):
+    try:
+        blank = getattr(field, 'blank', getattr(field, 'field', None))
+        default = getattr(field, 'default', getattr(field, 'field', None))
+        null = getattr(field, 'null', getattr(field, 'field', None))
+
+        if blank is None:
+            blank = True
+        elif not isinstance(blank, bool):
+            blank = getattr(blank, 'blank', True)
+
+        if default is None:
+            default = NOT_PROVIDED
+        elif default != NOT_PROVIDED:
+            default = getattr(default, 'default', default)
+
+    except AttributeError:
+        return False
+
+    return not blank and default == NOT_PROVIDED
 
 
 def _get_queryset(klass):
