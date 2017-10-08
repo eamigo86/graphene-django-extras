@@ -217,7 +217,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
-        kwargs = cls._meta.preprocess_kwargs(**kwargs)
+        kwargs = cls._meta.kwargs_formatter(**kwargs)
 
         return Field(
             cls._meta.output, args=cls._meta.arguments['create'], resolver=cls._meta.create_resolver, **kwargs
@@ -225,7 +225,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def DeleteField(cls, *args, **kwargs):
-        kwargs = cls._meta.preprocess_kwargs(**kwargs)
+        kwargs = cls._meta.kwargs_formatter(**kwargs)
 
         return Field(
             cls._meta.output, args=cls._meta.arguments['delete'], resolver=cls._meta.delete_resolver, **kwargs
@@ -233,7 +233,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def UpdateField(cls, *args, **kwargs):
-        kwargs = cls._meta.preprocess_kwargs(**kwargs)
+        kwargs = cls._meta.kwargs_formatter(**kwargs)
 
         return Field(
             cls._meta.output, args=cls._meta.arguments['update'], resolver=cls._meta.update_resolver, **kwargs
