@@ -17,6 +17,7 @@ from rest_framework.compat import get_related_model
 
 from .fields import DjangoFilterListField
 from .utils import is_required
+from .base_types import Date
 
 singledispatch = import_single_dispatch()
 
@@ -188,6 +189,10 @@ def convert_field_to_float(field, registry=None, input_flag=None, nested_fields=
 
 
 @convert_django_field.register(models.DateField)
+def convert_date_to_string(field, registry=None, input_flag=None, nested_fields=False):
+    return Date(description=field.help_text, required=is_required(field) and input_flag == 'create')
+
+
 @convert_django_field.register(models.DateTimeField)
 def convert_date_to_string(field, registry=None, input_flag=None, nested_fields=False):
     return DateTime(description=field.help_text, required=is_required(field) and input_flag == 'create')

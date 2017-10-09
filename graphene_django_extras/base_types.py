@@ -1,5 +1,43 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+import datetime
+
+from graphene import Scalar
 from graphene.utils.str_converters import to_camel_case
+from graphql.language import ast
+
+try:
+    import iso8601
+except:
+    raise ImportError(
+        "iso8601 package is required for DateTime Scalar.\n"
+        "You can install it using: pip install iso8601."
+    )
+
+
+class Date(Scalar):
+    '''
+    The `Date` scalar type represents a Date
+    value as specified by
+    [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+    '''
+
+    @staticmethod
+    def serialize(dt):
+        assert isinstance(dt, datetime.date), (
+            'Received not compatible date "{}"'.format(repr(dt))
+        )
+        return dt.isoformat()
+
+    @classmethod
+    def parse_literal(cls, node):
+        if isinstance(node, ast.StringValue):
+            return cls.parse_value(node.value).date()
+
+    @staticmethod
+    def parse_value(value):
+        return iso8601.parse_date(value)
 
 
 def generic_django_object_type_factory(graphene_type, new_model, new_only_fields=(), new_exclude_fields=(),
