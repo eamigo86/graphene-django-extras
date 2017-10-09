@@ -88,7 +88,7 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None, nes
 def construct_fields(model, registry, only_fields, exclude_fields, input_flag=None, nested_fields=False):
     _model_fields = get_model_fields(model)
     if input_flag == 'create' and settings.DEBUG:
-        # _model_fields = sorted(sorted(_model_fields, key=lambda f: f[0]), key=lambda f: is_required(f[1]), reverse=True)
+        # model_fields = sorted(sorted(_model_fields, key=lambda f: f[0]), key=lambda f: is_required(f[1]), reverse=True)
         _model_fields = sorted(_model_fields, key=lambda f: is_required(f[1]), reverse=True)
 
     fields = OrderedDict()
