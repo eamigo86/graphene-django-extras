@@ -2,6 +2,7 @@ import re
 from collections import OrderedDict
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
@@ -11,13 +12,13 @@ from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case, to_const
 from graphene_django.compat import ArrayField, HStoreField, RangeField
 from graphene_django.fields import DjangoListField
-from graphene_django.utils import import_single_dispatch, get_model_fields
+from graphene_django.utils import import_single_dispatch
 from rest_framework.fields import JSONField
 from rest_framework.compat import get_related_model
 
 from .fields import DjangoFilterListField
-from .utils import is_required
-from .base_types import Date
+from .utils import is_required, get_model_fields
+from .base_types import Date, GenericForeignKeyType, GenericForeignKeyInputType
 
 singledispatch = import_single_dispatch()
 
@@ -307,3 +308,42 @@ def convert_postgres_range_to_string(field, registry=None, input_flag=None, nest
     if not isinstance(inner_type, (List, NonNull)):
         inner_type = type(inner_type)
     return List(inner_type, description=field.help_text, required=is_required(field) and input_flag == 'create')
+
+
+@convert_django_field.register(GenericForeignKey)
+def convert_generic_foreign_key_to_object(field, registry=None, input_flag=None, nested_fields=False):
+
+    def dynamic_type():
+        key = '{}_{}'.format(field.name, field.model.__name__.lower())
+        if input_flag is not None:
+            key = '{}_{}'.format(key, input_flag)
+
+        key = to_camel_case(key)
+        model = field.model
+        ct_field = None
+        fk_field = None
+        required = False
+        for f in get_model_fields(model):
+            if f[0] == field.ct_field:
+                ct_field = f[1]
+            elif f[0] == field.fk_field:
+                fk_field = f[1]
+            if fk_field is not None and ct_field is not None:
+                break
+
+        if ct_field is not None and fk_field is not None:
+            required = (is_required(ct_field) and is_required(fk_field)) or required
+
+        if input_flag:
+            return GenericForeignKeyInputType(description=_(" Input Type for a GenericForeignKey relation "),
+                                              required=required and input_flag == 'create')
+
+        _type = registry.get_type_for_enum(key)
+        if not _type:
+            _type = GenericForeignKeyType
+
+        # return Field(_type, description=field.help_text, required=field.null)
+        return Field(_type, description=_(" Input Type for a GenericForeignKey relation "),
+                     required=required and input_flag == 'create')
+
+    return Dynamic(dynamic_type)
