@@ -1,12 +1,11 @@
 
-
 Graphene-Django-Extras
 ======================
 
-This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay:
+This package add some extra functionalities to **graphene-django** to facilitate the graphql use without Relay:
   1. Allow pagination and filtering on Queries.
   2. Allow to define DjangoRestFramework serializers based Mutations.
-  3. Add support to Subscription's requests and its integration with websockets using Channels package.
+  3. Add support to Subscription's requests and its integration with websockets using **Channels** package.
 
 Installation:
 -------------
@@ -19,26 +18,29 @@ For installing graphene-django-extras, just run this command in your shell:
 
 Documentation:
 --------------
+
+**********************
 Extra functionalities:
-  Fields:
+**********************
+  **Fields:**
     1. DjangoObjectField
     2. DjangoFilterListField
     3. DjangoFilterPaginateListField
     4. DjangoListObjectField  (Recommended for Queries definition)
 
-  Mutations:
+  **Mutations:**
     1.	DjangoSerializerMutation  (Recommended for Mutations definition)
 
-  Types:
+  **Types:**
     1.	DjangoListObjectType  (Recommended for Types definition)
     2.	DjangoInputObjectType
 
-  Paginations:
+  **Paginations:**
     1.	LimitOffsetGraphqlPagination
     2.	PageGraphqlPagination
     3.	CursorGraphqlPagination (coming soon)
 
-  Subscriptions:
+  **Subscriptions:**
     1.  Subscription  (Abstract class to define subscriptions to a DjangoSerializerMutation)
     2.  GraphqlAPIDemultiplexer  (Custom WebSocket consumer subclass that handles demultiplexing streams)
 
@@ -47,7 +49,10 @@ Queries and Mutations examples:
 
 This is a basic example of graphene-django-extras package use:
 
+********************
 1- Types Definition:
+********************
+
 
 .. code:: python
 
@@ -77,7 +82,9 @@ This is a basic example of graphene-django-extras package use:
             pagination = LimitOffsetGraphqlPagination()
 
 
-2- Input Types can be defined for use on mutations:
+***************************************************
+2- InputTypes can be defined for use on mutations:
+***************************************************
 
 .. code:: python
 
@@ -90,9 +97,14 @@ This is a basic example of graphene-django-extras package use:
             model = User
 
 
-3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+**********************
+3- Defining Mutations:
+**********************
 
-.. code:: python        
+You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+
+
+.. code:: python
 
     import graphene
     from .serializers import UserSerializer
@@ -128,9 +140,11 @@ This is a basic example of graphene-django-extras package use:
             ...
 
 
+********************
 4- Defining schemes:
+********************
 
-.. code:: python  
+.. code:: python
 
     import graphene
     from graphene_django_extras import DjangoObjectField, DjangoListObjectField, DjangoFilterPaginateListField, DjangoFilterListField, LimitOffsetGraphqlPagination
@@ -161,7 +175,9 @@ This is a basic example of graphene-django-extras package use:
         traditional_user_mutation = UserMutation.Field()
 
 
+***********************
 5- Examples of queries:
+***********************
 
 .. code:: python
 
@@ -180,7 +196,7 @@ This is a basic example of graphene-django-extras package use:
             id
             username
             firstName
-            lastName    
+            lastName
         }
 
         allUsers2(firstName_Icontains: "J"){
@@ -204,7 +220,9 @@ This is a basic example of graphene-django-extras package use:
     }
 
 
+*************************
 6- Examples of Mutations:
+*************************
 
 .. code:: python
 
@@ -249,7 +267,9 @@ Subscriptions:
 
 This first approach to support Graphql subscriptions with Channels in graphene-django-extras, use channels-api package.
 
+*****************************************
 1- Defining custom Subscriptions classes:
+*****************************************
 
 You must to have defined a DjangoSerializerMutation class for each model that you want to define a Subscription class:
 
@@ -320,9 +340,13 @@ Add your app schema into your project root schema:
     )
 
 
-2- Defining Channels settings and custom routing config (For more information see Channels  documentation):
+********************************************************
+2- Defining Channels settings and custom routing config:
+********************************************************
+**Note**: For more information about this step see Channels documentation.
 
 You must to have defined a DjangoSerializerMutation class for each model that you want to define a Subscription class:
+
 
 .. code:: python
 
@@ -383,17 +407,20 @@ You should add channels and channels_api modules into your INSTALLED_APPS settin
     ...
 
 
+*****************************
 3- Examples of Subscriptions:
+*****************************
 
 In your client you must define websocket connection to: 'ws://host:port/custom_websocket_path'.
 When the connection is established, the server return a websocket message like this:
 {"channel_id": "GthKdsYVrK!WxRCdJQMPi", "connect": "success"}, where you must store the channel_id value to later use in your graphql subscriptions request for subscribe or unsubscribe operations.
 The Subscription accept five possible parameters:
-  1.  operation: Operation to perform: subscribe or unsubscribe. (required)
-  2.  action:    Action you wish to subscribe: create, update, delete or all_actions. (required)
-  3.  channelId: Websocket connection identification. (required)
-  4.  id:        ID field value of model object that you wish to subscribe to. (optional)
-  5.  data:      List of desired model fields that you want in subscription's  notification. (optional)
+
+1.  **operation**: Operation to perform: subscribe or unsubscribe. (required)
+2.  **action**: Action you wish to subscribe: create, update, delete or all_actions. (required)
+3.  **channelId**: Websocket connection identification. (required)
+4.  **id**: ID field value of model object that you wish to subscribe to. (optional)
+5.  **data**: List of desired model fields that you want in subscription's  notification. (optional)
 
 .. code:: python
 
@@ -457,46 +484,70 @@ NOTE: Each time than the Graphql server restart, you must to reestablish the web
 Change Log:
 -----------
 
+**************
 v0.1.0-alpha1:
-    1.  Added support to multiselect choices values for models.CharField with choices attribute, on queries and mutations. Example: Integration with django-multiselectfield package.
-    2.  Added support to GenericForeignKey and GenericRelation fields, on queries and mutations.
-    3.  Added first approach to support Subscriptions with Channels, with subscribe and unsubscribe operations. Using channels-api package. :muscle:
-    4.  Fixed minors bugs.
+**************
+1.  Added support to multiselect choices values for models.CharField with choices attribute, on queries and mutations. Example: Integration with django-multiselectfield package.
+2.  Added support to GenericForeignKey and GenericRelation fields, on queries and mutations.
+3.  Added first approach to support Subscriptions with **Channels**, with subscribe and unsubscribe operations. Using **channels-api** package.
+4.  Fixed minors bugs.
 
+*******
 v0.0.4:
-    1. Fix error on DateType encode.
+*******
+1. Fix error on DateType encode.
 
+*******
 v0.0.3:
-    1. Implement custom implementation of DateType for use converter and avoid error on Serializer Mutation.
+*******
+1. Implement custom implementation of DateType for use converter and avoid error on Serializer Mutation.
 
+*******
 v0.0.2:
-    1. Updated dependency DRF in setup.py, to avoid an import error produced by the new version of DRF 3.7.0.
+*******
+1. Changed dependency of DRF to 3.6.4 on setup.py file, to avoid an import error produced by some changes in new version of DRF=3.7.0 and because DRF 3.7.0 dropped support to Django versions < 1.10.
 
+*******
 v0.0.1:
-    1. Fixed bug on DjangoInputObjectType class that refer to unused interface attribute.
-    2. Added support to create nested objects like in DRF (http://www.django-rest-framework.org/api-guide/serializers/#writable-nested-representations), it's valid to SerializerMutation and DjangoInputObjectType, only is necessary to specify nested_fields=True on its Meta class definition.
-    3. Added support to show, only in mutations types to create objects and with debug=True on settings, inputs autocomplete ordered by required fields first.
-    4. Fixed others minors bugs.
+*******
+1. Fixed bug on DjangoInputObjectType class that refer to unused interface attribute.
+2. Added support to create nested objects like in `DRF <http://www.django-rest-framework.org/api-guide/serializers/#writable-nested-representations>`, it's valid to SerializerMutation and DjangoInputObjectType, only is necessary to specify nested_fields=True on its Meta class definition.
+3. Added support to show, only in mutations types to create objects and with debug=True on settings, inputs autocomplete ordered by required fields first.
+4. Fixed others minors bugs.
 
+************
 v0.0.1-rc.2:
-    1. Make queries pagination configuration is more friendly.
+************
+1. Make queries pagination configuration is more friendly.
 
+************
 v0.0.1-rc.1:
-    1. Fixed a bug with input fields in the converter function.
+************
+1. Fixed a bug with input fields in the converter function.
 
+***************
 v0.0.1-beta.10:
-    1. Fixed bug in the queryset_factory function because it did not always return a queryset.
+***************
+1. Fixed bug in the queryset_factory function because it did not always return a queryset.
 
+**************
 v0.0.1-beta.9:
-    1. Remove hard dependence with psycopg2 module.
-    2. Fixed bug that prevented use queries with fragments.
-    3. Fixed bug relating to custom django_filters module and ordering fields.
+**************
+1. Remove hard dependence with psycopg2 module.
+2. Fixed bug that prevented use queries with fragments.
+3. Fixed bug relating to custom django_filters module and ordering fields.
 
+**************
 v0.0.1-beta.6:
-    1. Optimizing imports, fix some minors bugs and working on performance.
+**************
+1. Optimizing imports, fix some minors bugs and working on performance.
 
+**************
 v0.0.1-beta.5:
-    1. Repair conflict on converter.py, by the use of get_related_model function with: OneToOneRel, ManyToManyRel and ManyToOneRel.
+**************
+1. Repair conflict on converter.py, by the use of get_related_model function with: OneToOneRel, ManyToManyRel and ManyToOneRel.
 
+**************
 v0.0.1-beta.4:
-    1. First commit
+**************
+1. First commit

@@ -460,7 +460,8 @@ subscription{
     1. Implement custom implementation of DateType for use converter and avoid error on Serializer Mutation.
 
 #### v0.0.2:
-    1. Updated dependency DRF in setup.py, to avoid an import error produced by the new version of DRF 3.7.0.
+    1. Changed dependency of DRF to 3.6.4 on setup.py file, to avoid an import error produced by some changes in
+    new version of DRF=3.7.0 and because DRF 3.7.0 dropped support to Django versions < 1.10.
 
 #### v0.0.1:
     1. Fixed bug on DjangoInputObjectType class that refer to unused interface attribute.
