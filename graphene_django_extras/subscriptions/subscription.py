@@ -9,7 +9,7 @@ from graphene.types.base import BaseOptions
 from graphene.utils.str_converters import to_snake_case
 from six import string_types
 
-from graphene_django_extras import DjangoSerializerMutation
+from ..mutation import DjangoSerializerMutation
 from .bindings import SubscriptionResourceBinding
 
 
@@ -34,12 +34,6 @@ class SubscriptionOptions(BaseOptions):
     serializer_class = None
     queryset = None
     mutation_class = None
-    actions_map = {
-        'create': 'create',
-        'update': 'update',
-        'delete': 'delete',
-        'all_actions': ['create', 'update', 'delete']
-    }
 
 
 class Subscription(ObjectType):
@@ -132,8 +126,16 @@ class Subscription(ObjectType):
             channel = copy.copy(info.context.reply_channel)
             channel.name = u'daphne.response.{}'.format(kwargs.get('channel_id'))
 
-            for act in cls._meta.actions_map[action]:
-                group_name = cls._group_name(act, id=obj_id)
+            if action == 'all_actions':
+                for act in ('create', 'update', 'delete'):
+                    group_name = cls._group_name(act, id=obj_id)
+
+                    if operation == 'subscribe':
+                        Group(group_name).add(channel)
+                    elif operation == 'unsubscribe':
+                        Group(group_name).discard(channel)
+            else:
+                group_name = cls._group_name(action, id=obj_id)
 
                 if operation == 'subscribe':
                     Group(group_name).add(channel)
