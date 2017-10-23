@@ -7,7 +7,7 @@
 This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay:
   1. Allow pagination and filtering on Queries.
   2. Allow to define DjangoRestFramework serializers based Mutations.
-  3. Add support to Subscription's requests and its integration with websockets using Channels package.
+  3. Add support to Subscription's requests and its integration with websockets using Channels package. :muscle:
 
 ## Installation
 
@@ -33,7 +33,7 @@ pip install graphene-django-extras
   1.  DjangoListObjectType  (*Recommended for Types definition*)
   2.  DjangoInputObjectType
 
- **Paginations:** 
+ **Paginations:**
   1.  LimitOffsetGraphqlPagination
   2.  PageGraphqlPagination
   3.  CursorGraphqlPagination (*coming soon*)
@@ -93,7 +93,7 @@ class UserInput(DjangoInputObjectType):
 ```python
 import graphene
 from graphene_django_extras import DjangoSerializerMutation
-    
+
 from .serializers import UserSerializer
 from .types import UserType
 from .input_types import UserInputType
@@ -130,7 +130,8 @@ class UserMutation(graphene.Mutation):
 
 ```python
 import graphene
-from graphene_django_extras import DjangoObjectField, DjangoListObjectField, DjangoFilterPaginateListField, DjangoFilterListField, LimitOffsetGraphqlPagination
+from graphene_django_extras import DjangoObjectField, DjangoListObjectField, DjangoFilterPaginateListField,
+DjangoFilterListField, LimitOffsetGraphqlPagination
 from .types import UserType, UserListType
 from .mutations import UserMutation, UserSerializerMutation
 
@@ -143,7 +144,7 @@ class Queries(graphene.ObjectType):
     all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
 
     # Defining a query for a single user
-    # The DjangoObjectField have a ID input field, that allow filter by id and is't necessary resolve method definition
+    # The DjangoObjectField have a ID input field, that allow filter by id and is't necessary resolve method
     user = DjangoObjectField(UserType, description=_('Single User query'))
 
     # Another way to define a single user query
@@ -294,7 +295,7 @@ class RootQuery(custom.app.route.graphql.schema.Query, graphene.ObjectType):
     class Meta:
         description = 'Root Queries for my Project'
 
-      
+
 class RootSubscription(custom.app.route.graphql.schema.Mutation, graphene.ObjectType):
     class Meta:
         description = 'Root Mutations for my Project'
@@ -326,7 +327,7 @@ from .graphql.subscriptions import UserSubscription, GroupSubscription
 class CustomAppDemultiplexer(GraphqlAPIDemultiplexer):
     consumers = {
       'users': UserSubscription.get_binding().consumer,
-      'groups': GroupSubscription.get_binding().consumer      
+      'groups': GroupSubscription.get_binding().consumer
     }
 
 
@@ -382,15 +383,15 @@ When the connection is established, the server return a websocket message like t
 The Subscription accept five possible parameters:
   1.  **operation**: Operation to perform: subscribe or unsubscribe. (*required*)
   2.  **action**: Action you wish to subscribe: create, update, delete or all_actions. (*required*)
-  3.  **channelId**: Websocket connection identification. (*required*) 
-  4.  **id**: ID field value of model object that you wish to subscribe to. (*optional*) 
-  5.  **data**: List of desired model fields that you want in subscription's  notification. (*optional*) 
+  3.  **channelId**: Websocket connection identification. (*required*)
+  4.  **id**: ID field value of model object that you wish to subscribe to. (*optional*)
+  5.  **data**: List of desired model fields that you want in subscription's  notification. (*optional*)
 
 ```js
 subscription{
   userSubscription(
-    action: UPDATE, 
-    operation: SUBSCRIBE, 
+    action: UPDATE,
+    operation: SUBSCRIBE,
     channelId: "GthKdsYVrK!WxRCdJQMPi",
     id: 5,
     data: [ID, USERNAME, FIRST_NAME, LAST_NAME, EMAIL, IS_SUPERUSER]
@@ -409,16 +410,16 @@ In this case, the subscription request sanded return a websocket message to clie
   "stream": "users",
   "payload": {
     "action": "update",
-    "model": "auth.user", 
+    "model": "auth.user",
     "data": {
       "id": 5,
       "username": "meaghan90",
-      "first_name": "Meaghan", 
-      "last_name": "Ackerman", 
-      "email": "meaghan@gmail.com", 
-      "is_superuser": false     
+      "first_name": "Meaghan",
+      "last_name": "Ackerman",
+      "email": "meaghan@gmail.com",
+      "is_superuser": false
     }
-  } 
+  }
 }
 ```
 
@@ -427,8 +428,8 @@ For unsubscribe you must send a graphql subscription request like this:
 ```js
 subscription{
   userSubscription(
-    action: UPDATE, 
-    operation: UNSUBSCRIBE, 
+    action: UPDATE,
+    operation: UNSUBSCRIBE,
     channelId: "GthKdsYVrK!WxRCdJQMPi",
     id: 5
   ){
@@ -445,9 +446,11 @@ subscription{
 ## Change Log:
 
 #### v0.1.0-alpha1:
-    1.  Added support to multiselect choices values for models.CharField with choices attribute, on queries and mutations. Example: Integration with django-multiselectfield package.
+    1.  Added support to multiselect choices values for models.CharField with choices attribute,
+    on queries and mutations. Example: Integration with django-multiselectfield package.
     2.  Added support to GenericForeignKey and GenericRelation fields, on queries and mutations.
-    3.  Added first approach to support Subscriptions with Channels, with subscribe and unsubscribe operations. Using channels-api package. :muscle:
+    3.  Added first approach to support Subscriptions with Channels, with subscribe and unsubscribe operations.
+    Using channels-api package.
     4.  Fixed minors bugs.
 
 #### v0.0.4:
@@ -461,8 +464,10 @@ subscription{
 
 #### v0.0.1:
     1. Fixed bug on DjangoInputObjectType class that refer to unused interface attribute.
-    2. Added support to create nested objects like in DRF (http://www.django-rest-framework.org/api-guide/serializers/#writable-nested-representations), it's valid to SerializerMutation and DjangoInputObjectType, only is necessary to specify nested_fields=True on its Meta class definition.
-    3. Added support to show, only in mutations types to create objects and with debug=True on settings, inputs autocomplete ordered by required fields first.
+    2. Added support to create nested objects like in [DRF](http://www.django-rest-framework.org/api-guide/serializers/#writable-nested-representations),
+    it's valid to SerializerMutation and DjangoInputObjectType, only is necessary to specify nested_fields=True on its Meta class definition.
+    3. Added support to show, only in mutations types to create objects and with debug=True on settings,
+    inputs autocomplete ordered by required fields first.
     4. Fixed others minors bugs.
 
 #### v0.0.1-rc.2:
@@ -483,7 +488,8 @@ subscription{
     1. Optimizing imports, fix some minors bugs and working on performance.
 
 #### v0.0.1-beta.5:
-    1. Repair conflict on converter.py, by the use of get_related_model function with: OneToOneRel, ManyToManyRel and ManyToOneRel.
+    1. Repair conflict on converter.py, by the use of get_related_model function with: OneToOneRel,
+    ManyToManyRel and ManyToOneRel.
 
 #### v0.0.1-beta.4:
     1. First commit.
