@@ -444,8 +444,46 @@ subscription{
 
 ## Change Log:
 
-#### 0.1.0-alpha1:
+#### v0.1.0-alpha1:
     1.  Added support to multiselect choices values for models.CharField with choices attribute, on queries and mutations. Example: Integration with django-multiselectfield package.
     2.  Added support to GenericForeignKey and GenericRelation fields, on queries and mutations.
     3.  Added first approach to support Subscriptions with Channels, with subscribe and unsubscribe operations. Using channels-api package. :muscle:
     4.  Fixed minors bugs.
+
+#### v0.0.4:
+    1. Fix error on DateType encode.
+
+#### v0.0.3:
+    1. Implement custom implementation of DateType for use converter and avoid error on Serializer Mutation.
+
+#### v0.0.2:
+    1. Updated dependency DRF in setup.py, to avoid an import error produced by the new version of DRF 3.7.0.
+
+#### v0.0.1:
+    1. Fixed bug on DjangoInputObjectType class that refer to unused interface attribute.
+    2. Added support to create nested objects like in DRF (http://www.django-rest-framework.org/api-guide/serializers/#writable-nested-representations), it's valid to SerializerMutation and DjangoInputObjectType, only is necessary to specify nested_fields=True on its Meta class definition.
+    3. Added support to show, only in mutations types to create objects and with debug=True on settings, inputs autocomplete ordered by required fields first.
+    4. Fixed others minors bugs.
+
+#### v0.0.1-rc.2:
+    1. Make queries pagination configuration is more friendly.
+
+#### v0.0.1-rc.1:
+    1. Fixed a bug with input fields in the converter function.
+
+#### v0.0.1-beta.10:
+    1. Fixed bug in the queryset_factory function because it did not always return a queryset.
+
+#### v0.0.1-beta.9:
+    1. Remove hard dependence with psycopg2 module.
+    2. Fixed bug that prevented use queries with fragments.
+    3. Fixed bug relating to custom django_filters module and ordering fields.
+
+#### v0.0.1-beta.6:
+    1. Optimizing imports, fix some minors bugs and working on performance.
+
+#### v0.0.1-beta.5:
+    1. Repair conflict on converter.py, by the use of get_related_model function with: OneToOneRel, ManyToManyRel and ManyToOneRel.
+
+#### v0.0.1-beta.4:
+    1. First commit.
