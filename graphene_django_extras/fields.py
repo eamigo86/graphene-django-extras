@@ -7,9 +7,9 @@ from graphene import Field, List, ID, Argument
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django.utils import maybe_queryset, is_valid_django_model, DJANGO_FILTER_INSTALLED
 
+from graphene_django_extras.filters.filter import get_filterset_class
 from .base_types import DjangoListObjectBase
-from .filter import get_filterset_class
-from .pagination.utils import list_pagination_factory
+from .paginations.utils import list_pagination_factory
 from .utils import get_extra_filters, kwargs_formatter, queryset_factory, get_related_fields, find_field
 
 
@@ -167,7 +167,7 @@ class DjangoFilterPaginateListField(Field):
             extra_filters = get_extra_filters(root, manager.model)
             qs = qs.filter(**extra_filters)
 
-        if getattr(self, 'pagination', None):
+        if getattr(self, 'paginations', None):
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return maybe_queryset(qs)

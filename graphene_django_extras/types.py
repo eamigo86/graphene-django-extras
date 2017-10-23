@@ -183,8 +183,8 @@ class DjangoListObjectType(ObjectType):
                                                           exclude_fields, filter_fields)
         filter_fields = filter_fields or baseType._meta.filter_fields
         """
-        if pagination:
-            result_container = pagination.get_pagination_field(baseType)
+        if paginations:
+            result_container = paginations.get_pagination_field(baseType)
         else:
             result_container = DjangoListField(baseType)
 

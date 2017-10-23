@@ -59,9 +59,9 @@ def generic_django_object_type_factory(graphene_type, new_model, new_only_fields
     return GenericType
 
 
-def generic_django_input_object_type_factory(graphene_input_type, new_model, new_input_for, new_only_fields=(),
-                                             new_exclude_fields=(), new_filter_fields=None, new_nested_fields=False,
-                                             new_registry=None, new_skip_registry=False):
+def generic_django_input_object_type_factory(graphene_input_type, new_model, new_input_for,
+                                             new_only_fields=(), new_exclude_fields=(), new_filter_fields=None,
+                                             new_nested_fields=False, new_registry=None, new_skip_registry=False):
 
     class GenericInputType(graphene_input_type):
         class Meta:

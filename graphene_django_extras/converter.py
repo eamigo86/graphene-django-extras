@@ -2,7 +2,7 @@ import re
 from collections import OrderedDict
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.db import models
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
@@ -240,7 +240,7 @@ def convert_field_to_list_or_connection(field, registry=None, input_flag=None, n
 
         if _type._meta.filter_fields and input_flag:
             return DjangoFilterListField(_type, required=is_required(field) and input_flag == 'create')
-            # return DjangoFilterPaginateListField(_type, pagination=LimitOffsetGraphqlPagination())
+            # return DjangoFilterPaginateListField(_type, paginations=LimitOffsetGraphqlPagination())
         return DjangoListField(_type, required=is_required(field) and input_flag == 'create')
 
     return Dynamic(dynamic_type)
@@ -263,7 +263,7 @@ def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, neste
 
         if _type._meta.filter_fields and input_flag:
             return DjangoFilterListField(_type)
-            # return DjangoFilterPaginateListField(_type, pagination=LimitOffsetGraphqlPagination())
+            # return DjangoFilterPaginateListField(_type, paginations=LimitOffsetGraphqlPagination())
         return DjangoListField(_type)
 
     return Dynamic(dynamic_type)
@@ -345,5 +345,22 @@ def convert_generic_foreign_key_to_object(field, registry=None, input_flag=None,
         # return Field(_type, description=field.help_text, required=field.null)
         return Field(_type, description=_(" Input Type for a GenericForeignKey relation "),
                      required=required and input_flag == 'create')
+
+    return Dynamic(dynamic_type)
+
+
+@convert_django_field.register(GenericRelation)
+def convert_generic_relation_to_object_list(field, registry=None, input_flag=None, nested_fields=False):
+    model = field.related_model
+
+    def dynamic_type():
+        if input_flag:
+            return
+
+        _type = registry.get_type_for_model(model)
+        if not _type:
+            return
+
+        return DjangoListField(_type)
 
     return Dynamic(dynamic_type)
