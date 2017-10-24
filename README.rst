@@ -478,11 +478,16 @@ For unsubscribe you must send a graphql subscription request like this:
     }
 
 
-NOTE: Each time than the Graphql server restart, you must to reestablish the websocket's connection and resend the subscription graphql request with a new websocket connection id.
+*NOTE*: Each time than the Graphql server restart, you must to reestablish the websocket's connection and resend the subscription graphql request with a new websocket connection id.
 
 
 Change Log:
 -----------
+
+**************
+v0.1.0-alpha3:
+**************
+1.  Fixed bug on subscriptions when not specified any field in "data" parameter to bean return on notification message.
 
 **************
 v0.1.0-alpha2:

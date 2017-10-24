@@ -75,9 +75,12 @@ class Subscription(ObjectType):
         _meta.serializer_class = copy.deepcopy(mutation_class._meta.serializer_class)
         _meta.mutation_class = mutation_class
 
-        model_fields = Enum('{}Fields'.format(mutation_class._meta.model.__name__),
-                            [(to_snake_case(field.strip('_')).upper(), to_snake_case(field))
-                            for field in _meta.serializer_class.Meta.fields])
+        serializer_fields = [(to_snake_case(field.strip('_')).upper(), to_snake_case(field))
+                             for field in _meta.serializer_class.Meta.fields]
+        model_fields_enum = Enum('{}Fields'.format(mutation_class._meta.model.__name__),
+                                 serializer_fields + [('ALL_FIELDS', 'all_fields')],
+                                 description=_('Desired {} fields in subscription\'s  notification. You can specify '
+                                               '"all_fields" value.').format(mutation_class._meta.model.__name__))
 
         arguments = {
             'channel_id': Argument(String, required=True, description=_('Channel connection identification')),
@@ -85,9 +88,7 @@ class Subscription(ObjectType):
                                description=_('Action to subscribe or to unsubscribe: (create, update or delete)')),
             'operation': Argument(OperationSubscriptionEnum, required=True, description=_('Operation to do')),
             'id': Argument(ID, description=_('ID value that the object to watch must have')),
-            'data': List(model_fields, required=False,
-                         description=_('Desired {} fields in subscription\'s  notification')
-                         .format(mutation_class._meta.model.__name__))
+            'data': List(model_fields_enum, required=False)
         }
 
         _meta.arguments = arguments
@@ -113,7 +114,7 @@ class Subscription(ObjectType):
         # Manage the subscribe or unsubscribe operations
         action = kwargs.get('action')
         operation = kwargs.get('operation')
-        data = kwargs.get('data', [])
+        data = kwargs.get('data', None)
         obj_id = kwargs.get('id', None)
 
         response = {
@@ -142,7 +143,8 @@ class Subscription(ObjectType):
                 elif operation == 'unsubscribe':
                     Group(group_name).discard(channel)
 
-            setattr(cls._meta.serializer_class.Meta, 'only_fields', data)
+            if data is not None:
+                setattr(cls._meta.serializer_class.Meta, 'only_fields', data)
 
             response.update(dict(ok=True, error=None))
             channel.send({'text': json.dumps(response)})

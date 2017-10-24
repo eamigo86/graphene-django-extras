@@ -445,6 +445,9 @@ subscription{
 
 ## Change Log:
 
+#### v0.1.0-alpha3:
+    1.  Fixed bug on subscriptions when not specified any field in "data" parameter to bean return on notification message.
+
 #### v0.1.0-alpha2:
     1.  Fixed bug when subscribing to a given action (create, update pr delete).
     2.  Added intuitive and simple web tool to test notifications of graphene-django-extras subscription.
