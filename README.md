@@ -445,8 +445,15 @@ subscription{
 
 ## Change Log:
 
+#### v0.1.0-alpha4:
+    1.  Add queryset options to DjangoListObjectType Meta class for specify wanted model queryset.
+    2.  Add AuthenticatedGraphQLView on graphene_django_extras.views for use
+    'permission', 'authorization' and 'throttle' classes based on the DRF settings. Special thanks to
+    [@jacobh](https://github.com/jacobh) for this [comment](https://github.com/graphql-python/graphene/issues/249#issuecomment-300068390)
+
 #### v0.1.0-alpha3:
-    1.  Fixed bug on subscriptions when not specified any field in "data" parameter to bean return on notification message.
+    1.  Fixed bug on subscriptions when not specified any field in "data" parameter to bean return on notification
+    message.
 
 #### v0.1.0-alpha2:
     1.  Fixed bug when subscribing to a given action (create, update pr delete).

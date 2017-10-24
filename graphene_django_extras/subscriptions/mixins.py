@@ -41,6 +41,5 @@ class DjangoGraphqlBindingMixin(object):
         data = self.get_serializer(instance).data
         only_fields = hasattr(self.get_serializer_class().Meta, 'only_fields')
         if only_fields:
-            if self.get_serializer_class().Meta.only_fields != ['all_fields']:
-                data = {k: v for k, v in data.items() if k in self.get_serializer_class().Meta.only_fields}
+            data = {k: v for k, v in data.items() if k in self.get_serializer_class().Meta.only_fields}
         return data

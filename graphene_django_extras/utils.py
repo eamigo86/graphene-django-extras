@@ -21,14 +21,6 @@ def get_model_fields(model):
                   list(model._meta.local_many_to_many) +
                   list(model._meta.virtual_fields))
     ]
-    """
-    local_fields = [
-        (field.name, field)
-        for field
-        in sorted(list(model._meta.fields) +
-                  list(model._meta.local_many_to_many))
-    ]
-    """
 
     # Make sure we don't duplicate local fields with "reverse" version
     local_field_names = [field[0] for field in local_fields]
@@ -249,9 +241,9 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
                                                             prefetch_related)
 
     if select_related and prefetch_related:
-        return manager.select_related(*select_related).prefetch_related(*prefetch_related)
+        return _get_queryset(manager.select_related(*select_related).prefetch_related(*prefetch_related))
     elif not select_related and prefetch_related:
-        return manager.prefetch_related(*prefetch_related)
+        return _get_queryset(manager.prefetch_related(*prefetch_related))
     elif select_related and not prefetch_related:
-        return manager.select_related(*select_related)
-    return manager.get_queryset()
+        return _get_queryset(manager.select_related(*select_related))
+    return _get_queryset(manager)

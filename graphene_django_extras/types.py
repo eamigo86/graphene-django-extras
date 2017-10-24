@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
+from django.db.models import QuerySet
 from django.utils.functional import SimpleLazyObject
 from django.utils.translation import ugettext_lazy as _
 from graphene import Field, InputField, ObjectType, Int
@@ -23,6 +24,7 @@ class DjangoObjectOptions(BaseOptions):
     input_fields = None
     interfaces = ()
     model = None
+    queryset = None
     registry = None
     connection = None
     create_container = None
@@ -165,7 +167,7 @@ class DjangoListObjectType(ObjectType):
     @classmethod
     def __init_subclass_with_meta__(cls, model=None, results_field_name=None, pagination=None,
                                     only_fields=(), exclude_fields=(), filter_fields=None,
-                                    interfaces=(), **options):
+                                    queryset=None, interfaces=(), **options):
 
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
@@ -173,6 +175,11 @@ class DjangoListObjectType(ObjectType):
 
         if not DJANGO_FILTER_INSTALLED and filter_fields:
             raise Exception("Can only set filter_fields if Django-Filter is installed")
+
+        assert isinstance(queryset, QuerySet) or queryset is None, (
+            'The attribute queryset in {} needs to be an instance of '
+            'Django model queryset, received "{}".'
+        ).format(cls.__name__, queryset)
 
         results_field_name = results_field_name or 'results'
 
@@ -200,6 +207,7 @@ class DjangoListObjectType(ObjectType):
 
         _meta = DjangoObjectOptions(cls)
         _meta.model = model
+        _meta.queryset = queryset
         _meta.baseType = baseType
         _meta.results_field_name = results_field_name
         _meta.filter_fields = filter_fields

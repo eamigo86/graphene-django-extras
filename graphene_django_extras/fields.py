@@ -230,5 +230,5 @@ class DjangoListObjectField(Field):
         )
 
     def get_resolver(self, parent_resolver):
-        return partial(self.list_resolver, self.type._meta.model._default_manager,
+        return partial(self.list_resolver, self.type._meta.queryset or self.type._meta.model._default_manager,
                        self.filterset_class, self.filtering_args)
