@@ -485,6 +485,12 @@ Change Log:
 -----------
 
 **************
+v0.1.0-alpha2:
+**************
+1.  Fixed bug when subscribing to a given action (create, update pr delete).
+2.  Added intuitive and simple web tool to test notifications of graphene-django-extras subscription.
+
+**************
 v0.1.0-alpha1:
 **************
 1.  Added support to multiselect choices values for models.CharField with choices attribute, on queries and mutations. Example: Integration with django-multiselectfield package.
