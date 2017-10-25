@@ -69,7 +69,9 @@ class DjangoSerializerMutation(ObjectType):
         outputType = registry.get_type_for_model(model)
 
         if not outputType:
-            outputType = generic_django_object_type_factory(DjangoObjectType, model)
+            outputType = generic_django_object_type_factory(DjangoObjectType, new_model=model,
+                                                            new_only_fields=only_fields,
+                                                            new_exclude_fields=exclude_fields)
 
         django_fields = OrderedDict({output_field_name: Field(outputType)})
 
@@ -81,7 +83,9 @@ class DjangoSerializerMutation(ObjectType):
                 inputType = registry.get_type_for_model(model, for_input=operation)
 
                 if not inputType:
-                    inputType = generic_django_input_object_type_factory(DjangoInputObjectType, model,
+                    inputType = generic_django_input_object_type_factory(DjangoInputObjectType, new_model=model,
+                                                                         new_only_fields=only_fields,
+                                                                         new_exclude_fields=exclude_fields,
                                                                          new_input_for=operation,
                                                                          new_skip_registry=True,
                                                                          new_nested_fields=nested_fields)

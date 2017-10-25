@@ -186,8 +186,10 @@ class DjangoListObjectType(ObjectType):
         baseType = get_global_registry().get_type_for_model(model)
 
         if not baseType:
-            baseType = generic_django_object_type_factory(DjangoObjectType, model, only_fields,
-                                                          exclude_fields, filter_fields)
+            baseType = generic_django_object_type_factory(DjangoObjectType, new_model=model,
+                                                          new_only_fields=only_fields,
+                                                          new_exclude_fields=exclude_fields,
+                                                          new_filter_fields=filter_fields)
         filter_fields = filter_fields or baseType._meta.filter_fields
         """
         if paginations:

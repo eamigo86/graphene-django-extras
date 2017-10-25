@@ -485,6 +485,11 @@ Change Log:
 -----------
 
 **************
+v0.1.0-beta1:
+**************
+1. Fixed bug on GenericType and GenericInputType generations for Queries list Type and Mutations.
+
+**************
 v0.1.0-alpha6:
 **************
 1. Fixed with exclude fields and converter function.
