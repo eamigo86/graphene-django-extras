@@ -445,6 +445,13 @@ subscription{
 
 ## Change Log:
 
+#### v0.1.0-alpha6:
+    1. Fixed with exclude fields and converter function.
+
+#### v0.1.0-alpha5:
+    1. Updated dependencies to graphene-django>=2.0.
+    2. Fixed minor bugs on queryset_builder performance.
+
 #### v0.1.0-alpha4:
     1.  Add queryset options to DjangoListObjectType Meta class for specify wanted model queryset.
     2.  Add AuthenticatedGraphQLView on graphene_django_extras.views for use
