@@ -43,13 +43,14 @@ class Date(Scalar):
         return datetime.date(dt.year, dt.month, dt.day)
 
 
-def generic_django_object_type_factory(graphene_type, new_model, new_only_fields=(), new_exclude_fields=(),
-                                       new_filter_fields=None, new_registry=None, new_skip_registry=False):
+def generic_django_object_type_factory(graphene_type, new_model, new_name=None, new_only_fields=(),
+                                       new_exclude_fields=(), new_filter_fields=None, new_registry=None,
+                                       new_skip_registry=False):
 
     class GenericType(graphene_type):
         class Meta:
             model = new_model
-            name = to_camel_case('{}_Generic_Type'.format(new_model.__name__))
+            name = new_name or to_camel_case('{}_Generic_Type'.format(new_model.__name__))
             only_fields = new_only_fields
             exclude_fields = new_exclude_fields
             filter_fields = new_filter_fields
@@ -59,14 +60,14 @@ def generic_django_object_type_factory(graphene_type, new_model, new_only_fields
     return GenericType
 
 
-def generic_django_input_object_type_factory(graphene_input_type, new_model, new_input_for,
+def generic_django_input_object_type_factory(graphene_input_type, new_model, new_input_for, new_name=None,
                                              new_only_fields=(), new_exclude_fields=(), new_filter_fields=None,
                                              new_nested_fields=False, new_registry=None, new_skip_registry=False):
 
     class GenericInputType(graphene_input_type):
         class Meta:
             model = new_model
-            name = to_camel_case('{}_{}_Generic_Type'.format(new_model.__name__, new_input_for))
+            name = new_name or to_camel_case('{}_{}_Generic_Type'.format(new_model.__name__, new_input_for))
             only_fields = new_only_fields
             exclude_fields = new_exclude_fields
             filter_fields = new_filter_fields

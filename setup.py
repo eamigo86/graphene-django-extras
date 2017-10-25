@@ -54,7 +54,7 @@ setup(
     packages=get_packages(),
 
     install_requires=[
-        'graphene-django>=2.0.dev',
+        'graphene-django>=2.0',
         'Django>=1.8.0',
         'django-filter>=1.0.4',
         'djangorestframework~=3.6.0',
