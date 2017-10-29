@@ -445,7 +445,7 @@ subscription{
 
 ## Change Log:
 
-#### v0.1.0-beta1:
+#### v0.1.0-alpha9:
     1. Fixed bug on GenericType and GenericInputType generations for
     Queries list Type and Mutations.
 

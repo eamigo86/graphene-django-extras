@@ -67,21 +67,19 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None, nes
         name = to_camel_case(name)
 
         enum = registry.get_type_for_enum(name)
-        if enum:
-            return enum
+        if not enum:
+            choices = list(get_choices(choices))
+            named_choices = [(c[0], c[1]) for c in choices]
+            named_choices_descriptions = {c[0]: c[2] for c in choices}
 
-        choices = list(get_choices(choices))
-        named_choices = [(c[0], c[1]) for c in choices]
-        named_choices_descriptions = {c[0]: c[2] for c in choices}
+            class EnumWithDescriptionsType(object):
+                @property
+                def description(self):
+                    return named_choices_descriptions[self.name]
 
-        class EnumWithDescriptionsType(object):
-            @property
-            def description(self):
-                return named_choices_descriptions[self.name]
+            enum = Enum(name, list(named_choices), type=EnumWithDescriptionsType)
 
-        enum = Enum(name, list(named_choices), type=EnumWithDescriptionsType)
-
-        registry.register_enum(name, enum)
+            registry.register_enum(name, enum)
 
         return enum(description=field.help_text, required=is_required(field) and input_flag == 'create')
     return convert_django_field(field, registry, input_flag, nested_fields)
@@ -274,6 +272,10 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
     model = get_related_model(field)
 
     def dynamic_type():
+        if isinstance(field, models.OneToOneField) and field.name.endswith('_ptr'):
+            # Tengo k ver como saber cuando un field de tipo OneToOneField es creado por el usuario
+            # o es una llave foranea automatica producto de una herencia
+            return
         if input_flag and not nested_fields:
             return ID(description=field.help_text, required=is_required(field) and input_flag == 'create')
 
