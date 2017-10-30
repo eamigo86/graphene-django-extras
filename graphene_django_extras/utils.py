@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.exceptions import ValidationError
@@ -14,12 +15,16 @@ from six import string_types
 
 def get_model_fields(model):
 
+    # Backward compatibility patch for Django versions lower than 1.11.x
+    if DJANGO_VERSION >= (1, 11):
+        private_fields = model._meta.private_fields
+    else:
+        private_fields = model._meta.virtual_fields
+
     local_fields = [
         (field.name, field)
         for field
-        in sorted(list(model._meta.fields) +
-                  list(model._meta.local_many_to_many) +
-                  list(model._meta.virtual_fields))
+        in list(model._meta.fields) + list(model._meta.local_many_to_many) + list(private_fields)
     ]
 
     # Make sure we don't duplicate local fields with "reverse" version

@@ -87,8 +87,12 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None, nes
 
 def construct_fields(model, registry, only_fields, exclude_fields, input_flag=None, nested_fields=False):
     _model_fields = get_model_fields(model)
-    if input_flag == 'create' and settings.DEBUG:
-        _model_fields = sorted(_model_fields, key=lambda f: is_required(f[1]), reverse=True)
+
+    if settings.DEBUG:
+        if input_flag == 'create':
+            _model_fields = sorted(_model_fields, key=lambda f: (-is_required(f[1]), f[0]))
+        elif not input_flag:
+            _model_fields = sorted(_model_fields, key=lambda f: f[0])
 
     fields = OrderedDict()
 
@@ -336,7 +340,7 @@ def convert_generic_foreign_key_to_object(field, registry=None, input_flag=None,
             required = (is_required(ct_field) and is_required(fk_field)) or required
 
         if input_flag:
-            return GenericForeignKeyInputType(description=_(" Input Type for a GenericForeignKey relation "),
+            return GenericForeignKeyInputType(description='Input Type for a GenericForeignKey field',
                                               required=required and input_flag == 'create')
 
         _type = registry.get_type_for_enum(key)
@@ -344,7 +348,7 @@ def convert_generic_foreign_key_to_object(field, registry=None, input_flag=None,
             _type = GenericForeignKeyType
 
         # return Field(_type, description=field.help_text or field.verbose_name, required=field.null)
-        return Field(_type, description=_(" Input Type for a GenericForeignKey relation "),
+        return Field(_type, description='Type for a GenericForeignKey field',
                      required=required and input_flag == 'create')
 
     return Dynamic(dynamic_type)
