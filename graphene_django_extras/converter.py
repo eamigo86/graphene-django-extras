@@ -272,7 +272,7 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
     model = get_related_model(field)
 
     def dynamic_type():
-        if isinstance(field, models.OneToOneField) and field.name.endswith('_ptr'):
+        if isinstance(field, models.OneToOneField) and issubclass(field.model, field.related_model):
             # Tengo k ver como saber cuando un field de tipo OneToOneField es creado por el usuario
             # o es una llave foranea automatica producto de una herencia
             return
