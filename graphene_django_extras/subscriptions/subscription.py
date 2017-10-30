@@ -3,7 +3,6 @@ import copy
 import json
 
 from channels import Group
-from django.utils.translation import ugettext_lazy as _
 from graphene import Field, Argument, Enum, String, ObjectType, Boolean, List, ID
 from graphene.types.base import BaseOptions
 from graphene.utils.str_converters import to_snake_case
@@ -40,12 +39,11 @@ class Subscription(ObjectType):
     """
         Subscription Type Definition
     """
-    # payload = Field(SubscriptionPayload, description=_('Subscription result Object.'))
-    ok = Boolean(description=_('Boolean field that return subscription request result.'))
-    error = String(description=_('Error of subscribe or unsubscribe operation.'))
-    stream = String(description=_('Stream name.'))
-    operation = OperationSubscriptionEnum(description=_('Subscription operation.'))
-    action = ActionSubscriptionEnum(description=_('Subscription action.'))
+    ok = Boolean(description='Boolean field that return subscription request result.')
+    error = String(description='Subscribe or unsubscribe operation request error .')
+    stream = String(description='Stream name.')
+    operation = OperationSubscriptionEnum(description='Subscription operation.')
+    action = ActionSubscriptionEnum(description='Subscription action.')
 
     class Meta:
         abstract = True
@@ -80,15 +78,15 @@ class Subscription(ObjectType):
         serializer_fields = [(to_snake_case(field.strip('_')).upper(), to_snake_case(field))
                              for field in _meta.serializer_class.Meta.fields]
         model_fields_enum = Enum('{}Fields'.format(mutation_class._meta.model.__name__), serializer_fields,
-                                 description=_('Desired {} fields in subscription\'s  notification. You can specify '
-                                               '"all_fields" value.').format(mutation_class._meta.model.__name__))
+                                 description='Desired {} fields in subscription\'s  notification.'
+                                 .format(mutation_class._meta.model.__name__))
 
         arguments = {
-            'channel_id': Argument(String, required=True, description=_('Channel connection identification')),
+            'channel_id': Argument(String, required=True, description='Websocket\'s channel connection identification'),
             'action': Argument(ActionSubscriptionEnum, required=True,
-                               description=_('Action to subscribe or to unsubscribe: (create, update or delete)')),
-            'operation': Argument(OperationSubscriptionEnum, required=True, description=_('Operation to do')),
-            'id': Argument(ID, description=_('ID value that the object to watch must have')),
+                               description='Subscribe or unsubscribe action : (create, update or delete)'),
+            'operation': Argument(OperationSubscriptionEnum, required=True, description='Operation to do'),
+            'id': Argument(ID, description='ID field value that has the object to which you wish to subscribe'),
             'data': List(model_fields_enum, required=False)
         }
 

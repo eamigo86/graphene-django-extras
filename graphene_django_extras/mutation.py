@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from django.utils.translation import ugettext_lazy as _
 from graphene import Boolean, List, Field, ID, Argument, ObjectType
 from graphene.types.base import BaseOptions
 from graphene.utils.deprecated import warn_deprecation
@@ -31,8 +30,8 @@ class DjangoSerializerMutation(ObjectType):
         Serializer Mutation Type Definition
     """
 
-    ok = Boolean(description=_('Boolean field that return mutation result request.'))
-    errors = List(ErrorType, description=_('May contain more than one error for same field.'))
+    ok = Boolean(description='Boolean field that return mutation result request.')
+    errors = List(ErrorType, description='Errors list for the field')
 
     class Meta:
         abstract = True
@@ -97,7 +96,7 @@ class DjangoSerializerMutation(ObjectType):
                 })
             else:
                 global_arguments[operation].update({
-                    'id': Argument(ID, required=True, description=_('Django object unique identification field'))
+                    'id': Argument(ID, required=True, description='Django object unique identification field')
                 })
             global_arguments[operation].update(arguments)
 
@@ -114,8 +113,8 @@ class DjangoSerializerMutation(ObjectType):
             update_resolver = get_unbound_function(update_mutation) if update_mutation else None
 
         assert (create_resolver or delete_resolver or update_resolver), \
-            _('All the SerializerMutations must define at least one of his mutations methods in it: '
-              '\'create_mutation\', \'delete_mutation\' or \'update_mutation\'')
+            'All the SerializerMutations must define at least one of his mutations methods in it: ' \
+            '\'create_mutation\', \'delete_mutation\' or \'update_mutation\''
 
         kwargs_formatter = kwargs_formatter or native_kwargs_formatter
 

@@ -2,7 +2,6 @@
 from functools import partial
 from math import fabs
 
-from django.utils.translation import ugettext_lazy as _
 from graphene import Field, Int, List, NonNull, String
 
 from .utils import _nonzero_int, _get_count
@@ -34,9 +33,9 @@ class LimitOffsetPaginationField(AbstractPaginationField):
         self.offset_query_param = offset_query_param
         self.max_limit = max_limit
         self.default_limit = default_limit
-        self.limit_query_description = _('Number of results to return per page. Actual \'default_limit\': {}, and '
-                                         '\'max_limit\': {}').format(self.default_limit, self.max_limit)
-        self.offset_query_description = _('The initial index from which to return the results.')
+        self.limit_query_description = 'Number of results to return per page. Actual \'default_limit\': {}, and ' \
+                                       '\'max_limit\': {}'.format(self.default_limit, self.max_limit)
+        self.offset_query_description = 'The initial index from which to return the results.'
 
         kwargs[limit_query_param] = Int(default_value=self.default_limit,
                                         description=self.limit_query_description)
@@ -84,9 +83,9 @@ class PagePaginationField(AbstractPaginationField):
         # Only relevant if 'page_size_query_param' has also been set.
         self.max_page_size = max_page_size
 
-        self.page_size_query_description = _('Number of results to return per page. Actual \'page_size\': {}').format(
+        self.page_size_query_description = 'Number of results to return per page. Actual \'page_size\': {}'.format(
             self.page_size)
-        self.page_query_description = _('A page number within the paginated result set. Default: 1')
+        self.page_query_description = 'A page number within the paginated result set. Default: 1'
 
         kwargs[self.page_query_param] = Int(default_value=1, description=self.page_query_description)
         if self.page_size_query_param:
@@ -132,8 +131,8 @@ class CursorPaginationField(AbstractPaginationField):
         self.page_size_query_param = 'page_size' if not self.page_size else None
         self.cursor_query_param = cursor_query_param
         self.ordering = ordering
-        self.cursor_query_description = _('The paginations cursor value.')
-        self.page_size_query_description = _('Number of results to return per page.')
+        self.cursor_query_description = 'The paginations cursor value.'
+        self.page_size_query_description = 'Number of results to return per page.'
 
         kwargs[self.cursor_query_param] = NonNull(String, description=self.cursor_query_description)
 

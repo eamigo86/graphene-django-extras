@@ -3,7 +3,6 @@ from functools import partial
 
 import graphene
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
 
 from .pagination import *
 from ..base_types import DjangoListObjectBase
@@ -82,6 +81,6 @@ def list_pagination_factory(pagination_obj):
     if isinstance(pagination_obj, (LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination)):
         return pagination_obj.to_graphql_fields()
 
-    raise ValidationError(_('Incorrect paginations value, it must be instance of: \'LimitOffsetGraphqlPagination\' or '
-                            '\'PageGraphqlPagination\' or \'CursorGraphqlPagination\', receive: \'{}\'').
+    raise ValidationError('Incorrect paginations value, it must be instance of: \'LimitOffsetGraphqlPagination\' or '
+                          '\'PageGraphqlPagination\' or \'CursorGraphqlPagination\', receive: \'{}\''.
                           format(pagination_obj))

@@ -2,7 +2,6 @@
 import operator
 from functools import partial
 
-from django.utils.translation import ugettext_lazy as _
 from graphene import Field, List, ID, Argument
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django.utils import maybe_queryset, is_valid_django_model, DJANGO_FILTER_INSTALLED
@@ -20,7 +19,7 @@ class DjangoObjectField(Field):
     def __init__(self, _type, preprocess_kwargs=None, *args, **kwargs):
 
         kwargs.setdefault('args', {})
-        kwargs['id'] = ID(required=True, description=_('Django object unique identification field'))
+        kwargs['id'] = ID(required=True, description='Django object unique identification field')
 
         preprocess_kwargs = preprocess_kwargs or kwargs_formatter
         kwargs = preprocess_kwargs(**kwargs)
@@ -67,11 +66,11 @@ class DjangoFilterListField(Field):
 
             if 'id' not in kwargs['args'].keys():
                 self.filtering_args.update({'id': Argument(ID,
-                                                           description=_('Django object unique identification field'))})
-                kwargs['args'].update({'id': Argument(ID, description=_('Django object unique identification field'))})
+                                                           description='Django object unique identification field')})
+                kwargs['args'].update({'id': Argument(ID, description='Django object unique identification field')})
 
         if not kwargs.get('description', None):
-            kwargs['description'] = _('List of {} objects').format(_type._meta.model.__name__)
+            kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
 
         preprocess_kwargs = preprocess_kwargs or kwargs_formatter
         kwargs = preprocess_kwargs(**kwargs)
@@ -135,8 +134,8 @@ class DjangoFilterPaginateListField(Field):
         kwargs['args'].update(self.filtering_args)
 
         if 'id' not in kwargs['args'].keys():
-            self.filtering_args.update({'id': Argument(ID, description=_('Django object unique identification field'))})
-            kwargs['args'].update({'id': Argument(ID, description=_('Django object unique identification field'))})
+            self.filtering_args.update({'id': Argument(ID, description='Django object unique identification field')})
+            kwargs['args'].update({'id': Argument(ID, description='Django object unique identification field')})
 
         if pagination:
             pagination_kwargs = list_pagination_factory(pagination)
@@ -145,7 +144,7 @@ class DjangoFilterPaginateListField(Field):
             kwargs.update(**pagination_kwargs)
 
         if not kwargs.get('description', None):
-            kwargs['description'] = _('List of {} objects').format(_type._meta.model.__name__)
+            kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
 
         preprocess_kwargs = preprocess_kwargs or kwargs_formatter
         kwargs = preprocess_kwargs(**kwargs)
@@ -198,12 +197,12 @@ class DjangoListObjectField(Field):
             kwargs['args'].update(self.filtering_args)
 
             if 'id' not in kwargs['args'].keys():
-                id_description = _('Django object unique identification field')
+                id_description = 'Django object unique identification field'
                 self.filtering_args.update({'id': Argument(ID, description=id_description)})
                 kwargs['args'].update({'id': Argument(ID, description=id_description)})
 
         if not kwargs.get('description', None):
-            kwargs['description'] = _('List of {} objects').format(_type._meta.model.__name__)
+            kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
 
         preprocess_kwargs = preprocess_kwargs or kwargs_formatter
         kwargs = preprocess_kwargs(**kwargs)

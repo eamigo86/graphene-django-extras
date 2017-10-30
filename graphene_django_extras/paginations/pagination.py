@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from math import fabs
 
-from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
 from graphene import Int, NonNull, String
 
 from .fields import LimitOffsetPaginationField, PagePaginationField, CursorPaginationField
@@ -56,9 +54,9 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         # A string value indicating the name of the "offset" query parameter.
         self.offset_query_param = offset_query_param
 
-        self.limit_query_description = _('Number of results to return per page. Default \'default_limit\': {}, and '
-                                         '\'max_limit\': {}').format(self.default_limit, self.max_limit)
-        self.offset_query_description = _('The initial index from which to return the results. Default: 0')
+        self.limit_query_description = 'Number of results to return per page. Default \'default_limit\': {}, and ' \
+                                       '\'max_limit\': {}'.format(self.default_limit, self.max_limit)
+        self.offset_query_description = 'The initial index from which to return the results. Default: 0'
 
     def to_dict(self):
         return {
@@ -119,10 +117,10 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         # Only relevant if 'page_size_query_param' has also been set.
         self.max_page_size = max_page_size
 
-        self.page_size_query_description = _('Number of results to return per page. Default \'page_size\': {}').format(
-            self.page_size)
+        self.page_size_query_description = 'Number of results to return per page. Default \'page_size\': {}'\
+            .format(self.page_size)
 
-        self.page_query_description = _('A page number within the paginated result set. Default: 1')
+        self.page_query_description = 'A page number within the paginated result set. Default: 1'
 
     def to_dict(self):
         return {
@@ -173,7 +171,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
 class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
     __name__ = 'CursorPaginator'
-    cursor_query_description = _('The paginations cursor value.')
+    cursor_query_description = 'The paginations cursor value.'
     page_size = graphql_api_settings.PAGE_SIZE
 
     def __init__(self, ordering='-created', cursor_query_param='cursor'):
