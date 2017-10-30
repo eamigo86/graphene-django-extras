@@ -17,6 +17,7 @@ __all__ = ('LimitOffsetGraphqlPagination', 'PageGraphqlPagination', 'CursorGraph
 # *********************************************** #
 class BaseDjangoGraphqlPagination(object):
     _field = None
+    __name__ = None
 
     @property
     def get_field(self):
@@ -36,6 +37,7 @@ class BaseDjangoGraphqlPagination(object):
 
 
 class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
+    __name__ = 'LimitOffsetPaginator'
 
     def __init__(self, default_limit=graphql_api_settings.PAGE_SIZE, max_limit=None,
                  limit_query_param='limit', offset_query_param='offset'):
@@ -96,6 +98,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
 
 class PageGraphqlPagination(BaseDjangoGraphqlPagination):
+    __name__ = 'PagePaginator'
 
     def __init__(self, page_size=graphql_api_settings.PAGE_SIZE, page_size_query_param=None,
                  max_page_size=None):
@@ -169,6 +172,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
 
 class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
+    __name__ = 'CursorPaginator'
     cursor_query_description = _('The paginations cursor value.')
     page_size = graphql_api_settings.PAGE_SIZE
 

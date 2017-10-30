@@ -56,6 +56,7 @@ def generic_django_object_type_factory(graphene_type, new_model, new_name=None, 
             filter_fields = new_filter_fields
             registry = new_registry
             skip_registry = new_skip_registry
+            description = 'Generated type for {} model'.format(new_model._meta.verbose_name)
 
     return GenericType
 
@@ -75,6 +76,7 @@ def generic_django_input_object_type_factory(graphene_input_type, new_model, new
             registry = new_registry
             skip_registry = new_skip_registry
             input_for = new_input_for
+            description = 'Generated input type for {} model'.format(new_model._meta.verbose_name)
 
     return GenericInputType
 
@@ -107,7 +109,7 @@ class GenericForeignKeyType(graphene.ObjectType):
     model_name = graphene.String()
 
     class Meta:
-        description = " Type for a GenericForeignKey relation "
+        description = " Generated Type for a GenericForeignKey model field "
         default_resolver = resolver
 
 
@@ -117,4 +119,4 @@ class GenericForeignKeyInputType(graphene.InputObjectType):
     model_name = graphene.Argument(graphene.String, required=True)
 
     class Meta:
-        description = " Input Type for a GenericForeignKey relation "
+        description = " Generated InputType for a GenericForeignKey model field "

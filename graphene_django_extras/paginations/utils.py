@@ -20,6 +20,8 @@ class GenericPaginationField(graphene.Field):
         self.paginator_instance = paginator_instance
 
         kwargs.update(self.paginator_instance.to_graphql_fields())
+        kwargs.update({'description': '{} list, paginated by {}'.format(_type._meta.model.__name__,
+                                                                        paginator_instance.__name__)})
 
         super(GenericPaginationField, self).__init__(graphene.List(_type), *args, **kwargs)
 
@@ -64,6 +66,7 @@ def _nonzero_int(integer_string, strict=False, cutoff=None):
     if cutoff:
         return min(ret, cutoff)
     return ret
+
 
 def _get_count(queryset):
     """

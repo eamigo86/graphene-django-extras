@@ -41,12 +41,14 @@ class DjangoSerializerMutation(ObjectType):
     def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), exclude_fields=(),
                                     create_resolver=None, delete_resolver=None, update_resolver=None,
                                     input_field_name=None, output_field_name=None, kwargs_formatter=None,
-                                    nested_fields=False, **options):
+                                    nested_fields=False, description='', **options):
 
         if not serializer_class:
             raise Exception('serializer_class is required on all DjangoSerializerMutation')
 
         model = serializer_class.Meta.model
+
+        description = description or 'SerializerMutation for {} model'.format(model.__name__)
 
         input_field_name = input_field_name or 'new_{}'.format(model._meta.model_name)
         output_field_name = output_field_name or model._meta.model_name
@@ -130,7 +132,8 @@ class DjangoSerializerMutation(ObjectType):
         _meta.output_field_name = output_field_name
         _meta.kwargs_formatter = kwargs_formatter
 
-        super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(_meta=_meta, **options)
+        super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(_meta=_meta, description=description,
+                                                                         **options)
 
     @classmethod
     def get_errors(cls, errors):

@@ -51,7 +51,7 @@ class Subscription(ObjectType):
         abstract = True
 
     @classmethod
-    def __init_subclass_with_meta__(cls, mutation_class=None, stream=None, queryset=None, **options):
+    def __init_subclass_with_meta__(cls, mutation_class=None, stream=None, queryset=None, description='', **options):
 
         assert issubclass(mutation_class, DjangoSerializerMutation), \
             'You need to pass a valid DjangoSerializerMutation subclass in {}.Meta, received "mutation_class = {}"'\
@@ -65,6 +65,8 @@ class Subscription(ObjectType):
             assert mutation_class._meta.model == queryset.model, \
                 'The queryset model must correspond with mutation_class model passed on it Meta class, received "{}",' \
                 ' expected "{}"'.format(queryset.model.__name__, mutation_class._meta.model.__name__)
+
+        description = description or 'Subscription Type for {} model'.format(mutation_class._meta.model.__name__)
 
         _meta = SubscriptionOptions(cls)
 
@@ -92,7 +94,7 @@ class Subscription(ObjectType):
 
         _meta.arguments = arguments
 
-        super(Subscription, cls).__init_subclass_with_meta__(_meta=_meta, **options)
+        super(Subscription, cls).__init_subclass_with_meta__(_meta=_meta, description=description, **options)
 
     @classmethod
     def model_label(cls):
@@ -166,4 +168,5 @@ class Subscription(ObjectType):
 
     @classmethod
     def Field(cls, *args, **kwargs):
+        kwargs.update({'description': 'Subscription for {} model'.format(cls._meta.model.__name__)})
         return Field(cls._meta.output, args=cls._meta.arguments, resolver=cls.subscription_resolver, **kwargs)
