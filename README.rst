@@ -3,9 +3,9 @@ Graphene-Django-Extras
 ======================
 
 This package add some extra functionalities to **graphene-django** to facilitate the graphql use without Relay:
-  1. Allow pagination and filtering on Queries.
-  2. Allow to define DjangoRestFramework serializers based Mutations.
-  3. Add support to Subscription's requests and its integration with websockets using **Channels** package.
+  1. Allows pagination and filtering on Queries.
+  2. Allows to define DjangoRestFramework serializers based Mutations.
+  3. Adds support to Subscription's requests and its integration with websockets using **Channels** package.
 
 Installation:
 -------------
@@ -47,8 +47,8 @@ Extra functionalities:
 Queries and Mutations examples:
 -------------------------------
 
-This is a basic example of graphene-django-extras package use. You can configure some pagination
-default values on settings.py like this:
+This is a basic example of graphene-django-extras package use. You can configure global params for
+DjangoListObjectType classes pagination definitions on settings.py like this:
 
 .. code:: python
 
@@ -91,9 +91,9 @@ default values on settings.py like this:
             pagination = LimitOffsetGraphqlPagination()
 
 
-***************************************************
-2- InputTypes can be defined for use on mutations:
-***************************************************
+*****************************************************
+2- You can to define InputTypes for use on mutations:
+*****************************************************
 
 .. code:: python
 
@@ -102,7 +102,7 @@ default values on settings.py like this:
 
     class UserInput(DjangoInputObjectType):
         class Meta:
-            description = " User Input Type for used as input on Arguments classes on traditional Mutations "
+            description = " User InputType definition to use as input on an Arguments class on traditional Mutations "
             model = User
 
 
@@ -110,7 +110,7 @@ default values on settings.py like this:
 3- Defining Mutations:
 **********************
 
-You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+You can define traditional mutations that use InputTypes or Mutations based on DRF serializers:
 
 
 .. code:: python
@@ -127,7 +127,7 @@ You can define traditional mutations that use Input Types or Mutations based on 
             DjangoSerializerMutation auto implement Create, Delete and Update functions
         """
         class Meta:
-            description = " Serializer based Mutation for Users "
+            description = " DRF serializer based Mutation for Users "
             serializer_class = UserSerializer
 
 
@@ -142,7 +142,7 @@ You can define traditional mutations that use Input Types or Mutations based on 
             new_user = graphene.Argument(UserInput)
 
         class Meta:
-            description = " Traditional graphene mutation for Users "
+            description = " Graphene traditional mutation for Users "
 
         @classmethod
         def mutate(cls, root, info, *args, **kwargs):
@@ -169,24 +169,24 @@ You can define traditional mutations that use Input Types or Mutations based on 
         all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
 
         # Defining a query for a single user
-        # The DjangoObjectField have a ID input field, that allow filter by id and is't necessary resolve method definition
+        # The DjangoObjectField have a ID type input field, that allow filter by id and is't necessary to define resolve function
         user = DjangoObjectField(UserType, description=_('Single User query'))
 
-        # Another way to define a single user query
+        # Another way to define a query to single user
         user1 = DjangoObjectField(UserListType.getOne(), description=_('User List with pagination and filtering'))
 
 
     class Mutations(graphene.ObjectType):
-        user_create = UserSerializerMutation.CreateField(deprecation_reason='Some deprecation message')
+        user_create = UserSerializerMutation.CreateField(deprecation_reason='Some one deprecation message')
         user_delete = UserSerializerMutation.DeleteField()
         user_update = UserSerializerMutation.UpdateField()
 
         traditional_user_mutation = UserMutation.Field()
 
 
-***********************
-5- Examples of queries:
-***********************
+**********************
+5- Queries's examples:
+**********************
 
 .. code:: python
 
@@ -229,9 +229,9 @@ You can define traditional mutations that use Input Types or Mutations based on 
     }
 
 
-*************************
-6- Examples of Mutations:
-*************************
+************************
+6- Mutations's examples:
+************************
 
 .. code:: python
 
@@ -274,7 +274,7 @@ You can define traditional mutations that use Input Types or Mutations based on 
 Subscriptions:
 --------------
 
-This first approach to support Graphql subscriptions with Channels in graphene-django-extras, use channels-api package.
+This first approach to add Graphql subscriptions support  with Channels in graphene-django-extras, use channels-api package.
 
 *****************************************
 1- Defining custom Subscriptions classes:
@@ -294,17 +294,17 @@ You must to have defined a DjangoSerializerMutation class for each model that yo
         class Meta:
             mutation_class = UserMutation
             stream = 'users'
-            description = 'Subscription for users'
+            description = 'User Subscription'
 
 
     class GroupSubscription(Subscription):
         class Meta:
             mutation_class = GroupMutation
             stream = 'groups'
-            description = 'Subscriptions for groups'
+            description = 'Group Subscription'
 
 
-Add ours subscriptions definitions into our app schema:
+Add the subscriptions definitions into your app's schema:
 
 .. code:: python
 
@@ -318,7 +318,7 @@ Add ours subscriptions definitions into our app schema:
         GroupSubscription = PersonSubscription.Field()
 
 
-Add your app schema into your project root schema:
+Add the app's schema into your project root schema:
 
 .. code:: python
 
@@ -329,17 +329,17 @@ Add your app schema into your project root schema:
 
     class RootQuery(custom.app.route.graphql.schema.Query, graphene.ObjectType):
         class Meta:
-            description = 'Root Queries for my Project'
+            description = 'The project root query definition'
 
 
     class RootSubscription(custom.app.route.graphql.schema.Mutation, graphene.ObjectType):
         class Meta:
-            description = 'Root Mutations for my Project'
+            description = 'The project root mutation definition'
 
 
     class RootSubscription(custom.app.route.graphql.schema.Subscriptions, graphene.ObjectType):
         class Meta:
-            description = 'Root Subscriptions for my Project'
+            description = 'The project root subscription definition'
 
 
     schema = graphene.Schema(
@@ -356,6 +356,7 @@ Add your app schema into your project root schema:
 
 You must to have defined a DjangoSerializerMutation class for each model that you want to define a Subscription class:
 
+We define app routing, as if they were app urls:
 
 .. code:: python
 
@@ -389,7 +390,7 @@ Defining our project routing, like custom root project urls:
     ]
 
 
-You should add channels and channels_api modules into your INSTALLED_APPS setting and you must defining your routing project definition into the CHANNEL_LAYERS setting:
+You should put into your INSTALLED_APPS the channels and channels_api modules and you must to add your project's routing definition into the CHANNEL_LAYERS setting:
 
 .. code:: python
 
@@ -416,20 +417,20 @@ You should add channels and channels_api modules into your INSTALLED_APPS settin
     ...
 
 
-*****************************
-3- Examples of Subscriptions:
-*****************************
+***************************
+3- Subscription's examples:
+***************************
 
-In your client you must define websocket connection to: 'ws://host:port/custom_websocket_path'.
-When the connection is established, the server return a websocket message like this:
+In your WEB client you must define websocket connection to: 'ws://host:port/custom_websocket_path'.
+When the connection is established, the server return a websocket's message like this:
 {"channel_id": "GthKdsYVrK!WxRCdJQMPi", "connect": "success"}, where you must store the channel_id value to later use in your graphql subscriptions request for subscribe or unsubscribe operations.
-The Subscription accept five possible parameters:
 
+The graphql's subscription request accept five possible parameters:
 1.  **operation**: Operation to perform: subscribe or unsubscribe. (required)
-2.  **action**: Action you wish to subscribe: create, update, delete or all_actions. (required)
-3.  **channelId**: Websocket connection identification. (required)
-4.  **id**: ID field value of model object that you wish to subscribe to. (optional)
-5.  **data**: List of desired model fields that you want in subscription's  notification. (optional)
+2.  **action**: Action to which you wish to subscribe: create, update, delete or all_actions. (required)
+3.  **channelId**: Identification of the connection by websocket. (required)
+4.  **id**: Object's ID field value that you wish to subscribe to. (optional)
+5.  **data**: Model's fields that you want to appear in the subscription notifications. (optional)
 
 .. code:: python
 
@@ -448,7 +449,7 @@ The Subscription accept five possible parameters:
     }
 
 
-In this case, the subscription request sanded return a websocket message to client like this: *{"action": "update", "operation": "subscribe", "ok": true, "stream": "users", "error": null}* and each time than the user with id=5 get modified, you will receive a message through websocket's connection with the following format:
+In this case, the subscription request sent return a websocket message to client like this: *{"action": "update", "operation": "subscribe", "ok": true, "stream": "users", "error": null}* and from that moment each time than the user with id=5 get modified, you will receive a message through websocket's connection with the following format:
 
 .. code:: python
 
@@ -469,7 +470,7 @@ In this case, the subscription request sanded return a websocket message to clie
     }
 
 
-For unsubscribe you must send a graphql subscription request like this:
+For unsubscribe you must send a graphql request like this:
 
 .. code:: python
 
@@ -487,29 +488,30 @@ For unsubscribe you must send a graphql subscription request like this:
     }
 
 
-*NOTE*: Each time than the Graphql server restart, you must to reestablish the websocket's connection and resend the subscription graphql request with a new websocket connection id.
+*NOTE*: Each time than the graphql's server restart, you must to reestablish the websocket connection and resend the graphql's subscription request with the new websocket connection id.
 
 
 Change Log:
 -----------
 
-**************
+***************
 v0.1.0-alpha12:
-**************
-1. Added MAX_PAGE_SIZE configuration field to global dict GRAPHENE_DJANGO_EXTRAS
-configuration for better customize paginations.
+***************
+1. Added new settings param: MAX_PAGE_SIZE, to use on GRAPHENE_DJANGO_EXTRAS configuration dict for better customize DjangoListObjectType's pagination.
+2. Added support to Django's field: GenericRel.
+3. Improve model's fields calculation for to add all possible related and reverse fields.
+4. Improved documentation translation.
 
-**************
+***************
 v0.1.0-alpha11:
-**************
+***************
 1. Improved ordering for showed fields on graphqli's IDE.
 2. Added better descriptions for auto generated fields.
 
-**************
+***************
 v0.1.0-alpha10:
-**************
-1. Improve converter.py file to avoid create field for auto generate OneToOneField
-product of an inheritance.
+***************
+1. Improve converter.py file to avoid create field for auto generate OneToOneField product of an inheritance.
 2. Fixed bug in Emun generation for fields with choices of model inheritance child.
 
 **************
@@ -537,8 +539,7 @@ v0.1.0-alpha4:
 **************
 v0.1.0-alpha3:
 **************
-1.  Fixed bug on subscriptions when not specified any field in "data" parameter to bean return on
-notification message.
+1. Fixed bug on subscriptions when not specified any field in "data" parameter to bean return on notification message.
 
 **************
 v0.1.0-alpha2:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
 from django.core.exceptions import ValidationError
 from django.db.models import NOT_PROVIDED
 from django.db.models import QuerySet, Manager
@@ -21,10 +21,15 @@ def get_model_fields(model):
     else:
         private_fields = model._meta.virtual_fields
 
+    all_fields_list = list(model._meta.fields) + \
+                      list(model._meta.local_many_to_many) + \
+                      list(private_fields) + \
+                      list(model._meta.fields_map.values())
+
     local_fields = [
         (field.name, field)
         for field
-        in list(model._meta.fields) + list(model._meta.local_many_to_many) + list(private_fields)
+        in all_fields_list
     ]
 
     # Make sure we don't duplicate local fields with "reverse" version
@@ -177,7 +182,7 @@ def get_related_fields(model):
     return {
         field.name: field
         for field in model._meta.get_fields()
-        if field.is_relation and not isinstance(field, GenericForeignKey)
+        if field.is_relation and not isinstance(field, (GenericForeignKey, GenericRel))
     }
 
 

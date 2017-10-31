@@ -8,7 +8,7 @@ class GraphqlAPIDemultiplexer(WebsocketDemultiplexer):
 
     def connect(self, message, **kwargs):
         import json
-        """Forward connection to all consumers."""
+        """ Forward connection to all consumers."""
         resp = json.dumps({
             "channel_id": self.message.reply_channel.name.split('.')[-1],
             "connect": 'success'

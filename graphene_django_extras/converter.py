@@ -2,7 +2,7 @@ import re
 from collections import OrderedDict
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation, GenericRel
 from django.db import models
 from django.utils.encoding import force_text
 from graphene import (Field, ID, Boolean, Dynamic, Enum, Float, Int, List, NonNull, String, UUID)
@@ -239,6 +239,7 @@ def convert_field_to_list_or_connection(field, registry=None, input_flag=None, n
     return Dynamic(dynamic_type)
 
 
+@convert_django_field.register(GenericRel)
 @convert_django_field.register(models.ManyToManyRel)
 @convert_django_field.register(models.ManyToOneRel)
 def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, nested_fields=False):
@@ -280,31 +281,6 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
                      required=is_required(field) and input_flag == 'create')
 
     return Dynamic(dynamic_type)
-
-
-@convert_django_field.register(ArrayField)
-def convert_postgres_array_to_list(field, registry=None, input_flag=None, nested_fields=False):
-    base_type = convert_django_field(field.base_field)
-    if not isinstance(base_type, (List, NonNull)):
-        base_type = type(base_type)
-    return List(base_type, description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
-
-
-@convert_django_field.register(HStoreField)
-@convert_django_field.register(JSONField)
-def convert_postgres_field_to_string(field, registry=None, input_flag=None, nested_fields=False):
-    return JSONString(description=field.help_text or field.verbose_name,
-                      required=is_required(field) and input_flag == 'create')
-
-
-@convert_django_field.register(RangeField)
-def convert_postgres_range_to_string(field, registry=None, input_flag=None, nested_fields=False):
-    inner_type = convert_django_field(field.base_field)
-    if not isinstance(inner_type, (List, NonNull)):
-        inner_type = type(inner_type)
-    return List(inner_type, description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
 
 
 @convert_django_field.register(GenericForeignKey)
@@ -361,3 +337,28 @@ def convert_generic_relation_to_object_list(field, registry=None, input_flag=Non
         return DjangoListField(_type)
 
     return Dynamic(dynamic_type)
+
+
+@convert_django_field.register(ArrayField)
+def convert_postgres_array_to_list(field, registry=None, input_flag=None, nested_fields=False):
+    base_type = convert_django_field(field.base_field)
+    if not isinstance(base_type, (List, NonNull)):
+        base_type = type(base_type)
+    return List(base_type, description=field.help_text or field.verbose_name,
+                required=is_required(field) and input_flag == 'create')
+
+
+@convert_django_field.register(HStoreField)
+@convert_django_field.register(JSONField)
+def convert_postgres_field_to_string(field, registry=None, input_flag=None, nested_fields=False):
+    return JSONString(description=field.help_text or field.verbose_name,
+                      required=is_required(field) and input_flag == 'create')
+
+
+@convert_django_field.register(RangeField)
+def convert_postgres_range_to_string(field, registry=None, input_flag=None, nested_fields=False):
+    inner_type = convert_django_field(field.base_field)
+    if not isinstance(inner_type, (List, NonNull)):
+        inner_type = type(inner_type)
+    return List(inner_type, description=field.help_text or field.verbose_name,
+                required=is_required(field) and input_flag == 'create')

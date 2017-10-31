@@ -86,9 +86,9 @@ class PagePaginationField(AbstractPaginationField):
 
         self.page_size_query_description = 'Number of results to return per page. Actual \'page_size\': {}'.format(
             self.page_size)
-        self.page_query_description = 'A page number within the paginated result set. Default: 1'
 
-        kwargs[self.page_query_param] = Int(default_value=1, description=self.page_query_description)
+        kwargs[self.page_query_param] = Int(default_value=1,
+                                            description='A page number within the result paginated set. Default: 1')
         if self.page_size_query_param:
             if not page_size:
                 kwargs[self.page_size_query_param] = NonNull(Int, description=self.page_size_query_description)
@@ -111,7 +111,7 @@ class PagePaginationField(AbstractPaginationField):
             page_size = self.page_size
 
         assert page != 0, ValueError('Page value for PageGraphqlPagination must be '
-                                     'greater than or later than that zero')
+                                     'greater than or smaller than that zero, not a zero value')
 
         assert page_size > 0, ValueError('Page_size value for PageGraphqlPagination must be a non-null value, you must'
                                          ' set global DEFAULT_PAGE_SIZE on GRAPHENE_DJANGO_EXTRAS dict on your'
@@ -132,7 +132,7 @@ class CursorPaginationField(AbstractPaginationField):
         self.page_size_query_param = 'page_size' if not self.page_size else None
         self.cursor_query_param = cursor_query_param
         self.ordering = ordering
-        self.cursor_query_description = 'The paginations cursor value.'
+        self.cursor_query_description = 'The pagination cursor value.'
         self.page_size_query_description = 'Number of results to return per page.'
 
         kwargs[self.cursor_query_param] = NonNull(String, description=self.cursor_query_description)

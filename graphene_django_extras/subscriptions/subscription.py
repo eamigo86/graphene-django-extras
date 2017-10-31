@@ -56,13 +56,13 @@ class Subscription(ObjectType):
             .format(cls.__name__, mutation_class)
 
         assert isinstance(stream, string_types), \
-            'You need to pass a valid string stream in {}.Meta, received "{}"'.format(
+            'You need to pass a valid string stream name in {}.Meta, received "{}"'.format(
                 cls.__name__, stream)
 
         if queryset:
             assert mutation_class._meta.model == queryset.model, \
-                'The queryset model must correspond with mutation_class model passed on it Meta class, received "{}",' \
-                ' expected "{}"'.format(queryset.model.__name__, mutation_class._meta.model.__name__)
+                'The queryset model must correspond with the mutation_class model passed on Meta class, received ' \
+                '"{}", expected "{}"'.format(queryset.model.__name__, mutation_class._meta.model.__name__)
 
         description = description or 'Subscription Type for {} model'.format(mutation_class._meta.model.__name__)
 
