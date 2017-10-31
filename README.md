@@ -45,7 +45,7 @@ pip install graphene-django-extras
 
 ### Queries and Mutations examples:
 
-This is a basic example of graphene-django-extras package use. You must configure some pagination
+This is a basic example of graphene-django-extras package use. You can configure some pagination
 default values on settings.py like this:
 
 ```python
@@ -68,7 +68,7 @@ from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        description = " Type definition for a single user object "
+        description = " Type definition for a single user "
         filter_fields = {
             'id': ['exact', ],
             'first_name': ['icontains', 'iexact'],
@@ -80,7 +80,7 @@ class UserType(DjangoObjectType):
 
 class UserListType(DjangoListObjectType):
     class Meta:
-        description = " Type definition for users objects list "
+        description = " Type definition for user list "
         model = User
         pagination = LimitOffsetGraphqlPagination(page_size=20)
 ```
@@ -93,11 +93,11 @@ from graphene_django_extras import DjangoInputObjectType
 
 class UserInput(DjangoInputObjectType):
     class Meta:
-        description = " User Input Type for used as input on Arguments classes on traditional Mutations "
+        description = " User InputType to use as input on Arguments classes on traditional Mutations "
         model = User
 ```
 
-#### 3- You can define traditional mutations that use Input Types or Mutations based on DRF SerializerClass:
+#### 3- You can define traditional mutations that use InputTypes or Mutations based on DRF SerializerClass:
 
 ```python
 import graphene

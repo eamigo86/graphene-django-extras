@@ -47,7 +47,7 @@ Extra functionalities:
 Queries and Mutations examples:
 -------------------------------
 
-This is a basic example of graphene-django-extras package use. You must configure some pagination
+This is a basic example of graphene-django-extras package use. You can configure some pagination
 default values on settings.py like this:
 
 .. code:: python

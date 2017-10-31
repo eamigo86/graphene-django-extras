@@ -196,7 +196,9 @@ class DjangoListObjectType(ObjectType):
         else:
             global_paginator = graphql_api_settings.DEFAULT_PAGINATION_CLASS
             if global_paginator:
-                result_container = global_paginator().get_field(baseType)
+                global_paginator = global_paginator()
+                description = '{} list, paginated by {}'.format(model.__name__, global_paginator.__name__)
+                result_container = global_paginator.get_field(baseType)
             else:
                 result_container = DjangoListField(baseType)
 
