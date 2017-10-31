@@ -8,7 +8,7 @@ from .paginations import LimitOffsetGraphqlPagination, PageGraphqlPagination, Cu
 from .types import DjangoObjectType, DjangoInputObjectType, DjangoListObjectType
 from .subscriptions import *
 
-VERSION = (0, 1, 0, 'alpha', '11')
+VERSION = (0, 1, 0, 'alpha', '12')
 
 __version__ = get_version(VERSION)
 

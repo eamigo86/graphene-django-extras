@@ -9,7 +9,8 @@ __author__ = 'Ernesto'
 DEFAULTS = {
     # Pagination
     'DEFAULT_PAGINATION_CLASS': None,  # 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination'
-    'PAGE_SIZE': None,
+    'DEFAULT_PAGE_SIZE': None,
+    'MAX_PAGE_SIZE': None,
 }
 
 

@@ -24,7 +24,8 @@ class AbstractPaginationField(Field):
 # *********************************************** #
 class LimitOffsetPaginationField(AbstractPaginationField):
 
-    def __init__(self, _type, default_limit=graphql_api_settings.PAGE_SIZE, max_limit=None,
+    def __init__(self, _type, default_limit=graphql_api_settings.DEFAULT_PAGE_SIZE,
+                 max_limit=graphql_api_settings.MAX_PAGE_SIZE,
                  limit_query_param='limit', offset_query_param='offset', *args, **kwargs):
 
         kwargs.setdefault('args', {})
@@ -64,8 +65,8 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
 class PagePaginationField(AbstractPaginationField):
 
-    def __init__(self, _type, page_size=graphql_api_settings.PAGE_SIZE, page_size_query_param=None,
-                 max_page_size=None, *args, **kwargs):
+    def __init__(self, _type, page_size=graphql_api_settings.DEFAULT_PAGE_SIZE, page_size_query_param=None,
+                 max_page_size=graphql_api_settings.MAX_PAGE_SIZE, *args, **kwargs):
 
         kwargs.setdefault('args', {})
 
@@ -110,12 +111,12 @@ class PagePaginationField(AbstractPaginationField):
             page_size = self.page_size
 
         assert page != 0, ValueError('Page value for PageGraphqlPagination must be '
-                                     'greater than or leater than that cero')
+                                     'greater than or later than that zero')
 
-        assert page_size > 0, ValueError('Page_size value for PageGraphqlPagination must be a non-null value, you must '
-                                         'set global PAGE_SIZE on GRAPHENE_DJANGO_EXTRAS dict on your settings.py or '
-                                         'specify a page_size_query_param value on paginations declaration to specify a '
-                                         'custom page size value through a query parameters')
+        assert page_size > 0, ValueError('Page_size value for PageGraphqlPagination must be a non-null value, you must'
+                                         ' set global DEFAULT_PAGE_SIZE on GRAPHENE_DJANGO_EXTRAS dict on your'
+                                         ' settings.py or specify a page_size_query_param value on paginations '
+                                         'declaration to specify a custom page size value through a query parameters')
 
         offset = int(count - fabs(page_size * page)) if page < 0 else page_size * (page - 1)
 
@@ -127,7 +128,7 @@ class CursorPaginationField(AbstractPaginationField):
     def __init__(self, _type, ordering='-created', cursor_query_param='cursor', *args, **kwargs):
         kwargs.setdefault('args', {})
 
-        self.page_size = graphql_api_settings.PAGE_SIZE
+        self.page_size = graphql_api_settings.DEFAULT_PAGE_SIZE
         self.page_size_query_param = 'page_size' if not self.page_size else None
         self.cursor_query_param = cursor_query_param
         self.ordering = ordering

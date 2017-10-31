@@ -37,8 +37,9 @@ class BaseDjangoGraphqlPagination(object):
 class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
     __name__ = 'LimitOffsetPaginator'
 
-    def __init__(self, default_limit=graphql_api_settings.PAGE_SIZE, max_limit=None,
-                 limit_query_param='limit', offset_query_param='offset'):
+    def __init__(self, default_limit=graphql_api_settings.DEFAULT_PAGE_SIZE,
+                 max_limit=graphql_api_settings.MAX_PAGE_SIZE, limit_query_param='limit',
+                 offset_query_param='offset'):
 
         self._field = LimitOffsetPaginationField
 
@@ -98,8 +99,8 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 class PageGraphqlPagination(BaseDjangoGraphqlPagination):
     __name__ = 'PagePaginator'
 
-    def __init__(self, page_size=graphql_api_settings.PAGE_SIZE, page_size_query_param=None,
-                 max_page_size=None):
+    def __init__(self, page_size=graphql_api_settings.DEFAULT_PAGE_SIZE, page_size_query_param=None,
+                 max_page_size=graphql_api_settings.MAX_PAGE_SIZE):
 
         self._field = PagePaginationField
 
@@ -158,7 +159,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         if page_size is None:
             """
             raise ValueError('Page_size value for PageGraphqlPagination must be a non-null value, you must set global'
-                             ' PAGE_SIZE on GRAPHENE_DJANGO_EXTRAS dict on your settings.py or specify a '
+                             ' DEFAULT_PAGE_SIZE on GRAPHENE_DJANGO_EXTRAS dict on your settings.py or specify a '
                              'page_size_query_param value on paginations declaration to specify a custom page size '
                              'value through a query parameters')
             """
@@ -172,7 +173,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
     __name__ = 'CursorPaginator'
     cursor_query_description = 'The paginations cursor value.'
-    page_size = graphql_api_settings.PAGE_SIZE
+    page_size = graphql_api_settings.DEFAULT_PAGE_SIZE
 
     def __init__(self, ordering='-created', cursor_query_param='cursor'):
         self._field = CursorPaginationField

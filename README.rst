@@ -47,7 +47,16 @@ Extra functionalities:
 Queries and Mutations examples:
 -------------------------------
 
-This is a basic example of graphene-django-extras package use:
+This is a basic example of graphene-django-extras package use. You must configure some pagination
+default values on settings.py like this:
+
+.. code:: python
+
+    GRAPHENE_DJANGO_EXTRAS = {
+        'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination',
+        'DEFAULT_PAGE_SIZE': 20,
+        'MAX_PAGE_SIZE': 50,
+    }
 
 ********************
 1- Types Definition:
@@ -483,6 +492,25 @@ For unsubscribe you must send a graphql subscription request like this:
 
 Change Log:
 -----------
+
+**************
+v0.1.0-alpha12:
+**************
+1. Added MAX_PAGE_SIZE configuration field to global dict GRAPHENE_DJANGO_EXTRAS
+configuration for better customize paginations.
+
+**************
+v0.1.0-alpha11:
+**************
+1. Improved ordering for showed fields on graphqli's IDE.
+2. Added better descriptions for auto generated fields.
+
+**************
+v0.1.0-alpha10:
+**************
+1. Improve converter.py file to avoid create field for auto generate OneToOneField
+product of an inheritance.
+2. Fixed bug in Emun generation for fields with choices of model inheritance child.
 
 **************
 v0.1.0-alpha9:
