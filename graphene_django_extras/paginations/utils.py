@@ -4,13 +4,12 @@ from functools import partial
 import graphene
 from django.core.exceptions import ValidationError
 
-from .pagination import *
 from ..base_types import DjangoListObjectBase
 
 
 class GenericPaginationField(graphene.Field):
     """
-        Generic paginations field class with all generic function needed to paginate querysets
+        Generic paginations field class with all generic function needed to paginate queryset
     """
 
     def __init__(self, _type, paginator_instance, *args, **kwargs):
@@ -78,6 +77,9 @@ def _get_count(queryset):
 
 
 def list_pagination_factory(pagination_obj):
+
+    from .pagination import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
+
     if isinstance(pagination_obj, (LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination)):
         return pagination_obj.to_graphql_fields()
 
