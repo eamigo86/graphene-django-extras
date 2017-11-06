@@ -8,7 +8,7 @@ This package add some extra functionalities to graphene-django to facilitate the
   1. Allows pagination and filtering on Queries.
   2. Allows to define DjangoRestFramework serializers based Mutations.
 
-**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo/graphene-django-subscriptions) due incompatibility with subscriptions on graphene-django>=2.0
+**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions) due incompatibility with subscriptions on graphene-django>=2.0
 
 ## Installation
 
