@@ -1,7 +1,7 @@
 
 ---
 
-# ![Graphene Logo](https://avatars.githubusercontent.com/u/15002022?v=3) Graphene-Django-Extras [![PyPI version](https://badge.fury.io/py/graphene-django-extras.svg)](https://badge.fury.io/py/graphene-django-extras)
+# Graphene-Django-Extras [![PyPI version](https://badge.fury.io/py/graphene-django-extras.svg)](https://badge.fury.io/py/graphene-django-extras)
 
 
 This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay:
