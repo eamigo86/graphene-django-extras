@@ -7,7 +7,8 @@
 This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.
   2. Allows to define DjangoRestFramework serializers based Mutations.
-  3. Adds support to Subscription's requests and its integration with websockets using Channels package. :muscle:
+
+**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo/graphene-django-subscriptions) due incompatibility with subscriptions on graphene-django>=2.0
 
 ## Installation
 
@@ -32,15 +33,12 @@ pip install graphene-django-extras
  **Types:**
   1.  DjangoListObjectType  (*Recommended for Types definition*)
   2.  DjangoInputObjectType
+  3.  DjangoSerializerType  (*Recommended for quick queries and mutations definitions*)
 
  **Paginations:**
   1.  LimitOffsetGraphqlPagination
   2.  PageGraphqlPagination
   3.  CursorGraphqlPagination (*coming soon*)
-
-  **Subscriptions:**
-  1.  Subscription  (*Abstract class to define subscriptions to a DjangoSerializerMutation class*)
-  2.  GraphqlAPIDemultiplexer  (*Custom WebSocket consumer subclass that handles demultiplexing streams*)
 
 
 ### Queries and Mutations examples:
@@ -61,8 +59,10 @@ for DjangoListObjectType classes pagination definitions on settings.py like this
 ```python
 from django.contrib.auth.models import User
 from graphene_django import DjangoObjectType
-from graphene_django_extras import DjangoListObjectType
+from graphene_django_extras import DjangoListObjectType, DjangoSerializerType
 from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
+
+from .serializers import UserSerializer
 
 
 class UserType(DjangoObjectType):
@@ -83,6 +83,23 @@ class UserListType(DjangoListObjectType):
         description = " Type definition for user list "
         model = User
         pagination = LimitOffsetGraphqlPagination(page_size=20)
+
+
+class UserModelType(DjangoSerializerType):
+    """ With this type definition it't necessary a mutation definition for user's model """
+
+    class Meta:
+        description = " User's model type definition "
+        serializer_class = UserSerializer
+        pagination = LimitOffsetGraphqlPagination(default_limit=25)
+        filter_fields = {
+            'id': ['exact', ],
+            'first_name': ['icontains', 'iexact'],
+            'last_name': ['icontains', 'iexact'],
+            'username': ['icontains', 'iexact'],
+            'email': ['icontains', 'iexact'],
+            'is_staff': ['exact']
+        }
 ```
 
 #### 2- You can to define InputTypes for use on mutations:
@@ -141,7 +158,7 @@ class UserMutation(graphene.Mutation):
 import graphene
 from graphene_django_extras import DjangoObjectField, DjangoListObjectField, DjangoFilterPaginateListField,
 DjangoFilterListField, LimitOffsetGraphqlPagination
-from .types import UserType, UserListType
+from .types import UserType, UserListType, UserModelType
 from .mutations import UserMutation, UserSerializerMutation
 
 
@@ -159,11 +176,27 @@ class Queries(graphene.ObjectType):
     # Another way to define a query to single user
     user1 = DjangoObjectField(UserListType.getOne(), description=_('User list with pagination and filtering'))
 
+    # Exist two ways to define single or list user queries with DjangoSerializerType
+    user_retrieve1, user_list1 = UserModelType.QueryFields(description='Some description message for both queries',
+                                                           deprecation_reason='Some deprecation message for both queries')
+    user_retrieve2 = UserModelType.RetrieveField(description='Some description message for retrieve query',
+                                                 deprecation_reason='Some deprecation message for retrieve query')
+    user_list2 = UserModelType.ListField(description='Some description message for list query',
+                                         deprecation_reason='Some deprecation message for list query')
 
 class Mutations(graphene.ObjectType):
     user_create = UserSerializerMutation.CreateField(deprecation_reason='Some one deprecation message')
     user_delete = UserSerializerMutation.DeleteField()
     user_update = UserSerializerMutation.UpdateField()
+
+    # Exist two ways to define mutations with DjangoSerializerType
+    user_create1, user_delete1, user_update1 = UserModelType.MutationFields(
+        description='Some description message for create, delete and update mutations',
+        deprecation_reason='Some deprecation message for create, delete and update mutations')
+
+    user_create2 = UserModelType.CreateField(description='Description message for create')
+    user_delete2 = UserModelType.DeleteField(description='Description message for delete')
+    user_update2 = UserModelType.UpdateField(description='Description message for update')
 
     traditional_user_mutation = UserMutation.Field()
 ```
@@ -249,213 +282,13 @@ mutation{
 }
 ```
 
-### **Subscriptions:**
-
-This first approach to add Graphql subscriptions support  with Channels in **graphene-django-extras**, use **channels-api** package.
-
-#### 1- Defining custom Subscriptions classes:
-
-You must to have defined a DjangoSerializerMutation class for each model that you want to define a Subscription class:
-
-```python
-# app/graphql/subscriptions.py
-import graphene
-from graphene_django_extras.subscription import Subscription
-from .mutations import UserMutation, GroupMutation
-
-
-class UserSubscription(Subscription):
-    class Meta:
-        mutation_class = UserMutation
-        stream = 'users'
-        description = 'User Subscription'
-
-
-class GroupSubscription(Subscription):
-    class Meta:
-        mutation_class = GroupMutation
-        stream = 'groups'
-        description = 'Group Subscription'
-
-```
-
-Add the subscriptions definitions into your app's schema:
-
-```python
-# app/graphql/schema.py
-import graphene
-from .subscriptions import UserSubscription, GroupSubscription
-
-
-class Subscriptions(graphene.ObjectType):
-    user_subscription = UserSubscription.Field()
-    GroupSubscription = PersonSubscription.Field()
-```
-
-Add the app's schema into your project root schema:
-
-```python
-# schema.py
-import graphene
-import custom.app.route.graphql.schema
-
-
-class RootQuery(custom.app.route.graphql.schema.Query, graphene.ObjectType):
-    class Meta:
-        description = 'The project root query definition'
-
-
-class RootSubscription(custom.app.route.graphql.schema.Mutation, graphene.ObjectType):
-    class Meta:
-        description = 'The project root mutation definition'
-
-
-class RootSubscription(custom.app.route.graphql.schema.Subscriptions, graphene.ObjectType):
-    class Meta:
-        description = 'The project root subscription definition'
-
-
-schema = graphene.Schema(
-    query=RootQuery,
-    mutation=RootMutation,
-    subscription=RootSubscription
-)
-```
-
-#### 2- Defining Channels settings and custom routing config ( *For more information see Channels documentation* ):
-
-We define app routing, as if they were app urls:
-
-```python
-# app/routing.py
-from graphene_django_extras.subscriptions import GraphqlAPIDemultiplexer
-from channels.routing import route_class
-from .graphql.subscriptions import UserSubscription, GroupSubscription
-
-
-class CustomAppDemultiplexer(GraphqlAPIDemultiplexer):
-    consumers = {
-      'users': UserSubscription.get_binding().consumer,
-      'groups': GroupSubscription.get_binding().consumer
-    }
-
-
-app_routing = [
-    route_class(CustomAppDemultiplexer)
-]
-```
-
-We define project routing, as if they were project urls:
-
-```python
-# project/routing.py
-from channels import include
-
-
-project_routing = [
-    include("custom.app.folder.routing.app_routing", path=r"^/custom_websocket_path"),
-]
-
-```
-
-You should put into your INSTALLED_APPS the **channels** and **channels_api** modules and you must to add your project's routing definition into the CHANNEL_LAYERS setting:
-
-```python
-# settings.py
-...
-INSTALLED_APPS = (
-  'django.contrib.auth',
-  'django.contrib.contenttypes',
-  'django.contrib.sessions',
-  'django.contrib.sites',
-  ...
-  'channels',
-  'channels_api',
-
-  'custom_app'
-)
-
-CHANNEL_LAYERS = {
-  "default": {
-    "BACKEND": "asgiref.inmemory.ChannelLayer",
-    "ROUTING": "myproject.routing.project_routing",  # Our project routing
-  },
-}
-...
-```
-
-#### 3- Subscription's examples:
-
-In your WEB client you must define websocket connection to: *'ws://host:port/custom_websocket_path'*.
-When the connection is established, the server return a websocket's message like this:
-*{"channel_id": "GthKdsYVrK!WxRCdJQMPi", "connect": "success"}*, where you must store the **channel_id** value to later use in your graphql subscriptions request for subscribe or unsubscribe operations.
-
-The graphql's subscription request accept five possible parameters:
-  1.  **operation**: Operation to perform: subscribe or unsubscribe. (*required*)
-  2.  **action**: Action to which you wish to subscribe: create, update, delete or all_actions. (*required*)
-  3.  **channelId**: Identification of the connection by websocket. (*required*)
-  4.  **id**: Object's ID field value that you wish to subscribe to. (*optional*)
-  5.  **data**: Model's fields that you want to appear in the subscription notifications. (*optional*)
-
-```js
-subscription{
-  userSubscription(
-    action: UPDATE,
-    operation: SUBSCRIBE,
-    channelId: "GthKdsYVrK!WxRCdJQMPi",
-    id: 5,
-    data: [ID, USERNAME, FIRST_NAME, LAST_NAME, EMAIL, IS_SUPERUSER]
-  ){
-    ok
-    error
-    stream
-  }
-}
-```
-
-In this case, the subscription request sent return a websocket message to client like this:
-*{"action": "update", "operation": "subscribe", "ok": true, "stream": "users", "error": null}*
-and from that moment each time than the user with id=5 get modified, you will receive a message through websocket's connection with the following format:
-
-```js
-{
-  "stream": "users",
-  "payload": {
-    "action": "update",
-    "model": "auth.user",
-    "data": {
-      "id": 5,
-      "username": "meaghan90",
-      "first_name": "Meaghan",
-      "last_name": "Ackerman",
-      "email": "meaghan@gmail.com",
-      "is_superuser": false
-    }
-  }
-}
-```
-
-For unsubscribe you must send a graphql request like this:
-
-```js
-subscription{
-  userSubscription(
-    action: UPDATE,
-    operation: UNSUBSCRIBE,
-    channelId: "GthKdsYVrK!WxRCdJQMPi",
-    id: 5
-  ){
-    ok
-    error
-    stream
-  }
-}
-```
-
-**NOTE:** Each time than the graphql's server restart, you must to reestablish the websocket connection and resend the graphql's subscription request with the new websocket connection id.
-
-
 ## Change Log:
+
+#### v0.1.0:
+    1. Added DjangoSerializerType for quick Django's models types definition (See documentation).
+    2. Moved support for Subscriptions to graphene-django-subscriptions packages for
+    incompatibility with graphene-django>=2.0.
+    3. Fixed bug on DjangoFilterPaginateListField's pagination.
 
 #### v0.1.0-alpha12:
     1. Added new settings param: MAX_PAGE_SIZE, to use on GRAPHENE_DJANGO_EXTRAS

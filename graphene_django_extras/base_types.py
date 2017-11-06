@@ -43,11 +43,10 @@ class Date(Scalar):
         return datetime.date(dt.year, dt.month, dt.day)
 
 
-def generic_django_object_type_factory(graphene_type, new_model, new_name=None, new_only_fields=(),
-                                       new_exclude_fields=(), new_filter_fields=None, new_registry=None,
-                                       new_skip_registry=False):
+def object_type_factory(_type, new_model, new_name=None, new_only_fields=(), new_exclude_fields=(),
+                        new_filter_fields=None, new_registry=None, new_skip_registry=False):
 
-    class GenericType(graphene_type):
+    class GenericType(_type):
         class Meta:
             model = new_model
             name = new_name or to_camel_case('{}_Generic_Type'.format(new_model.__name__))
@@ -61,11 +60,29 @@ def generic_django_object_type_factory(graphene_type, new_model, new_name=None, 
     return GenericType
 
 
-def generic_django_input_object_type_factory(graphene_input_type, new_model, new_input_for, new_name=None,
-                                             new_only_fields=(), new_exclude_fields=(), new_filter_fields=None,
-                                             new_nested_fields=False, new_registry=None, new_skip_registry=False):
+def object_list_type_factory(_type, new_model, new_only_fields=(), new_exclude_fields=(), new_results_field_name=None,
+                             new_filter_fields=None, new_name=None, new_pagination=None, new_queryset=None):
 
-    class GenericInputType(graphene_input_type):
+    class GenericListType(_type):
+        class Meta:
+            model = new_model
+            name = new_name or to_camel_case('{}_List_Type'.format(new_model.__name__))
+            only_fields = new_only_fields
+            exclude_fields = new_exclude_fields
+            filter_fields = new_filter_fields
+            results_field_name = new_results_field_name
+            pagination = new_pagination
+            queryset = new_queryset
+            description = 'Auto generated list Type for {} model'.format(new_model._meta.verbose_name)
+
+    return GenericListType
+
+
+def input_object_type_factory(input_type, new_model, new_input_for, new_name=None, new_only_fields=(),
+                              new_exclude_fields=(), new_filter_fields=None,new_nested_fields=False,
+                              new_registry=None, new_skip_registry=False):
+
+    class GenericInputType(input_type):
         class Meta:
             model = new_model
             name = new_name or to_camel_case('{}_{}_Generic_Type'.format(new_model.__name__, new_input_for))

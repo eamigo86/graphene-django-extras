@@ -8,7 +8,7 @@ from graphene.utils.get_unbound_function import get_unbound_function
 from graphene.utils.props import props
 from graphene_django.rest_framework.types import ErrorType
 
-from .base_types import generic_django_object_type_factory, generic_django_input_object_type_factory
+from .base_types import object_type_factory, input_object_type_factory
 from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
 from .utils import get_Object_or_None, kwargs_formatter as native_kwargs_formatter
@@ -70,9 +70,8 @@ class DjangoSerializerMutation(ObjectType):
         outputType = registry.get_type_for_model(model)
 
         if not outputType:
-            outputType = generic_django_object_type_factory(DjangoObjectType, new_model=model,
-                                                            new_only_fields=only_fields,
-                                                            new_exclude_fields=exclude_fields)
+            outputType = object_type_factory(DjangoObjectType, new_model=model, new_only_fields=only_fields,
+                                             new_exclude_fields=exclude_fields)
 
         django_fields = OrderedDict({output_field_name: Field(outputType)})
 
@@ -84,12 +83,12 @@ class DjangoSerializerMutation(ObjectType):
                 inputType = registry.get_type_for_model(model, for_input=operation)
 
                 if not inputType:
-                    inputType = generic_django_input_object_type_factory(DjangoInputObjectType, new_model=model,
-                                                                         new_only_fields=only_fields,
-                                                                         new_exclude_fields=exclude_fields,
-                                                                         new_input_for=operation,
-                                                                         new_skip_registry=True,
-                                                                         new_nested_fields=nested_fields)
+                    inputType = input_object_type_factory(DjangoInputObjectType, new_model=model,
+                                                          new_only_fields=only_fields,
+                                                          new_exclude_fields=exclude_fields,
+                                                          new_input_for=operation,
+                                                          new_skip_registry=True,
+                                                          new_nested_fields=nested_fields)
 
                 global_arguments[operation].update({
                     input_field_name: Argument(inputType, required=True)
@@ -122,6 +121,7 @@ class DjangoSerializerMutation(ObjectType):
         _meta.output = cls
         _meta.arguments = global_arguments
         _meta.fields = django_fields
+        _meta.output_type = outputType
         _meta.create_resolver = create_resolver
         _meta.delete_resolver = delete_resolver
         _meta.update_resolver = update_resolver
@@ -244,3 +244,11 @@ class DjangoSerializerMutation(ObjectType):
         return Field(
             cls._meta.output, args=cls._meta.arguments['update'], resolver=cls._meta.update_resolver, **kwargs
         )
+
+    @classmethod
+    def MutationFields(cls, *args, **kwargs):
+        create_field = cls.CreateField(*args, **kwargs)
+        delete_field = cls.DeleteField(*args, **kwargs)
+        update_field = cls.UpdateField(*args, **kwargs)
+
+        return create_field, delete_field, update_field

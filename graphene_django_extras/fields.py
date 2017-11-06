@@ -166,7 +166,7 @@ class DjangoFilterPaginateListField(Field):
             extra_filters = get_extra_filters(root, manager.model)
             qs = qs.filter(**extra_filters)
 
-        if getattr(self, 'paginations', None):
+        if getattr(self, 'pagination', None):
             qs = self.pagination.paginate_queryset(qs, **kwargs)
 
         return maybe_queryset(qs)

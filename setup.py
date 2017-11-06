@@ -6,8 +6,9 @@ from setuptools import setup
 
 
 _version_re = re.compile(r'VERSION\s+=\s+(.*)')
+_name = 'graphene_django_extras'
 
-with open('graphene_django_extras/__init__.py', 'rb') as f:
+with open('{}/__init__.py'.format(_name), 'rb') as f:
     version = ast.literal_eval(_version_re.search(
         f.read().decode('utf-8')).group(1))
     version = ".".join([str(v) for v in version])
@@ -16,12 +17,12 @@ with open('graphene_django_extras/__init__.py', 'rb') as f:
 
 def get_packages():
     return [dirpath
-            for dirpath, dirnames, filenames in os.walk('graphene_django_extras')
+            for dirpath, dirnames, filenames in os.walk(_name)
             if os.path.exists(os.path.join(dirpath, '__init__.py'))]
 
 
 setup(
-    name='graphene-django-extras',
+    name=_name,
     version=version,
 
     description='Graphene-Django-Extras add some extra funcionalities to graphene-django to facilitate '
@@ -54,13 +55,12 @@ setup(
     packages=get_packages(),
 
     install_requires=[
-        'graphql-core==2.0.dev20171009101843',
-        'graphene==2.0.dev20170802065539',
-        'graphene-django==2.0.dev2017083101',
+        'graphql-core>=2.0.dev20171009101843',
+        'graphene>=2.0.dev20170802065539',
+        'graphene-django>=2.0.dev2017083101',
         'Django>=1.8.0',
         'django-filter>=1.0.4',
-        'djangorestframework~=3.6.0',
-        'channels-api>=0.4.0'
+        'djangorestframework~=3.6.0'
     ],
     include_package_data=True,
     zip_safe=False,

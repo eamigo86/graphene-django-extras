@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from django import VERSION as DJANGO_VERSION
+from django.db import models
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
 from django.core.exceptions import ValidationError
-from django.db.models import NOT_PROVIDED
-from django.db.models import QuerySet, Manager
+from django.db.models import NOT_PROVIDED, QuerySet, Manager, ManyToOneRel
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model, get_reverse_fields
@@ -29,7 +29,7 @@ def get_model_fields(model):
     local_fields = [
         (field.name, field)
         for field
-        in all_fields_list
+        in all_fields_list if not isinstance(field, (ManyToOneRel, ))
     ]
 
     # Make sure we don't duplicate local fields with "reverse" version

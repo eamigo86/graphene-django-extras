@@ -5,10 +5,9 @@ from .fields import DjangoObjectField, DjangoFilterListField, DjangoFilterPagina
     DjangoListObjectField
 from .mutation import DjangoSerializerMutation
 from .paginations import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
-from .types import DjangoObjectType, DjangoInputObjectType, DjangoListObjectType
-from .subscriptions import *
+from .types import DjangoObjectType, DjangoInputObjectType, DjangoListObjectType, DjangoSerializerType
 
-VERSION = (0, 1, 0, 'alpha', '12')
+VERSION = (0, 1, 0, 'final', '')
 
 __version__ = get_version(VERSION)
 
@@ -33,8 +32,5 @@ __all__ = (
     'DjangoObjectType',
     'DjangoListObjectType',
     'DjangoInputObjectType',
-
-    # SUBSCRIPTIONS
-    'Subscription',
-    'GraphqlAPIDemultiplexer'
+    'DjangoSerializerType'
 )
