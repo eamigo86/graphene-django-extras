@@ -9,10 +9,9 @@ from graphene import (Field, ID, Boolean, Dynamic, Enum, Float, Int, List, NonNu
 from graphene.types.datetime import DateTime, Time
 from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case, to_const
-from graphene_django.compat import ArrayField, HStoreField, RangeField
+from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONField
 from graphene_django.fields import DjangoListField
 from graphene_django.utils import import_single_dispatch
-from rest_framework.fields import JSONField
 from rest_framework.compat import get_related_model
 
 from .fields import DjangoFilterListField
