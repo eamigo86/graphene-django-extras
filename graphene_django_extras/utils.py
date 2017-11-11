@@ -11,6 +11,15 @@ from graphene_django.utils import is_valid_django_model, get_reverse_fields
 from graphql import GraphQLList, GraphQLNonNull
 from graphql.language.ast import FragmentSpread
 from six import string_types
+from rest_framework.compat import _resolve_model
+
+
+def get_related_model(field):
+    # Backward compatibility patch for Django versions lower than 1.9.x
+    # Function taken from DRF 3.6.x
+    if DJANGO_VERSION < (1, 9):
+        return _resolve_model(field.rel.to)
+    return field.remote_field.model
 
 
 def get_model_fields(model):

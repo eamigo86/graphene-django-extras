@@ -12,10 +12,9 @@ from graphene.utils.str_converters import to_camel_case, to_const
 from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONField
 from graphene_django.fields import DjangoListField
 from graphene_django.utils import import_single_dispatch
-from rest_framework.compat import get_related_model
 
 from .fields import DjangoFilterListField
-from .utils import is_required, get_model_fields
+from .utils import is_required, get_model_fields, get_related_model
 from .base_types import Date, GenericForeignKeyType, GenericForeignKeyInputType
 
 singledispatch = import_single_dispatch()
