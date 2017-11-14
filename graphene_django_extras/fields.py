@@ -5,9 +5,11 @@ from functools import partial
 from graphene import Field, List, ID, Argument
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django.utils import maybe_queryset, is_valid_django_model, DJANGO_FILTER_INSTALLED
+from graphene_django_extras.settings import graphql_api_settings
 
 from graphene_django_extras.filters.filter import get_filterset_class
 from .base_types import DjangoListObjectBase
+from .paginations.pagination import BaseDjangoGraphqlPagination
 from .paginations.utils import list_pagination_factory
 from .utils import get_extra_filters, kwargs_formatter, queryset_factory, get_related_fields, find_field
 
@@ -101,7 +103,7 @@ class DjangoFilterListField(Field):
             except AttributeError:
                 qs = None
 
-        if not qs:
+        if qs is None:
             qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
             qs = filterset_class(data=filter_kwargs, queryset=qs).qs
 
@@ -137,7 +139,13 @@ class DjangoFilterPaginateListField(Field):
             self.filtering_args.update({'id': Argument(ID, description='Django object unique identification field')})
             kwargs['args'].update({'id': Argument(ID, description='Django object unique identification field')})
 
-        if pagination:
+        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS
+
+        if pagination is not None:
+            assert isinstance(pagination, BaseDjangoGraphqlPagination), (
+                'You need to pass a valid DjangoGraphqlPagination in DjangoFilterPaginateListField, received "{}".'
+            ).format(pagination)
+
             pagination_kwargs = list_pagination_factory(pagination)
 
             self.pagination = pagination

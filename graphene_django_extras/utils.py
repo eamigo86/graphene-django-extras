@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django import VERSION as DJANGO_VERSION
-from django.db import models
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
 from django.core.exceptions import ValidationError
@@ -10,7 +9,16 @@ from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model, get_reverse_fields
 from graphql import GraphQLList, GraphQLNonNull
 from graphql.language.ast import FragmentSpread
+from rest_framework.compat import _resolve_model
 from six import string_types
+
+
+def get_related_model(field):
+    # Backward compatibility patch for Django versions lower than 1.9.x
+    # Function taken from DRF 3.6.x
+    if DJANGO_VERSION < (1, 9):
+        return _resolve_model(field.rel.to)
+    return field.remote_field.model
 
 
 def get_model_fields(model):
@@ -29,7 +37,7 @@ def get_model_fields(model):
     local_fields = [
         (field.name, field)
         for field
-        in all_fields_list if not isinstance(field, (ManyToOneRel, ))
+        in all_fields_list
     ]
 
     # Make sure we don't duplicate local fields with "reverse" version
@@ -68,9 +76,9 @@ def create_obj(model, new_obj_key=None, *args, **kwargs):
     except ValidationError as e:
         raise ValidationError(e.__str__())
     except TypeError as e:
-        raise TypeError(e.message)
+        raise TypeError(e.__str__())
     except Exception as e:
-        return e.message
+        return e.__str__()
 
 
 def get_type(_type):

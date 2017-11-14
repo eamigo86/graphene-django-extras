@@ -310,6 +310,19 @@ Change Log:
 -----------
 
 *******
+v0.1.2:
+*******
+1. Added ok field and errors field to DjangoSerializerType like on DjangoSerializerMutation.
+2. Added possibility of filtering in those queries fields that return a list of objects.
+3. Updated DRF compatibility.
+4. Fixed bug with filters when use global DEFAULT_PAGINATION_CLASS.
+
+*******
+v0.1.1:
+*******
+1. Fixed error with JSONField reference on Django==1.8.x installations.
+
+*******
 v0.1.0:
 *******
 1. Added DjangoSerializerType for quick Django's models types definition (See documentation).
