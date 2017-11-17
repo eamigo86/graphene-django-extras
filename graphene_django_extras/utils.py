@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
+
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
 from django.core.exceptions import ValidationError
-from django.db.models import NOT_PROVIDED, QuerySet, Manager, ManyToOneRel
+from django.db.models import NOT_PROVIDED, QuerySet, Manager
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model, get_reverse_fields
@@ -30,9 +32,9 @@ def get_model_fields(model):
         private_fields = model._meta.virtual_fields
 
     all_fields_list = list(model._meta.fields) + \
-                      list(model._meta.local_many_to_many) + \
-                      list(private_fields) + \
-                      list(model._meta.fields_map.values())
+        list(model._meta.local_many_to_many) + \
+        list(private_fields) + \
+        list(model._meta.fields_map.values())
 
     local_fields = [
         (field.name, field)
@@ -49,11 +51,40 @@ def get_model_fields(model):
     return all_fields
 
 
+def get_obj(app_label, model_name, object_id):
+    """
+    Function used by my to get objst
+    :param app_label: A valid Django Model or a string with format: <app_label>.<model_name>
+    :param model_name: Key into kwargs that contains de data: new_person
+    :param object_id:
+    :return: instance
+    """
+    try:
+        model = apps.get_model('{}.{}'.format(app_label, model_name))
+        assert is_valid_django_model(model), (
+            'Model {}.{} do not exist.').format(app_label, model_name)
+
+        obj = get_Object_or_None(model, pk=object_id)
+        return obj
+
+    except model.DoesNotExist:
+        return None
+    except LookupError as e:
+        pass
+    except ValidationError as e:
+        raise ValidationError(e.__str__())
+    except TypeError as e:
+        raise TypeError(e.__str__())
+    except Exception as e:
+        return e.__str__()
+
+
 def create_obj(model, new_obj_key=None, *args, **kwargs):
     """
     Function used by my on traditional Mutations to create objs
-    :param model: A valid Django Model or a string with format: <app_label>.<model_name>
-    :param new_obj_key: Key into kwargs that contains de data
+    :param model: A valid Django Model or a string with format:
+    <app_label>.<model_name>
+    :param new_obj_key: Key into kwargs that contains de data: new_person
     :param args:
     :param kwargs: Dict with model attributes values
     :return: instance of model after saved it
@@ -63,7 +94,8 @@ def create_obj(model, new_obj_key=None, *args, **kwargs):
         if isinstance(model, string_types):
             model = apps.get_model(model)
         assert is_valid_django_model(model), (
-            'You need to pass a valid Django Model or a string with format: <app_label>.<model_name> to "create_obj"'
+            'You need to pass a valid Django Model or a string with format: '
+            '<app_label>.<model_name> to "create_obj"'
             ' function, received "{}".').format(model)
 
         data = kwargs.get(new_obj_key, None) if new_obj_key else kwargs
@@ -79,6 +111,18 @@ def create_obj(model, new_obj_key=None, *args, **kwargs):
         raise TypeError(e.__str__())
     except Exception as e:
         return e.__str__()
+
+
+def clean_dict(d):
+    """
+        Remove all empty fields in a nested dict
+    """
+
+    if not isinstance(d, (dict, list)):
+        return d
+    if isinstance(d, list):
+        return [v for v in (clean_dict(v) for v in d) if v]
+    return OrderedDict([(k, v) for k, v in ((k, clean_dict(v)) for k, v in list(d.items())) if v])
 
 
 def get_type(_type):
@@ -154,8 +198,8 @@ def get_Object_or_None(klass, *args, **kwargs):
     klass may be a Model, Manager, or QuerySet object. All other passed
     arguments and keyword arguments are used in the get() query.
 
-    Note: Like with get(), an MultipleObjectsReturned will be raised if more than one
-    object is found.
+    Note: Like with get(), an MultipleObjectsReturned will be raised
+    if more than one object is found.
     Ex: get_Object_or_None(User, db, id=1)
     """
     queryset = _get_queryset(klass)
@@ -172,7 +216,8 @@ def get_Object_or_None(klass, *args, **kwargs):
 
 def kwargs_formatter(**kwargs):
     if kwargs.get('deprecation_reason', None):
-        kwargs['deprecation_reason'] = 'DEPRECATED: {}'.format(kwargs['deprecation_reason'])
+        kwargs['deprecation_reason'] = 'DEPRECATED: {}'.format(
+            kwargs['deprecation_reason'])
 
     return kwargs
 
@@ -190,7 +235,8 @@ def get_related_fields(model):
     return {
         field.name: field
         for field in model._meta.get_fields()
-        if field.is_relation and not isinstance(field, (GenericForeignKey, GenericRel))
+        if field.is_relation and
+        not isinstance(field, (GenericForeignKey, GenericRel))
     }
 
 
@@ -205,15 +251,21 @@ def find_field(field, fields_dict):
     return temp
 
 
-def recursive_params(selection_set, fragments, available_related_fields, select_related, prefetch_related):
+def recursive_params(selection_set, fragments, available_related_fields,
+                     select_related, prefetch_related):
 
     for field in selection_set.selections:
 
         if isinstance(field, FragmentSpread) and fragments:
-            a, b = recursive_params(fragments[field.name.value].selection_set, fragments, available_related_fields,
-                                    select_related, prefetch_related)
+            a, b = recursive_params(
+                fragments[field.name.value].selection_set,
+                fragments,
+                available_related_fields,
+                select_related, prefetch_related
+            )
             [select_related.append(x) for x in a if x not in select_related]
-            [prefetch_related.append(x) for x in b if x not in prefetch_related]
+            [prefetch_related.append(x)
+             for x in b if x not in prefetch_related]
             continue
 
         temp = available_related_fields.get(
@@ -224,15 +276,22 @@ def recursive_params(selection_set, fragments, available_related_fields, select_
         )
 
         if temp:
-            if (temp.many_to_many or temp.one_to_many) and temp.name not in prefetch_related:
+            if (temp.many_to_many or temp.one_to_many) and \
+               temp.name not in prefetch_related:
                 prefetch_related.append(temp.name)
             elif temp.name not in select_related:
                 select_related.append(temp.name)
         elif getattr(field, 'selection_set', None):
-            a, b = recursive_params(field.selection_set, fragments, available_related_fields,
-                                    select_related, prefetch_related)
+            a, b = recursive_params(
+                field.selection_set,
+                fragments,
+                available_related_fields,
+                select_related,
+                prefetch_related
+            )
             [select_related.append(x) for x in a if x not in select_related]
-            [prefetch_related.append(x) for x in b if x not in prefetch_related]
+            [prefetch_related.append(x)
+             for x in b if x not in prefetch_related]
 
     return select_related, prefetch_related
 
@@ -246,20 +305,24 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
     for f in kwargs.keys():
         temp = available_related_fields.get(f.split('_', 1)[0], None)
         if temp:
-            if (temp.many_to_many or temp.one_to_many) and temp.name not in prefetch_related:
+            if (temp.many_to_many or temp.one_to_many) and \
+               temp.name not in prefetch_related:
                 prefetch_related.append(temp.name)
             else:
                 select_related.append(temp.name)
 
     if fields_asts:
-        select_related, prefetch_related = recursive_params(fields_asts[0].selection_set,
-                                                            fragments,
-                                                            available_related_fields,
-                                                            select_related,
-                                                            prefetch_related)
+        select_related, prefetch_related = recursive_params(
+            fields_asts[0].selection_set,
+            fragments,
+            available_related_fields,
+            select_related,
+            prefetch_related
+        )
 
     if select_related and prefetch_related:
-        return _get_queryset(manager.select_related(*select_related).prefetch_related(*prefetch_related))
+        return _get_queryset(manager.select_related(
+            *select_related).prefetch_related(*prefetch_related))
     elif not select_related and prefetch_related:
         return _get_queryset(manager.prefetch_related(*prefetch_related))
     elif select_related and not prefetch_related:

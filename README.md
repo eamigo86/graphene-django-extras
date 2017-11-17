@@ -137,6 +137,7 @@ class UserSerializerMutation(DjangoSerializerMutation):
 class UserMutation(graphene.Mutation):
     """
          On traditional mutation classes definition you must implement the mutate function
+         
     """
 
     user = graphene.Field(UserType, required=False)
@@ -283,6 +284,9 @@ mutation{
 ```
 
 ## Change Log:
+
+#### v0.1.3:
+    1. Fixed minors minors bugs.
 
 #### v0.1.2:
     1. Added ok field and errors field to DjangoSerializerType like on DjangoSerializerMutation.

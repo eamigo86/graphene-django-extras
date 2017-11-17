@@ -235,7 +235,7 @@ class DjangoListObjectType(ObjectType):
         _meta.only_fields = only_fields
         _meta.fields = OrderedDict([
             (results_field_name, result_container),
-            ('count', Field(Int, name='totalCount', required=True, description="Total count of matches elements"))
+            ('count', Field(Int, name='totalCount', description="Total count of matches elements"))
         ])
 
         super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)

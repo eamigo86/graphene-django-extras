@@ -3,6 +3,7 @@ import operator
 from functools import partial
 
 from graphene import Field, List, ID, Argument
+from graphene.types.structures import Structure
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 from graphene_django.utils import maybe_queryset, is_valid_django_model, DJANGO_FILTER_INSTALLED
 from graphene_django_extras.settings import graphql_api_settings
@@ -114,8 +115,10 @@ class DjangoFilterListField(Field):
         return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
-        return partial(self.list_resolver, self.type.of_type._meta.model._default_manager,
-                       self.filterset_class, self.filtering_args)
+        temp = self.type
+        while isinstance(temp, Structure):
+            temp = temp.of_type
+        return partial(self.list_resolver, temp._meta.model._default_manager, self.filterset_class, self.filtering_args)
 
 
 class DjangoFilterPaginateListField(Field):
@@ -180,8 +183,10 @@ class DjangoFilterPaginateListField(Field):
         return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
-        return partial(self.list_resolver, self.type.of_type._meta.model._default_manager,
-                       self.filterset_class, self.filtering_args)
+        temp = self.type
+        while isinstance(temp, Structure):
+            temp = temp.of_type
+        return partial(self.list_resolver, temp._meta.model._default_manager, self.filterset_class, self.filtering_args)
 
 
 class DjangoListObjectField(Field):
@@ -237,5 +242,5 @@ class DjangoListObjectField(Field):
         )
 
     def get_resolver(self, parent_resolver):
-        return partial(self.list_resolver, self.type._meta.queryset or self.type._meta.model._default_manager,
+        return partial(self.list_resolver, self.type._meta.model._default_manager,
                        self.filterset_class, self.filtering_args)

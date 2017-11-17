@@ -310,6 +310,11 @@ Change Log:
 -----------
 
 *******
+v0.1.3:
+*******
+1. Fixed some minors bugs.
+
+*******
 v0.1.2:
 *******
 1. Added ok field and errors field to DjangoSerializerType like on DjangoSerializerMutation.

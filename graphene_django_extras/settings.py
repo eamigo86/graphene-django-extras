@@ -11,6 +11,7 @@ DEFAULTS = {
     'DEFAULT_PAGINATION_CLASS': None,  # 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination'
     'DEFAULT_PAGE_SIZE': None,
     'MAX_PAGE_SIZE': None,
+    'CLEAN_RESPONSE': False,
 }
 
 
