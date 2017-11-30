@@ -76,7 +76,7 @@ def get_obj(app_label, model_name, object_id):
     except TypeError as e:
         raise TypeError(e.__str__())
     except Exception as e:
-        return e.__str__()
+        raise Exception(e.__str__())
 
 
 def create_obj(model, new_obj_key=None, *args, **kwargs):
@@ -328,3 +328,13 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
     elif select_related and not prefetch_related:
         return _get_queryset(manager.select_related(*select_related))
     return _get_queryset(manager)
+
+
+def parse_validation_exc(validation_exc):
+
+    errors_list = []
+    for key, value in validation_exc.error_dict.items():
+        for exc in value:
+            errors_list.append({"field": key, "messages": exc.messages})
+
+    return errors_list

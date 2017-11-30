@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
+from django.core.exceptions import ValidationError
 from graphene import Boolean, List, Field, ID, Argument, ObjectType
 from graphene.types.base import BaseOptions
 from graphene.utils.deprecated import warn_deprecation
@@ -11,7 +12,7 @@ from graphene_django.rest_framework.types import ErrorType
 from .base_types import object_type_factory, input_object_type_factory
 from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
-from .utils import get_Object_or_None, kwargs_formatter as native_kwargs_formatter
+from .utils import get_Object_or_None, kwargs_formatter as native_kwargs_formatter, parse_validation_exc
 
 
 class SerializerMutationOptions(BaseOptions):
@@ -162,8 +163,19 @@ class DjangoSerializerMutation(ObjectType):
             serializer = cls._meta.serializer_class(data=new_obj)
 
             if serializer.is_valid():
-                obj = serializer.save()
-                return cls.perform_mutate(obj, info)
+                try:
+                    cls._meta.model(**serializer.validated_data).full_clean()
+                    obj = serializer.save()
+                    return cls.perform_mutate(obj, info)
+
+                except ValidationError as e:
+                    errors_list = parse_validation_exc(e)
+
+                    errors = [
+                        ErrorType(**errors)
+                        for errors in errors_list
+                    ]
+                    return cls.get_errors(errors)
 
             else:
                 errors = [
