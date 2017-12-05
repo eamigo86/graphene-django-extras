@@ -310,6 +310,11 @@ Change Log:
 -----------
 
 *******
+v0.1.5:
+*******
+    1. Fixed bug on create and update function on serializer mutation.
+
+*******
 v0.1.3:
 *******
 1. Fixed some minors bugs.

@@ -285,8 +285,11 @@ mutation{
 
 ## Change Log:
 
+#### v0.1.5:
+    1. Fixed bug on create and update function on serializer mutation.
+
 #### v0.1.3:
-    1. Fixed minors minors bugs.
+    1. Fixed minors  bugs.
 
 #### v0.1.2:
     1. Added ok field and errors field to DjangoSerializerType like on DjangoSerializerMutation.

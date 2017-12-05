@@ -164,7 +164,7 @@ class DjangoSerializerMutation(ObjectType):
 
             if serializer.is_valid():
                 try:
-                    cls._meta.model(**serializer.validated_data).full_clean()
+                    # cls._meta.model(**serializer.validated_data).full_clean()
                     obj = serializer.save()
                     return cls.perform_mutate(obj, info)
 
@@ -218,8 +218,19 @@ class DjangoSerializerMutation(ObjectType):
                 serializer = cls._meta.serializer_class(old_obj, data=new_obj_serialized)
 
                 if serializer.is_valid():
-                    obj = serializer.save()
-                    return cls.perform_mutate(obj, info)
+                    try:
+                        # cls._meta.model(**serializer.validated_data).full_clean()
+                        obj = serializer.save()
+                        return cls.perform_mutate(obj, info)
+
+                    except ValidationError as e:
+                        errors_list = parse_validation_exc(e)
+
+                        errors = [
+                            ErrorType(**errors)
+                            for errors in errors_list
+                        ]
+                        return cls.get_errors(errors)
                 else:
                     errors = [
                         ErrorType(field=key, messages=value)

@@ -27,6 +27,9 @@ class Date(Scalar):
 
     @staticmethod
     def serialize(date):
+        if isinstance(date, datetime.datetime):
+           date = date.date()
+
         assert isinstance(date, datetime.date), (
             'Received not compatible date "{}"'.format(repr(date))
         )
@@ -41,6 +44,10 @@ class Date(Scalar):
     def parse_value(cls, value):
         dt = iso8601.parse_date('{}T{}'.format(value, cls.epoch_time))
         return datetime.date(dt.year, dt.month, dt.day)
+
+    @staticmethod
+    def parse_value1(value):
+        return iso8601.parse_date(value).date()
 
 
 def object_type_factory(_type, new_model, new_name=None, new_only_fields=(), new_exclude_fields=(),
