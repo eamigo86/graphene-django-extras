@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
-from graphql.execution.executor import execute, subscribe
+# from graphql.execution.executor import execute, subscribe
 from rest_framework.decorators import (
     authentication_classes, permission_classes, api_view, throttle_classes)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
-from graphql.utils.get_operation_ast import get_operation_ast
+# from graphql.utils.get_operation_ast import get_operation_ast
 
 from .settings import graphql_api_settings
 from .utils import clean_dict
 
 
 class ExtraGraphQLView(GraphQLView, APIView):
-
+    """
     def execute(self, *args, **kwargs):
         operation_ast = get_operation_ast(args[0])
 
@@ -23,6 +23,7 @@ class ExtraGraphQLView(GraphQLView, APIView):
             return subscribe(self.schema, *args, **kwargs)
 
         return execute(self.schema, *args, **kwargs)
+    """
 
     @classmethod
     def as_view(cls, *args, **kwargs):
