@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
-from graphene import get_version
+from graphene.pyutils.version import get_version
 
+from .directives import get_all_directives
 from .fields import DjangoObjectField, DjangoFilterListField, DjangoFilterPaginateListField, \
     DjangoListObjectField
+from .middleware import ExtraGraphQLDirectiveMiddleware
 from .mutation import DjangoSerializerMutation
 from .paginations import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
 from .types import DjangoObjectType, DjangoInputObjectType, DjangoListObjectType, DjangoSerializerType
 
-VERSION = (0, 1, 7, 'final', '')
+VERSION = (0, 2, 0, 'final', '')
 
 __version__ = get_version(VERSION)
 
 __all__ = (
     '__version__',
-    
+
     # FIELDS
     'DjangoObjectField',
     'DjangoFilterListField',
@@ -32,5 +34,9 @@ __all__ = (
     'DjangoObjectType',
     'DjangoListObjectType',
     'DjangoInputObjectType',
-    'DjangoSerializerType'
+    'DjangoSerializerType',
+
+    # DIRECTIVES
+    'get_all_directives',
+    'ExtraGraphQLDirectiveMiddleware'
 )

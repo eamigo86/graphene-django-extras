@@ -9,12 +9,19 @@ class Registry(object):
     def __init__(self):
         self._registry = {}
         self._registry_models = {}
+        self._registry_directives = {}
 
     def register_enum(self, key, enum):
         self._registry[key] = enum
 
     def get_type_for_enum(self, key):
         return self._registry.get(key)
+
+    def register_directive(self, name, directive):
+        self._registry_directives[name] = directive
+
+    def get_directive(self, name):
+        return self._registry_directives.get(name)
 
     def register(self, cls, for_input=None):
         from .types import DjangoInputObjectType, DjangoObjectType

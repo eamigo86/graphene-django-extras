@@ -25,8 +25,9 @@ setup(
     name=_name,
     version=version,
 
-    description='Graphene-Django-Extras add some extra funcionalities to graphene-django to facilitate '
-                'the graphql use without Relay and allow paginations and filtering integration',
+    description='graphene_django_extras add some extra funcionalities to graphene-django to facilitate '
+                'the graphql use without Relay, allow paginations and filtering integration and add some'
+                'extra directives',
     long_description=open('README.rst').read(),
 
     url='https://github.com/eamigo86/graphene-django-extras',
@@ -54,6 +55,7 @@ setup(
     packages=get_packages(),
 
     install_requires=[
+        'six>=1.9.0',
         'graphql-core>=2.0.dev20171009101843',
         'graphene>=2.0.dev20170802065539',
         'graphene-django>=2.0.dev2017083101',
@@ -61,6 +63,11 @@ setup(
         'django-filter>=1.0.4',
         'djangorestframework>=3.6.0'
     ],
+    extras_require={
+        'date': [
+            'dateutils>=0.6.6',
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
     platforms='any',

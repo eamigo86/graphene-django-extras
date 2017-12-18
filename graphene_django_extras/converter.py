@@ -13,9 +13,13 @@ from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONFiel
 from graphene_django.fields import DjangoListField
 from graphene_django.utils import import_single_dispatch
 
-from .base_types import Date, GenericForeignKeyType, GenericForeignKeyInputType
+from .base_types import GenericForeignKeyType, GenericForeignKeyInputType
 from .fields import DjangoFilterListField
 from .utils import is_required, get_model_fields, get_related_model
+try:
+    from graphene import Date
+except ImportError:
+    from .base_types import Date
 
 singledispatch = import_single_dispatch()
 

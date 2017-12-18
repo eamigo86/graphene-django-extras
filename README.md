@@ -7,6 +7,7 @@
 This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.
   2. Allows to define DjangoRestFramework serializers based Mutations.
+  3. Allows use Directives on Queries and Fragments.
 
 **NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions) due incompatibility with subscriptions on graphene-django>=2.0
 
@@ -14,7 +15,7 @@ This package add some extra functionalities to graphene-django to facilitate the
 
 For installing graphene-django-extras, just run this command in your shell:
 
-```bash
+```
 pip install graphene-django-extras
 ```
 
@@ -202,7 +203,95 @@ class Mutations(graphene.ObjectType):
     traditional_user_mutation = UserMutation.Field()
 ```
 
-#### 5- Queries's examples:
+#### 5- Configuring Directives:
+For use Directives you must follow two simple steps:
+1. You must add **'graphene_django_extras.ExtraGraphQLDirectiveMiddleware'** to your GRAPHENE dict
+config on your settings.py:
+
+```python
+# settings.py
+
+GRAPHENE = {
+    'SCHEMA_INDENT': 4,
+    'MIDDLEWARE': [
+        'graphene_django_extras.ExtraGraphQLDirectiveMiddleware'
+    ]
+}
+```
+
+2. You must add the *directives* param with yours custom directives to your schema definition. This module come with
+some common directives for you, this directives allow to you format strings, numbers, lists, and dates (optional), and
+you can load like this:
+
+```python
+# schema.py
+from graphene_django_extras import get_all_directives
+
+schema = graphene.Schema(
+    query=RootQuery,
+    mutation=RootMutation,
+    directives=get_all_directives()
+)
+```
+**NOTE**: Date directive depends of *dateutils* module, so if you do not have installed it, this directive will not be
+available. You can install *dateutils* module manually:
+```
+pip install dateutils
+```
+or like this: *(pip install
+```
+pip install graphene-django-extras[date]
+```
+That's all !!!
+
+
+#### 6- Complete Directive list:
+
+##### FOR NUMBERS:
+1. **FloorGraphQLDirective**: Floors value. Supports both String and Float fields.
+2. **CeilGraphQLDirective**: Ceils value. Supports both String and Float fields.
+
+##### FOR LIST:
+1. **ShuffleGraphQLDirective**: Shuffle the list in place.
+2. **SampleGraphQLDirective**: Take a 'k' int argument and return a k length list of unique elements chosen from the
+taken list
+
+##### FOR DATE:
+1. **DateGraphQLDirective**: Take a optional 'format' string argument and format the date from resolving the field by
+dateutil module with the 'format' format. Default format is: 'DD MMM YYYY HH:mm:SS' equivalent to
+'%d %b %Y %H:%M:%S' python format.
+
+##### FOR STRING:
+1. **DefaultGraphQLDirective**: Take a 'to' string argument. Default to given value if None or ""
+2. **Base64GraphQLDirective**: Take a optional ("encode" or "decode") 'op' string argument(default='encode').
+Encode or decode the string taken.
+3. **NumberGraphQLDirective**: Take a 'as' string argument. String formatting like a specify Python number formatting.
+4. **CurrencyGraphQLDirective**: Take a optional 'symbol' string argument(default="$").
+Prepend the *symbol* argument to taken string and format it like a currency.
+5. **LowercaseGraphQLDirective**: Lowercase the taken string.
+6. **UppercaseGraphQLDirective**: Uppercase the taken string.
+7. **CapitalizeGraphQLDirective**: Return the taken string with its first character capitalized and the rest lowered.
+8. **CamelCaseGraphQLDirective**: CamelCase the taken string.
+9. **SnakeCaseGraphQLDirective**: SnakeCase the taken string.
+10. **KebabCaseGraphQLDirective**: SnakeCase the taken string.
+11. **SwapCaseGraphQLDirective**: Return the taken string with uppercase characters converted to lowercase and vice
+versa.
+12. **StripGraphQLDirective**: Take a optional 'chars' string argument(default=" ").
+Return the taken string with the leading and trailing characters removed. The 'chars' argument is not a prefix or
+suffix; rather, all combinations of its values are stripped.
+13. **TitleCaseGraphQLDirective**: Return the taken string titlecased, where words start with an uppercase character
+and the remaining characters are lowercase.
+14. **CenterGraphQLDirective**: Take a 'width' string argument and a optional 'fillchar' string argument(default=" ").
+Return the taken string centered with the 'width' argument as new length. Padding is done using the specified
+'fillchar' argument. The original string is returned if 'width' argument is less than or equal to taken string
+length.
+15. **ReplaceGraphQLDirective**: Take two strings arguments 'old' and 'new', and a optional integer argument
+'count'.
+Return the taken string with all occurrences of substring 'old' argument replaced by 'new' argument value.
+If the optional argument 'count' is given, only the first 'count' occurrences are replaced.
+
+
+#### 7- Queries's examples:
 ```js
 {
   allUsers(username_Icontains:"john"){
@@ -243,7 +332,7 @@ class Mutations(graphene.ObjectType):
 }
 ```
 
-#### 6- Mutations's examples:
+#### 8- Mutations's examples:
 
 ```js
 mutation{
@@ -283,7 +372,119 @@ mutation{
 }
 ```
 
+#### 9- Directives's examples:
+Let's suppose that we have this query:
+```js
+query{
+    allUsers{
+        result{
+            id
+            firstName
+            lastName
+            dateJoined
+            lastLogin
+        }
+    }
+}
+```
+And return this data:
+```js
+{
+  "data": {
+    "allUsers": {
+      "results": [
+        {
+            "id": "1",
+            "firstName": "JOHN",
+            "lastName": "",
+            "dateJoined": "2017-06-20 09:40:30",
+            "lastLogin": "2017-08-05 21:05:02"
+        },
+        {
+            "id": "2",
+            "firstName": "Golden",
+            "lastName": "GATE",
+            "dateJoined": "2017-01-02 20:36:45",
+            "lastLogin": "2017-06-20 10:15:31"
+        },
+        {
+            "id": "3",
+            "firstName": "Nike",
+            "lastName": "just do it!",
+            "dateJoined": "2017-08-30 16:05:20",
+            "lastLogin": "2017-12-05 09:23:09"
+        }
+      ]
+    }
+  }
+}
+```
+As we see, some data it's missing or just not have the format that we like it, so let's go to format the output data
+that we desired:
+```js
+query{
+    allUsers{
+        result{
+            id
+            firstName @capitalize
+            lastName @default(to: "Doe") @title_case
+            dateJoined @date(format: "DD MMM YYYY HH:mm:SS")
+            lastLogin @date(format: "time ago")
+        }
+    }
+}
+```
+And we get this output data:
+```js
+{
+  "data": {
+    "allUsers": {
+      "results": [
+        {
+            "id": "1",
+            "firstName": "John",
+            "lastName": "Doe",
+            "dateJoined": "20 Jun 2017 09:40:30",
+            "lastLogin": "4 months, 12 days, 15 hours, 27 minutes and 58 seconds ago"
+        },
+        {
+            "id": "2",
+            "firstName": "Golden",
+            "lastName": "Gate",
+            "dateJoined": "02 Jan 2017 20:36:45",
+            "lastLogin": "5 months, 28 days, 2 hours, 17 minutes and 53 seconds ago"
+        },
+        {
+            "id": "3",
+            "firstName": "Nike",
+            "lastName": "Just Do It!",
+            "dateJoined": "30 Aug 2017 16:05:20",
+            "lastLogin": "13 days, 3 hours, 10 minutes and 31 seconds ago"
+        }
+      ]
+    }
+  }
+}
+```
+As we see, the directives is a easy way to format output data on queries, and it's can be put together like a chain.
+
+**NOTE**: The *date* directive take a string of tokens, this tokens are the common of JavaScript date format.
+
+**List of possible date's tokens**:
+"YYYY", "YY", "WW", "W", "DD", "DDDD", "d", "ddd", "dddd", "MM", "MMM", "MMMM", "HH", "hh", "mm", "ss", "A", "ZZ", "z".
+
+You can use this shortcuts too:
+
+1. "time ago"
+2. "iso": "YYYY-MMM-DDTHH:mm:ss"
+3. "js" or "javascript": "ddd MMM DD YYYY HH:mm:ss"
+
+
 ## Change Log:
+
+#### v0.2.0:
+    1. Added some useful directives to use on queries and fragments.
+    2. Fixed error on DjangoFilterPaginateListField resolve function.
 
 #### v0.1.6:
     1. Fixed bug on create and update function on serializer mutation.
@@ -345,7 +546,7 @@ mutation{
     message.
 
 #### v0.1.0-alpha2:
-    1.  Fixed bug when subscribing to a given action (create, update pr delete).
+    1.  Fixed bug when subscribing to a given action (create, update or delete).
     2.  Added intuitive and simple web tool to test notifications of graphene-django-extras subscription.
 
 #### v0.1.0-alpha1:

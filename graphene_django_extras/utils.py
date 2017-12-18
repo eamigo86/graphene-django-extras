@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from collections import OrderedDict
 
 from django import VERSION as DJANGO_VERSION
@@ -13,6 +14,11 @@ from graphql import GraphQLList, GraphQLNonNull
 from graphql.language.ast import FragmentSpread
 from rest_framework.compat import _resolve_model
 from six import string_types
+
+
+def to_kebab_case(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1-\2', name.title().replace(' ', ''))
+    return re.sub('([a-z0-9])([A-Z])', r'\1-\2', s1).lower()
 
 
 def get_related_model(field):

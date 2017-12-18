@@ -41,12 +41,12 @@ class Date(Scalar):
             return cls.parse_value(node.value)
 
     @classmethod
-    def parse_value(cls, value):
+    def parse_value1(cls, value):
         dt = iso8601.parse_date('{}T{}'.format(value, cls.epoch_time))
         return datetime.date(dt.year, dt.month, dt.day)
 
     @staticmethod
-    def parse_value1(value):
+    def parse_value(value):
         return iso8601.parse_date(value).date()
 
 

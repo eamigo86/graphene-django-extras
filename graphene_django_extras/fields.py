@@ -86,31 +86,13 @@ class DjangoFilterListField(Field):
 
     @staticmethod
     def list_resolver(manager, filterset_class, filtering_args, root, info, **kwargs):
-        qs = None
-        available_related_fields = get_related_fields(root._meta.model)
-        field = find_field(info.field_asts[0], available_related_fields)
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
+        qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
+        qs = filterset_class(data=filter_kwargs, queryset=qs).qs
 
-        if field:
-            try:
-                if filter_kwargs:
-                    qs = operator.attrgetter(
-                        '{}.filter'.format(
-                            getattr(field, 'related_name', None) or field.name))(root)(**filter_kwargs)
-                else:
-                    qs = operator.attrgetter(
-                        '{}.all'.format(
-                            getattr(field, 'related_name', None) or field.name))(root)()
-            except AttributeError:
-                qs = None
-
-        if qs is None:
-            qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-            qs = filterset_class(data=filter_kwargs, queryset=qs).qs
-
-            if root and is_valid_django_model(root._meta.model):
-                extra_filters = get_extra_filters(root, manager.model)
-                qs = qs.filter(**extra_filters)
+        if root and is_valid_django_model(root._meta.model):
+            extra_filters = get_extra_filters(root, manager.model)
+            qs = qs.filter(**extra_filters)
 
         return maybe_queryset(qs)
 
