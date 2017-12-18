@@ -260,7 +260,7 @@ available. You can install *dateutils* module manually:
     pip install dateutils
 
 
-or like this: *(pip install
+or like this:
 
 .. code::
     pip install graphene-django-extras[date]
