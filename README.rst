@@ -526,6 +526,11 @@ Change Log:
 -----------
 
 *******
+v0.2.1:
+*******
+1. Fixed bug with default PaginationClass and DjangoFilterPaginateListField.
+
+*******
 v0.2.0:
 *******
 1. Added some useful directives to use on queries and fragments.
