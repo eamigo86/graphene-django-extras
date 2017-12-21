@@ -11,7 +11,6 @@ from graphene_django_extras.settings import graphql_api_settings
 from graphene_django_extras.filters.filter import get_filterset_class
 from .base_types import DjangoListObjectBase
 from .paginations.pagination import BaseDjangoGraphqlPagination
-from .paginations.utils import list_pagination_factory
 from .utils import get_extra_filters, kwargs_formatter, queryset_factory, get_related_fields, find_field
 
 
@@ -124,14 +123,14 @@ class DjangoFilterPaginateListField(Field):
             self.filtering_args.update({'id': Argument(ID, description='Django object unique identification field')})
             kwargs['args'].update({'id': Argument(ID, description='Django object unique identification field')})
 
-        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS
+        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS()
 
         if pagination is not None:
             assert isinstance(pagination, BaseDjangoGraphqlPagination), (
                 'You need to pass a valid DjangoGraphqlPagination in DjangoFilterPaginateListField, received "{}".'
             ).format(pagination)
 
-            pagination_kwargs = list_pagination_factory(pagination)
+            pagination_kwargs = pagination.to_graphql_fields()
 
             self.pagination = pagination
             kwargs.update(**pagination_kwargs)

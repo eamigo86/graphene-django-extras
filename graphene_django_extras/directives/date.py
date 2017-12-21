@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import random
 from datetime import date, datetime, timedelta, time
 
 from dateutil import parser, relativedelta
-from graphql import GraphQLArgument, GraphQLNonNull, GraphQLString
+from graphql import GraphQLArgument, GraphQLString
 
 from .base import BaseExtraGraphQLDirective
 
@@ -65,7 +64,6 @@ FORMATS_MAP = {
 
 
 def str_in_dict_keys(s, d):
-    char_in_key = False
     for k in d:
         if s in k:
             return True

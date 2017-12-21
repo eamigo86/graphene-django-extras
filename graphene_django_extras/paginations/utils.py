@@ -74,15 +74,3 @@ def _get_count(queryset):
         return queryset.count()
     except (AttributeError, TypeError):
         return len(queryset)
-
-
-def list_pagination_factory(pagination_obj):
-
-    from .pagination import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
-
-    if isinstance(pagination_obj, (LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination)):
-        return pagination_obj.to_graphql_fields()
-
-    raise ValidationError('Incorrect paginations value, it must be instance of: \'LimitOffsetGraphqlPagination\' or '
-                          '\'PageGraphqlPagination\' or \'CursorGraphqlPagination\', receive: \'{}\''.
-                          format(pagination_obj))
