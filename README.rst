@@ -510,7 +510,8 @@ And we get this output data:
 
 As we see, the directives is a easy way to format output data on queries, and it's can be put together like a chain.
 
-**NOTE**: The *date* directive take a string of tokens, this tokens are the common of JavaScript date format.
+**IMPORTANT NOTE**: The *date* directive only work with datetime returned as Graphene String Type not with normal
+Graphene DateTime, Time or Date Types and take a string of tokens, this tokens are the common of JavaScript date format.
 
 **List of possible date's tokens**:
 "YYYY", "YY", "WW", "W", "DD", "DDDD", "d", "ddd", "dddd", "MM", "MMM", "MMMM", "HH", "hh", "mm", "ss", "A", "ZZ", "z".
