@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+import time as t
 from datetime import date, datetime, timedelta, time
 
+import six
 from dateutil import parser, relativedelta
+from django.utils import timezone
 from graphql import GraphQLArgument, GraphQLString
 
 from .base import BaseExtraGraphQLDirective
+from ..base_types import CustomDate
 
 __author__ = 'Ernesto'
 __all__ = ('DateGraphQLDirective', )
@@ -90,7 +94,7 @@ def _parse(dt):
         if isinstance(dt, (int, float)):
             return datetime.fromtimestamp(dt)
         if isinstance(dt, (str, bytes)):
-            return parser.parse(dt)
+            return parser.parse(dt, default=datetime.now())
         return None
     except ValueError:
         return None
@@ -128,7 +132,8 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False):
 
     if not isinstance(dt, timedelta):
         if now is None:
-            now = datetime.now()
+            now = timezone.localtime(timezone=timezone.get_fixed_timezone(-int(t.timezone / 60)))
+
         dt = _parse(dt)
         now = _parse(now)
 
@@ -145,16 +150,22 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False):
 
 
 def _format_dt(dt, format='default'):
-    CUSTOM_FORMAT = {
-        'time ago': _format_time_ago(dt, full=True, ago_in=True),
-        'default': dt.strftime(DEFAULT_DATE_FORMAT),
-        'iso': dt.strftime('%Y-%b-%dT%H:%M:%S'),
-        'JS': dt.strftime('%a %b %d %Y %H:%M:%S'),
-        'javascript': dt.strftime('%a %b %d %Y %H:%M:%S'),
-    }
+    if not dt:
+        return None
 
-    if format.lower() in CUSTOM_FORMAT:
-        return CUSTOM_FORMAT[format]
+    format_lowered = format.lower()
+
+    if format_lowered == 'default':
+        return dt.strftime(DEFAULT_DATE_FORMAT)
+
+    if format_lowered == 'time ago':
+        return _format_time_ago(dt, full=True, ago_in=True)
+
+    if format_lowered == 'iso':
+        return dt.strftime('%Y-%b-%dT%H:%M:%S')
+
+    if format_lowered in ('js', 'javascript'):
+        return dt.strftime('%a %b %d %Y %H:%M:%S')
 
     if format in FORMATS_MAP:
         return dt.strftime(FORMATS_MAP[format])
@@ -164,7 +175,7 @@ def _format_dt(dt, format='default'):
         temp_format = ''
         translate_format_list = []
         for char in format:
-            if char in (' ', ',', ':', '.', ';', '[', ']', '(', ')', '{', '}', '-', '_'):
+            if not char.isalpha():
                 if temp_format != '':
                     translate_format_list.append(FORMATS_MAP.get(temp_format, ''))
                     temp_format = ''
@@ -184,9 +195,13 @@ def _format_dt(dt, format='default'):
         if not wrong_format_flag:
             if temp_format !=  '':
                 translate_format_list.append(FORMATS_MAP.get(temp_format, ''))
-            return dt.strftime(''.join(translate_format_list))
+            format_result = ''.join(translate_format_list)
+            if format_result:
+                return dt.strftime(''.join(translate_format_list))
+            return None
 
-        return 'Invalid format string'
+        # Invalid format string
+        return None
 
 
 class DateGraphQLDirective(BaseExtraGraphQLDirective):
@@ -204,13 +219,15 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
-        DEFAULT = datetime.now()
         format_argument = [arg for arg in directive.arguments if arg.name.value == 'format']
         format_argument = format_argument[0] if len(format_argument) > 0 else None
 
         format = format_argument.value.value if format_argument else 'default'
-        dt = parser.parse(value, default=DEFAULT)
+        dt = _parse(value)
         try:
-            return _format_dt(dt, format) or value
+            result = _format_dt(dt, format)
+            if isinstance(value, six.string_types):
+                return result or value
+            return CustomDate(result or 'Invalid format string')
         except ValueError:
-            return 'Invalid format string'
+            return CustomDate('Invalid format string')

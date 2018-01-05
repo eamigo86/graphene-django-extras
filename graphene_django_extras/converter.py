@@ -5,21 +5,20 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation, GenericRel
 from django.db import models
 from django.utils.encoding import force_text
-from graphene import (Field, ID, Boolean, Dynamic, Enum, Float, Int, List, NonNull, String, UUID)
-from graphene.types.datetime import DateTime, Time
+from graphene import (
+    Field, ID, Boolean, Dynamic, Enum, Float, Int, List, NonNull, String, UUID
+)
 from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case, to_const
 from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONField
 from graphene_django.fields import DjangoListField
 from graphene_django.utils import import_single_dispatch
 
-from .base_types import GenericForeignKeyType, GenericForeignKeyInputType
+from .base_types import (
+    GenericForeignKeyType, GenericForeignKeyInputType, DateTime, Time, Date, Binary
+)
 from .fields import DjangoFilterListField
 from .utils import is_required, get_model_fields, get_related_model
-try:
-    from graphene import Date
-except ImportError:
-    from .base_types import Date
 
 singledispatch = import_single_dispatch()
 
@@ -177,6 +176,12 @@ def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field
 def convert_field_to_nullboolean(field, registry=None, input_flag=None, nested_fields=False):
     return Boolean(description=field.help_text or field.verbose_name,
                    required=is_required(field) and input_flag == 'create')
+
+
+@convert_django_field.register(models.BinaryField)
+def convert_binary_to_string(field, registry=None, input_flag=None, nested_fields=False):
+    return Binary(description=field.help_text or field.verbose_name,
+                  required=is_required(field) and input_flag == 'create')
 
 
 @convert_django_field.register(models.DecimalField)

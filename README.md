@@ -9,7 +9,8 @@ This package add some extra functionalities to graphene-django to facilitate the
   2. Allows to define DjangoRestFramework serializers based Mutations.
   3. Allows use Directives on Queries and Fragments.
 
-**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions) due incompatibility with subscriptions on graphene-django>=2.0
+**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github
+.com/eamigo86/graphene-django-subscriptions).
 
 ## Installation
 
@@ -52,6 +53,8 @@ for DjangoListObjectType classes pagination definitions on settings.py like this
         'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination',
         'DEFAULT_PAGE_SIZE': 20,
         'MAX_PAGE_SIZE': 50,
+        'CACHE_ACTIVE': True,
+        'CACHE_TIMEOUT': 300    # seconds
     }
 ```
 
@@ -468,9 +471,6 @@ And we get this output data:
 ```
 As we see, the directives is a easy way to format output data on queries, and it's can be put together like a chain.
 
-**IMPORTANT NOTE**: The *date* directive only work with datetime returned as String Type and take a string of tokens,
-this tokens are the common of JavaScript date format.
-
 **List of possible date's tokens**:
 "YYYY", "YY", "WW", "W", "DD", "DDDD", "d", "ddd", "dddd", "MM", "MMM", "MMMM", "HH", "hh", "mm", "ss", "A", "ZZ", "z".
 
@@ -482,6 +482,18 @@ You can use this shortcuts too:
 
 
 ## Change Log:
+
+#### v0.3.0:
+    1. Added Binary graphql type. A BinaryArray is used to convert a Django BinaryField to the string form.
+    2. Added 'CACHE_ACTIVE' and 'CACHE_TIMEOUT' config options to GRAPHENE_DJANGO_EXTRAS settings for activate cache and
+     define a expire time. Default values are: CACHE_ACTIVE=False, CACHE_TIMEOUT=300 (seconds). Only available for
+     Queries.
+    3. Updated Date directive for use with Django TimeField, DateField, and DateTimeField.
+    4. Updated ExtraGraphQLView and AuthenticatedGraphQLView to allow use subscription requests on graphene-django >=2.0
+    5. Updated setup dependence to graphene-django>=2.0.
+
+#### v0.2.2:
+    1. Fixed performance bug on some queries when request nested ManyToMany fields.
 
 #### v0.2.1:
     1. Fixed bug with default PaginationClass and DjangoFilterPaginateListField.

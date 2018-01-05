@@ -12,6 +12,8 @@ DEFAULTS = {
     'DEFAULT_PAGE_SIZE': None,
     'MAX_PAGE_SIZE': None,
     'CLEAN_RESPONSE': False,
+    'CACHE_ACTIVE': False,
+    'CACHE_TIMEOUT': 300    # seconds (default 5 min)
 }
 
 
@@ -29,6 +31,7 @@ class GraphQLAPISettings(APISettings):
         if not hasattr(self, '_user_settings'):
             self._user_settings = getattr(settings, 'GRAPHENE_DJANGO_EXTRAS', {})
         return self._user_settings
+
 
 graphql_api_settings = GraphQLAPISettings(None, DEFAULTS, IMPORT_STRINGS)
 

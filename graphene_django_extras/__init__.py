@@ -9,7 +9,7 @@ from .mutation import DjangoSerializerMutation
 from .paginations import LimitOffsetGraphqlPagination, PageGraphqlPagination, CursorGraphqlPagination
 from .types import DjangoObjectType, DjangoInputObjectType, DjangoListObjectType, DjangoSerializerType
 
-VERSION = (0, 2, 2, 'final', '')
+VERSION = (0, 3, 0, 'final', '')
 
 __version__ = get_version(VERSION)
 
