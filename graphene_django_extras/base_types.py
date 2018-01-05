@@ -116,7 +116,7 @@ class GenericForeignKeyInputType(graphene.InputObjectType):
 # ************************************************ #
 # ************** CUSTOM BASE TYPES *************** #
 # ************************************************ #
-class CustomDate(object):
+class CustomDateStr(object):
 
     def __init__(self, date):
         self.date_str = date
@@ -139,7 +139,7 @@ class Binary(graphene.Scalar):
             return cls.binary_to_string(node.value)
 
 
-class Time(graphene.Scalar):
+class CustomTime(graphene.Scalar):
     """
     The `Time` scalar type represents a Time value as
     specified by
@@ -149,7 +149,7 @@ class Time(graphene.Scalar):
 
     @staticmethod
     def serialize(time):
-        if isinstance(time, CustomDate):
+        if isinstance(time, CustomDateStr):
             return time.date_str
 
         assert isinstance(time, datetime.time), (
@@ -168,7 +168,7 @@ class Time(graphene.Scalar):
         return datetime.time(dt.hour, dt.minute, dt.second, dt.microsecond, dt.tzinfo)
 
 
-class Date(graphene.Scalar):
+class CustomDate(graphene.Scalar):
     """
     The `Date` scalar type represents a Date
     value as specified by
@@ -178,7 +178,7 @@ class Date(graphene.Scalar):
 
     @staticmethod
     def serialize(date):
-        if isinstance(date, CustomDate):
+        if isinstance(date, CustomDateStr):
             return date.date_str
 
         if isinstance(date, datetime.datetime):
@@ -199,7 +199,7 @@ class Date(graphene.Scalar):
         return iso8601.parse_date(value).date()
 
 
-class DateTime(graphene.Scalar):
+class CustomDateTime(graphene.Scalar):
     """
     The `DateTime` scalar type represents a DateTime
     value as specified by
@@ -208,7 +208,7 @@ class DateTime(graphene.Scalar):
 
     @staticmethod
     def serialize(dt):
-        if isinstance(dt, CustomDate):
+        if isinstance(dt, CustomDateStr):
             return dt.date_str
 
         assert isinstance(dt, (datetime.datetime, datetime.date)), (
