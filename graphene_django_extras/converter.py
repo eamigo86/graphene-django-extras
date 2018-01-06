@@ -195,19 +195,19 @@ def convert_field_to_float(field, registry=None, input_flag=None, nested_fields=
 @convert_django_field.register(models.DateField)
 def convert_date_to_string(field, registry=None, input_flag=None, nested_fields=False):
     return CustomDate(description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
+                      required=is_required(field) and input_flag == 'create')
 
 
 @convert_django_field.register(models.DateTimeField)
 def convert_date_to_string(field, registry=None, input_flag=None, nested_fields=False):
     return CustomDateTime(description=field.help_text or field.verbose_name,
-                    required=is_required(field) and input_flag == 'create')
+                          required=is_required(field) and input_flag == 'create')
 
 
 @convert_django_field.register(models.TimeField)
 def convert_time_to_string(field, registry=None, input_flag=None, nested_fields=False):
     return CustomTime(description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
+                      required=is_required(field) and input_flag == 'create')
 
 
 @convert_django_field.register(models.OneToOneRel)

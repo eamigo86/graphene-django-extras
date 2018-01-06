@@ -8,7 +8,7 @@ from django.utils import timezone
 from graphql import GraphQLArgument, GraphQLString
 
 from .base import BaseExtraGraphQLDirective
-from ..base_types import CustomDate
+from ..base_types import CustomDateFormat
 
 __author__ = 'Ernesto'
 __all__ = ('DateGraphQLDirective', )
@@ -171,7 +171,6 @@ def _format_dt(dt, format='default'):
         return dt.strftime(FORMATS_MAP[format])
 
     else:
-        wrong_format_flag = False
         temp_format = ''
         translate_format_list = []
         for char in format:
@@ -185,22 +184,24 @@ def _format_dt(dt, format='default'):
                     temp_format = '{}{}'.format(temp_format, char)
                 else:
                     if temp_format != '':
-                        translate_format_list.append(FORMATS_MAP.get(temp_format, ''))
+                        if temp_format in FORMATS_MAP:
+                            translate_format_list.append(FORMATS_MAP.get(temp_format, ''))
+                        else:
+                            return None
                     if str_in_dict_keys(char, FORMATS_MAP):
                         temp_format = char
                     else:
-                        wrong_format_flag = True
-                        break
+                        return None
 
-        if not wrong_format_flag:
-            if temp_format !=  '':
+        if temp_format != '':
+            if temp_format in FORMATS_MAP:
                 translate_format_list.append(FORMATS_MAP.get(temp_format, ''))
-            format_result = ''.join(translate_format_list)
-            if format_result:
-                return dt.strftime(''.join(translate_format_list))
-            return None
+            else:
+                return None
 
-        # Invalid format string
+        format_result = ''.join(translate_format_list)
+        if format_result:
+            return dt.strftime(''.join(translate_format_list))
         return None
 
 
@@ -222,12 +223,12 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
         format_argument = [arg for arg in directive.arguments if arg.name.value == 'format']
         format_argument = format_argument[0] if len(format_argument) > 0 else None
 
-        format = format_argument.value.value if format_argument else 'default'
+        custom_format = format_argument.value.value if format_argument else 'default'
         dt = _parse(value)
         try:
-            result = _format_dt(dt, format)
+            result = _format_dt(dt, custom_format)
             if isinstance(value, six.string_types):
                 return result or value
-            return CustomDate(result or 'Invalid format string')
+            return CustomDateFormat(result or 'INVALID FORMAT STRING')
         except ValueError:
-            return CustomDate('Invalid format string')
+            return CustomDateFormat('INVALID FORMAT STRING')

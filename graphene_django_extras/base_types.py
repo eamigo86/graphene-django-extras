@@ -2,9 +2,9 @@
 from __future__ import absolute_import
 
 import binascii
-import datetime
 
 import graphene
+from graphene.types.datetime import Date, Time, DateTime
 from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
 
@@ -116,12 +116,6 @@ class GenericForeignKeyInputType(graphene.InputObjectType):
 # ************************************************ #
 # ************** CUSTOM BASE TYPES *************** #
 # ************************************************ #
-class CustomDateStr(object):
-
-    def __init__(self, date):
-        self.date_str = date
-
-
 class Binary(graphene.Scalar):
     """
     BinaryArray is used to convert a Django BinaryField to the string form
@@ -139,88 +133,36 @@ class Binary(graphene.Scalar):
             return cls.binary_to_string(node.value)
 
 
-class CustomTime(graphene.Scalar):
-    """
-    The `Time` scalar type represents a Time value as
-    specified by
-    [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
-    """
-    epoch_date = '1970-01-01'
+class CustomDateFormat(object):
+
+    def __init__(self, date):
+        self.date_str = date
+
+
+class CustomTime(Time):
 
     @staticmethod
     def serialize(time):
-        if isinstance(time, CustomDateStr):
+        if isinstance(time, CustomDateFormat):
             return time.date_str
 
-        assert isinstance(time, datetime.time), (
-            'Received not compatible time "{}"'.format(repr(time))
-        )
-        return time.isoformat()
+        return super(Date).serialize(time)
 
-    @classmethod
-    def parse_literal(cls, node):
-        if isinstance(node, ast.StringValue):
-            return cls.parse_value(node.value)
-
-    @classmethod
-    def parse_value(cls, value):
-        dt = iso8601.parse_date('{}T{}'.format(cls.epoch_date, value))
-        return datetime.time(dt.hour, dt.minute, dt.second, dt.microsecond, dt.tzinfo)
-
-
-class CustomDate(graphene.Scalar):
-    """
-    The `Date` scalar type represents a Date
-    value as specified by
-    [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
-    """
-    epoch_time = '00:00:00'
+class CustomDate(Date):
 
     @staticmethod
     def serialize(date):
-        if isinstance(date, CustomDateStr):
+        if isinstance(date, CustomDateFormat):
             return date.date_str
 
-        if isinstance(date, datetime.datetime):
-           date = date.date()
-
-        assert isinstance(date, datetime.date), (
-            'Received not compatible date "{}"'.format(repr(date))
-        )
-        return date.isoformat()
-
-    @classmethod
-    def parse_literal(cls, node):
-        if isinstance(node, ast.StringValue):
-            return cls.parse_value(node.value)
-
-    @staticmethod
-    def parse_value(value):
-        return iso8601.parse_date(value).date()
+        return super(Date).serialize(date)
 
 
-class CustomDateTime(graphene.Scalar):
-    """
-    The `DateTime` scalar type represents a DateTime
-    value as specified by
-    [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
-    """
+class CustomDateTime(DateTime):
 
     @staticmethod
     def serialize(dt):
-        if isinstance(dt, CustomDateStr):
+        if isinstance(dt, CustomDateFormat):
             return dt.date_str
 
-        assert isinstance(dt, (datetime.datetime, datetime.date)), (
-            'Received not compatible datetime "{}"'.format(repr(dt))
-        )
-        return dt.isoformat()
-
-    @classmethod
-    def parse_literal(cls, node):
-        if isinstance(node, ast.StringValue):
-            return cls.parse_value(node.value)
-
-    @staticmethod
-    def parse_value(value):
-        return iso8601.parse_date(value)
+        return super(DateTime).serialize(dt)

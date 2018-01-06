@@ -483,6 +483,14 @@ You can use this shortcuts too:
 
 ## Change Log:
 
+#### v0.3.2:
+    1. Updated Date directive format function for better string format combinations.
+    2. Updated custom Time, Date and DateTime base types to be used with Date directive.
+    3. Fixed bug with caching Introspection queries on ExtraGraphQLView.
+
+#### v0.3.1:
+    1. Fixed bug with default Date directive format.
+
 #### v0.3.0:
     1. Added Binary graphql type. A BinaryArray is used to convert a Django BinaryField to the string form.
     2. Added 'CACHE_ACTIVE' and 'CACHE_TIMEOUT' config options to GRAPHENE_DJANGO_EXTRAS settings for activate cache and

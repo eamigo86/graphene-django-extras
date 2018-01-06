@@ -24,6 +24,10 @@ class ExtraGraphQLView(GraphQLView, APIView):
     def get_operation_ast(self, request):
         data = self.parse_body(request)
         query = request.GET.get('query') or data.get('query')
+
+        if not query:
+            return None
+
         source = Source(query, name='GraphQL request')
 
         document_ast = parse(source)
@@ -31,7 +35,8 @@ class ExtraGraphQLView(GraphQLView, APIView):
 
         return operation_ast
 
-    def fetch_cache_key(self, request):
+    @staticmethod
+    def fetch_cache_key(request):
         """ Returns a hashed cache key. """
         m = hashlib.md5()
         m.update(request.body)
@@ -49,7 +54,8 @@ class ExtraGraphQLView(GraphQLView, APIView):
             return self.super_call(request, *args, **kwargs)
 
         cache = caches['default']
-        if self.get_operation_ast(request).operation != 'query':
+        operation_ast = self.get_operation_ast(request)
+        if operation_ast and operation_ast.operation == 'mutation':
             cache.clear()
             return self.super_call(request, *args, **kwargs)
 
