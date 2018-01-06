@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import binascii
+import datetime
 
 import graphene
 from graphene.types.datetime import Date, Time, DateTime
@@ -146,7 +147,14 @@ class CustomTime(Time):
         if isinstance(time, CustomDateFormat):
             return time.date_str
 
-        return super(Date).serialize(time)
+        if isinstance(date, datetime.datetime):
+            time = time.time()
+
+        assert isinstance(time, datetime.time), (
+            'Received not compatible time "{}"'.format(repr(time))
+        )
+        return time.isoformat()
+
 
 class CustomDate(Date):
 
@@ -155,7 +163,12 @@ class CustomDate(Date):
         if isinstance(date, CustomDateFormat):
             return date.date_str
 
-        return super(Date).serialize(date)
+        if isinstance(date, datetime.datetime):
+            date = date.date()
+        assert isinstance(date, datetime.date), (
+            'Received not compatible date "{}"'.format(repr(date))
+        )
+        return date.isoformat()
 
 
 class CustomDateTime(DateTime):
@@ -165,4 +178,7 @@ class CustomDateTime(DateTime):
         if isinstance(dt, CustomDateFormat):
             return dt.date_str
 
-        return super(DateTime).serialize(dt)
+        assert isinstance(dt, (datetime.datetime, datetime.date)), (
+            'Received not compatible datetime "{}"'.format(repr(dt))
+        )
+        return dt.isoformat()
