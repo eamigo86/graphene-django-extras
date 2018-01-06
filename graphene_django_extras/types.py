@@ -208,7 +208,7 @@ class DjangoListObjectType(ObjectType):
 
         if not baseType:
             baseType = object_type_factory(DjangoObjectType, new_model=model, new_exclude_fields=exclude_fields,
-                                           new_filter_fields=filter_fields)
+                                           new_only_fields=only_fields, new_filter_fields=filter_fields)
         filter_fields = filter_fields or baseType._meta.filter_fields
 
         if pagination:
