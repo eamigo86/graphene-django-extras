@@ -147,7 +147,7 @@ class CustomTime(Time):
         if isinstance(time, CustomDateFormat):
             return time.date_str
 
-        if isinstance(date, datetime.datetime):
+        if isinstance(time, datetime.datetime):
             time = time.time()
 
         assert isinstance(time, datetime.time), (
