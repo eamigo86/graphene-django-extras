@@ -309,7 +309,7 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
     available_related_fields = get_related_fields(manager.model)
 
     for f in kwargs.keys():
-        temp = available_related_fields.get(f.split('_', 1)[0], None)
+        temp = available_related_fields.get(f.split('__', 1)[0], None)
         if temp:
             if (temp.many_to_many or temp.one_to_many) and \
                temp.name not in prefetch_related:

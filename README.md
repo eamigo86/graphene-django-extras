@@ -9,8 +9,7 @@ This package add some extra functionalities to graphene-django to facilitate the
   2. Allows to define DjangoRestFramework serializers based Mutations.
   3. Allows use Directives on Queries and Fragments.
 
-**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github
-.com/eamigo86/graphene-django-subscriptions).
+**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions).
 
 ## Installation
 
@@ -482,6 +481,9 @@ You can use this shortcuts too:
 
 
 ## Change Log:
+
+####  v0.3.3-alpha1:
+    1. Fixed minor bug on *queryset_factory* function.
 
 #### v0.3.2:
     1. Updated Date directive format function for better string format combinations.

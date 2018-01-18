@@ -14,7 +14,7 @@ Installation:
 
 For installing graphene-django-extras, just run this command in your shell:
 
-.. code::
+.. code:: python
 
     pip install "graphene-django-extras"
 
@@ -258,13 +258,15 @@ you can load like this:
 **NOTE**: Date directive depends of *dateutils* module, so if you do not have installed it, this directive will not be
 available. You can install *dateutils* module manually:
 
-.. code::
+.. code:: python
+
     pip install dateutils
 
 
 or like this:
 
-.. code::
+.. code:: python
+
     pip install graphene-django-extras[date]
 
 That's all !!!
@@ -275,47 +277,32 @@ That's all !!!
 ***************************
 
 **FOR NUMBERS:**
-1. **FloorGraphQLDirective**: Floors value. Supports both String and Float fields.
-2. **CeilGraphQLDirective**: Ceils value. Supports both String and Float fields.
+    1. **FloorGraphQLDirective**: Floors value. Supports both String and Float fields.
+    2. **CeilGraphQLDirective**: Ceils value. Supports both String and Float fields.
 
 **FOR LIST:**
-1. **ShuffleGraphQLDirective**: Shuffle the list in place.
-2. **SampleGraphQLDirective**: Take a 'k' int argument and return a k length list of unique elements chosen from the
-taken list
+    1. **ShuffleGraphQLDirective**: Shuffle the list in place.
+    2. **SampleGraphQLDirective**: Take a 'k' int argument and return a k length list of unique elements chosen from the taken list
 
 **FOR DATE:**
-1. **DateGraphQLDirective**: Take a optional 'format' string argument and format the date from resolving the field by
-dateutil module with the 'format' format. Default format is: 'DD MMM YYYY HH:mm:SS' equivalent to
-'%d %b %Y %H:%M:%S' python format.
+    1. **DateGraphQLDirective**: Take a optional 'format' string argument and format the date from resolving the field by dateutil module with the 'format' format. Default format is: 'DD MMM YYYY HH:mm:SS' equivalent to '%d %b %Y %H:%M:%S' python format.
 
 **FOR STRING:**
-1. **DefaultGraphQLDirective**: Take a 'to' string argument. Default to given value if None or ""
-2. **Base64GraphQLDirective**: Take a optional ("encode" or "decode") 'op' string argument(default='encode').
-Encode or decode the string taken.
-3. **NumberGraphQLDirective**: Take a 'as' string argument. String formatting like a specify Python number formatting.
-4. **CurrencyGraphQLDirective**: Take a optional 'symbol' string argument(default="$").
-Prepend the *symbol* to taken string and format it like a currency.
-5. **LowercaseGraphQLDirective**: Lowercase the taken string.
-6. **UppercaseGraphQLDirective**: Uppercase the taken string.
-7. **CapitalizeGraphQLDirective**: Return the taken string with its first character capitalized and the rest lowered.
-8. **CamelCaseGraphQLDirective**: CamelCase the taken string.
-9. **SnakeCaseGraphQLDirective**: SnakeCase the taken string.
-10. **KebabCaseGraphQLDirective**: SnakeCase the taken string.
-11. **SwapCaseGraphQLDirective**: Return the taken string with uppercase characters converted to lowercase and vice
-versa.
-12. **StripGraphQLDirective**: Take a optional 'chars' string argument(default=" ").
-Return the taken string with the leading and trailing characters removed. The 'chars' argument is not a prefix or
-suffix; rather, all combinations of its values are stripped.
-13. **TitleCaseGraphQLDirective**: Return the taken string titlecased, where words start with an uppercase character
-and the remaining characters are lowercase.
-14. **CenterGraphQLDirective**: Take a 'width' string argument and a optional 'fillchar' string argument(default=" ").
-Return the taken string centered with the 'width' argument as new length. Padding is done using the specified
-'fillchar' argument. The original string is returned if 'width' argument is less than or equal to taken string
-length.
-15. **ReplaceGraphQLDirective**: Take two strings arguments 'old' and 'new', and a optional integer argument
-'count'.
-Return the taken string with all occurrences of substring 'old' argument replaced by 'new' argument value.
-If the optional argument 'count' is given, only the first 'count' occurrences are replaced.
+    1. **DefaultGraphQLDirective**: Take a 'to' string argument. Default to given value if None or "".
+    2. **Base64GraphQLDirective**: Take a optional ("encode" or "decode") 'op' string argument(default='encode'). Encode or decode the string taken.
+    3. **NumberGraphQLDirective**: Take a 'as' string argument. String formatting like a specify Python number formatting.
+    4. **CurrencyGraphQLDirective**: Take a optional 'symbol' string argument(default="$"). Prepend the *symbol* to taken string and format it like a currency.
+    5. **LowercaseGraphQLDirective**: Lowercase the taken string.
+    6. **UppercaseGraphQLDirective**: Uppercase the taken string.
+    7. **CapitalizeGraphQLDirective**: Return the taken string with its first character capitalized and the rest lowered.
+    8. **CamelCaseGraphQLDirective**: CamelCase the taken string.
+    9. **SnakeCaseGraphQLDirective**: SnakeCase the taken string.
+    10. **KebabCaseGraphQLDirective**: SnakeCase the taken string.
+    11. **SwapCaseGraphQLDirective**: Return the taken string with uppercase characters converted to lowercase and viceversa.
+    12. **StripGraphQLDirective**: Take a optional 'chars' string argument(default=" "). Return the taken string with the leading and trailing characters removed. The 'chars' argument is not a prefix or suffix; rather, all combinations of its values are stripped.
+    13. **TitleCaseGraphQLDirective**: Return the taken string titlecased, where words start with an uppercase character and the remaining characters are lowercase.
+    14. **CenterGraphQLDirective**: Take a 'width' string argument and a optional 'fillchar' string argument(default=" "). Return the taken string centered with the 'width' argument as new length. Padding is done using the specified 'fillchar' argument. The original string is returned if 'width' argument is less than or equal to taken string length.
+    15. **ReplaceGraphQLDirective**: Take two strings arguments 'old' and 'new', and a optional integer argument 'count'. Return the taken string with all occurrences of substring 'old' argument replaced by 'new' argument value. If the optional argument 'count' is given, only the first 'count' occurrences are replaced.
 
 
 **********************
@@ -524,6 +511,11 @@ You can use this shortcuts too:
 
 Change Log:
 -----------
+
+**************
+v0.3.3-alpha1:
+**************
+1. Fixed minor bug on *queryset_factory* function.
 
 *******
 v0.3.2:
