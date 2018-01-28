@@ -364,13 +364,18 @@ class DjangoSerializerType(ObjectType):
         }
 
         return cls(**resp)
+    
+    @classmethod
+    def get_serializer_kwargs(cls, root, info, **kwargs):
+        return {}
+
 
     @classmethod
     def create(cls, root, info, **kwargs):
         new_obj = kwargs.get(cls._meta.input_field_name, None)
 
         if new_obj:
-            serializer = cls._meta.serializer_class(data=new_obj)
+            serializer = cls._meta.serializer_class(data=new_obj, **cls.get_serializer_kwargs(root, info, **kwargs))
 
             if serializer.is_valid():
                 obj = serializer.save()
@@ -412,9 +417,9 @@ class DjangoSerializerType(ObjectType):
             id = new_obj.pop('id')
             old_obj = get_Object_or_None(model, pk=id)
             if old_obj:
-                new_obj_serialized = dict(cls._meta.serializer_class(old_obj).data)
+                new_obj_serialized = dict(cls._meta.serializer_class(old_obj, **cls.get_serializer_kwargs(root, info, **kwargs)).data)
                 new_obj_serialized.update(new_obj)
-                serializer = cls._meta.serializer_class(old_obj, data=new_obj_serialized)
+                serializer = cls._meta.serializer_class(old_obj, data=new_obj_serialized, **cls.get_serializer_kwargs(root, info, **kwargs))
 
                 if serializer.is_valid():
                     obj = serializer.save()
