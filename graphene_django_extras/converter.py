@@ -264,7 +264,7 @@ def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, neste
 
     def dynamic_type():
         if input_flag and not nested_fields:
-            return DjangoListField(ID, filterset_class=_type._meta.filterset_class)
+            return DjangoListField(ID)
 
         _type = registry.get_type_for_model(model, for_input=input_flag)
         if not _type:
