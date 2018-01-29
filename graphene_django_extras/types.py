@@ -36,6 +36,7 @@ class DjangoObjectOptions(BaseOptions):
     results_field_name = None
     filter_fields = ()
     input_for = None
+    filterset_class = None
 
 
 class DjangoSerializerOptions(BaseOptions):
@@ -56,9 +57,18 @@ class DjangoSerializerOptions(BaseOptions):
 
 class DjangoObjectType(ObjectType):
     @classmethod
-    def __init_subclass_with_meta__(cls, model=None, registry=None, skip_registry=False,
-                                    only_fields=(), exclude_fields=(), filter_fields=None,
-                                    interfaces=(), **options):
+    def __init_subclass_with_meta__(
+        cls,
+        model=None,
+        registry=None,
+        skip_registry=False,
+        only_fields=(),
+        exclude_fields=(),
+        filter_fields=None,
+        interfaces=(),
+        filterset_class=None,
+        **options
+    ):
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -84,6 +94,7 @@ class DjangoObjectType(ObjectType):
         _meta.registry = registry
         _meta.filter_fields = filter_fields
         _meta.fields = django_fields
+        _meta.filterset_class = filterset_class
 
         super(DjangoObjectType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
 
@@ -231,12 +242,16 @@ class DjangoListObjectType(ObjectType):
         else:
             global_paginator = graphql_api_settings.DEFAULT_PAGINATION_CLASS
             if global_paginator:
-                assert issubclass(global_paginator, BaseDjangoGraphqlPagination), (
+                assert issubclass(
+                    global_paginator, BaseDjangoGraphqlPagination
+                ), (
                     'You need to pass a valid DjangoGraphqlPagination class in {}.Meta, received "{}".'
                 ).format(cls.__name__, global_paginator)
 
                 global_paginator = global_paginator()
-                result_container = global_paginator.get_pagination_field(baseType)
+                result_container = global_paginator.get_pagination_field(
+                    baseType
+                )
             else:
                 result_container = DjangoListField(baseType)
 
@@ -248,10 +263,19 @@ class DjangoListObjectType(ObjectType):
         _meta.filter_fields = filter_fields
         _meta.exclude_fields = exclude_fields
         _meta.only_fields = only_fields
-        _meta.fields = OrderedDict([
-            (results_field_name, result_container),
-            ('count', Field(Int, name='totalCount', description="Total count of matches elements"))
-        ])
+        _meta.filterset_class = filterset_class
+        _meta.fields = OrderedDict(
+            [
+                (results_field_name, result_container), (
+                    'count',
+                    Field(
+                        Int,
+                        name='totalCount',
+                        description="Total count of matches elements"
+                    )
+                )
+            ]
+        )
 
         super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
@@ -265,7 +289,9 @@ class DjangoSerializerType(ObjectType):
         DjangoSerializerType definition
     """
 
-    ok = Boolean(description='Boolean field that return mutation result request.')
+    ok = Boolean(
+        description='Boolean field that return mutation result request.'
+    )
     errors = List(ErrorType, description='Errors list for the field')
 
     class Meta:
