@@ -9,10 +9,10 @@ from graphene.utils.get_unbound_function import get_unbound_function
 from graphene.utils.props import props
 from graphene_django.rest_framework.types import ErrorType
 
-from .base_types import object_type_factory, input_object_type_factory
+from .base_types import factory_type
 from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
-from .utils import get_Object_or_None, kwargs_formatter as native_kwargs_formatter, parse_validation_exc
+from .utils import get_Object_or_None, parse_validation_exc
 
 
 class SerializerMutationOptions(BaseOptions):
@@ -40,8 +40,8 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), exclude_fields=(),
                                     create_resolver=None, delete_resolver=None, update_resolver=None,
-                                    input_field_name=None, output_field_name=None, kwargs_formatter=None,
-                                    nested_fields=False, description='', **options):
+                                    input_field_name=None, output_field_name=None, description='',
+                                    nested_fields=False, **options):
 
         if not serializer_class:
             raise Exception('serializer_class is required on all DjangoSerializerMutation')
@@ -68,31 +68,35 @@ class DjangoSerializerMutation(ObjectType):
 
         registry = get_global_registry()
 
-        outputType = registry.get_type_for_model(model)
+        factory_kwargs = {
+            'model': model,
+            'only_fields': only_fields,
+            'exclude_fields': exclude_fields,
+            'nested_fields': nested_fields,
+            'registry': registry,
+            'skip_registry': False
+        }
 
-        if not outputType:
-            outputType = object_type_factory(DjangoObjectType, new_model=model, new_only_fields=only_fields,
-                                             new_exclude_fields=exclude_fields)
+        output_type = registry.get_type_for_model(model)
 
-        django_fields = OrderedDict({output_field_name: Field(outputType)})
+        if not output_type:
+            output_type = factory_type('output', DjangoObjectType, **factory_kwargs)
+
+        django_fields = OrderedDict({output_field_name: Field(output_type)})
 
         global_arguments = {}
         for operation in ('create', 'delete', 'update'):
             global_arguments.update({operation: OrderedDict()})
 
             if operation != 'delete':
-                inputType = registry.get_type_for_model(model, for_input=operation)
+                input_type = registry.get_type_for_model(model, for_input=operation)
 
-                if not inputType:
-                    inputType = input_object_type_factory(DjangoInputObjectType, new_model=model,
-                                                          new_only_fields=only_fields,
-                                                          new_exclude_fields=exclude_fields,
-                                                          new_input_for=operation,
-                                                          new_skip_registry=True,
-                                                          new_nested_fields=nested_fields)
+                if not input_type:
+                    factory_kwargs.update({'skip_registry': True})
+                    input_type = factory_type('input', DjangoInputObjectType, operation, **factory_kwargs)
 
                 global_arguments[operation].update({
-                    input_field_name: Argument(inputType, required=True)
+                    input_field_name: Argument(input_type, required=True)
                 })
             else:
                 global_arguments[operation].update({
@@ -116,13 +120,11 @@ class DjangoSerializerMutation(ObjectType):
             'All the SerializerMutations must define at least one of his mutations methods in it: ' \
             '\'create_mutation\', \'delete_mutation\' or \'update_mutation\''
 
-        kwargs_formatter = kwargs_formatter or native_kwargs_formatter
-
         _meta = SerializerMutationOptions(cls)
         _meta.output = cls
         _meta.arguments = global_arguments
         _meta.fields = django_fields
-        _meta.output_type = outputType
+        _meta.output_type = output_type
         _meta.create_resolver = create_resolver
         _meta.delete_resolver = delete_resolver
         _meta.update_resolver = update_resolver
@@ -130,7 +132,6 @@ class DjangoSerializerMutation(ObjectType):
         _meta.serializer_class = serializer_class
         _meta.input_field_name = input_field_name
         _meta.output_field_name = output_field_name
-        _meta.kwargs_formatter = kwargs_formatter
 
         super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(_meta=_meta, description=description,
                                                                          **options)
@@ -156,11 +157,18 @@ class DjangoSerializerMutation(ObjectType):
         return cls(**resp)
 
     @classmethod
+    def get_serializer_kwargs(cls, root, info, **kwargs):
+        return {}
+
+    @classmethod
     def create_mutation(cls, root, info, **kwargs):
         new_obj = kwargs.get(cls._meta.input_field_name, None)
 
         if new_obj:
-            serializer = cls._meta.serializer_class(data=new_obj)
+            serializer = cls._meta.serializer_class(
+                data=new_obj,
+                **cls.get_serializer_kwargs(root, info, **kwargs)
+            )
 
             if serializer.is_valid():
                 try:
@@ -213,9 +221,16 @@ class DjangoSerializerMutation(ObjectType):
             id = new_obj.pop('id')
             old_obj = get_Object_or_None(model, pk=id)
             if old_obj:
-                new_obj_serialized = dict(cls._meta.serializer_class(old_obj).data)
+                new_obj_serialized = dict(cls._meta.serializer_class(
+                    old_obj,
+                    **cls.get_serializer_kwargs(root, info, **kwargs)
+                ).data)
                 new_obj_serialized.update(new_obj)
-                serializer = cls._meta.serializer_class(old_obj, data=new_obj_serialized)
+                serializer = cls._meta.serializer_class(
+                    old_obj,
+                    data=new_obj_serialized,
+                    **cls.get_serializer_kwargs(root, info, **kwargs)
+                )
 
                 if serializer.is_valid():
                     try:
@@ -246,24 +261,18 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
-        kwargs = cls._meta.kwargs_formatter(**kwargs)
-
         return Field(
             cls._meta.output, args=cls._meta.arguments['create'], resolver=cls._meta.create_resolver, **kwargs
         )
 
     @classmethod
     def DeleteField(cls, *args, **kwargs):
-        kwargs = cls._meta.kwargs_formatter(**kwargs)
-
         return Field(
             cls._meta.output, args=cls._meta.arguments['delete'], resolver=cls._meta.delete_resolver, **kwargs
         )
 
     @classmethod
     def UpdateField(cls, *args, **kwargs):
-        kwargs = cls._meta.kwargs_formatter(**kwargs)
-
         return Field(
             cls._meta.output, args=cls._meta.arguments['update'], resolver=cls._meta.update_resolver, **kwargs
         )

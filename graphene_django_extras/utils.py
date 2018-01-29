@@ -220,14 +220,6 @@ def get_Object_or_None(klass, *args, **kwargs):
         # return get_Objects_or_None(klass, *args, **kwargs)
 
 
-def kwargs_formatter(**kwargs):
-    if kwargs.get('deprecation_reason', None):
-        kwargs['deprecation_reason'] = 'DEPRECATED: {}'.format(
-            kwargs['deprecation_reason'])
-
-    return kwargs
-
-
 def get_extra_filters(root, model):
     extra_filters = {}
     for field in model._meta.get_fields():

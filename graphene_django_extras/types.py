@@ -13,13 +13,13 @@ from graphene_django.fields import DjangoListField
 from graphene_django.rest_framework.types import ErrorType
 from graphene_django.utils import is_valid_django_model, DJANGO_FILTER_INSTALLED, maybe_queryset
 
-from .base_types import object_type_factory, object_list_type_factory, input_object_type_factory, DjangoListObjectBase
+from .base_types import DjangoListObjectBase, factory_type
 from .converter import construct_fields
 from .fields import DjangoObjectField, DjangoListObjectField
+from .paginations.pagination import BaseDjangoGraphqlPagination
 from .registry import get_global_registry, Registry
 from .settings import graphql_api_settings
-from .utils import get_Object_or_None, queryset_factory, kwargs_formatter
-from .paginations.pagination import BaseDjangoGraphqlPagination
+from .utils import get_Object_or_None, queryset_factory
 
 __all__ = ('DjangoObjectType', 'DjangoInputObjectType', 'DjangoListObjectType', 'DjangoSerializerType')
 
@@ -207,8 +207,17 @@ class DjangoListObjectType(ObjectType):
         baseType = get_global_registry().get_type_for_model(model)
 
         if not baseType:
-            baseType = object_type_factory(DjangoObjectType, new_model=model, new_exclude_fields=exclude_fields,
-                                           new_only_fields=only_fields, new_filter_fields=filter_fields)
+            factory_kwargs = {
+                'model': model,
+                'only_fields': only_fields,
+                'exclude_fields': exclude_fields,
+                'filter_fields': filter_fields,
+                'pagination': pagination,
+                'queryset': queryset,
+                'skip_registry': False
+            }
+            baseType = factory_type('output', DjangoObjectType, **factory_kwargs)
+
         filter_fields = filter_fields or baseType._meta.filter_fields
 
         if pagination:
@@ -287,35 +296,40 @@ class DjangoSerializerType(ObjectType):
 
         registry = get_global_registry()
 
-        outputType = registry.get_type_for_model(model)
+        factory_kwargs = {
+            'model': model,
+            'only_fields': only_fields,
+            'exclude_fields': exclude_fields,
+            'filter_fields': filter_fields,
+            'pagination': pagination,
+            'queryset': queryset,
+            'nested_fields': nested_fields,
+            'registry': registry,
+            'skip_registry': False
+        }
 
-        if not outputType:
-            outputType = object_type_factory(DjangoObjectType, new_model=model, new_only_fields=only_fields,
-                                             new_exclude_fields=exclude_fields, new_filter_fields=filter_fields,
-                                             new_registry=registry)
+        output_type = registry.get_type_for_model(model)
 
-        outputListType = object_list_type_factory(DjangoListObjectType, model, new_only_fields=only_fields,
-                                                  new_exclude_fields=exclude_fields, new_queryset=queryset,
-                                                  new_results_field_name=results_field_name,
-                                                  new_filter_fields=filter_fields, new_pagination=pagination)
+        if not output_type:
+            output_type = factory_type('output', DjangoObjectType, **factory_kwargs)
 
-        django_fields = OrderedDict({output_field_name: Field(outputType)})
+        output_list_type = factory_type('list', DjangoListObjectType, **factory_kwargs)
+
+        django_fields = OrderedDict({output_field_name: Field(output_type)})
 
         global_arguments = {}
         for operation in ('create', 'delete', 'update'):
             global_arguments.update({operation: OrderedDict()})
 
             if operation != 'delete':
-                inputType = registry.get_type_for_model(model, for_input=operation)
+                input_type = registry.get_type_for_model(model, for_input=operation)
 
-                if not inputType:
-                    inputType = input_object_type_factory(DjangoInputObjectType, new_model=model,
-                                                          new_only_fields=only_fields, new_input_for=operation,
-                                                          new_exclude_fields=exclude_fields, new_registry=registry,
-                                                          new_skip_registry=True, new_nested_fields=nested_fields)
+                if not input_type:
+                    factory_kwargs.update({'skip_registry': True})
+                    input_type = factory_type('input', DjangoInputObjectType, operation, **factory_kwargs)
 
                 global_arguments[operation].update({
-                    input_field_name: Argument(inputType, required=True)
+                    input_field_name: Argument(input_type, required=True)
                 })
             else:
                 global_arguments[operation].update({
@@ -327,8 +341,8 @@ class DjangoSerializerType(ObjectType):
         _meta.mutation_output = cls
         _meta.arguments = global_arguments
         _meta.fields = django_fields
-        _meta.output_type = outputType
-        _meta.output_list_type = outputListType
+        _meta.output_type = output_type
+        _meta.output_list_type = output_list_type
         _meta.model = model
         _meta.queryset = queryset or model._default_manager
         _meta.serializer_class = serializer_class
@@ -369,13 +383,15 @@ class DjangoSerializerType(ObjectType):
     def get_serializer_kwargs(cls, root, info, **kwargs):
         return {}
 
-
     @classmethod
     def create(cls, root, info, **kwargs):
         new_obj = kwargs.get(cls._meta.input_field_name, None)
 
         if new_obj:
-            serializer = cls._meta.serializer_class(data=new_obj, **cls.get_serializer_kwargs(root, info, **kwargs))
+            serializer = cls._meta.serializer_class(
+                data=new_obj,
+                **cls.get_serializer_kwargs(root, info, **kwargs)
+            )
 
             if serializer.is_valid():
                 obj = serializer.save()
@@ -417,9 +433,16 @@ class DjangoSerializerType(ObjectType):
             id = new_obj.pop('id')
             old_obj = get_Object_or_None(model, pk=id)
             if old_obj:
-                new_obj_serialized = dict(cls._meta.serializer_class(old_obj, **cls.get_serializer_kwargs(root, info, **kwargs)).data)
+                new_obj_serialized = dict(cls._meta.serializer_class(
+                    old_obj,
+                    **cls.get_serializer_kwargs(root, info, **kwargs)
+                ).data)
                 new_obj_serialized.update(new_obj)
-                serializer = cls._meta.serializer_class(old_obj, data=new_obj_serialized, **cls.get_serializer_kwargs(root, info, **kwargs))
+                serializer = cls._meta.serializer_class(
+                    old_obj,
+                    data=new_obj_serialized,
+                    **cls.get_serializer_kwargs(root, info, **kwargs)
+                )
 
                 if serializer.is_valid():
                     obj = serializer.save()
@@ -464,34 +487,26 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def RetrieveField(cls, *args, **kwargs):
-        kwargs = kwargs_formatter(**kwargs)
         return DjangoObjectField(cls._meta.output_type, resolver=cls.retrieve, **kwargs)
 
     @classmethod
     def ListField(cls, *args, **kwargs):
-        kwargs = kwargs_formatter(**kwargs)
         return DjangoListObjectField(cls._meta.output_list_type, resolver=cls.list, **kwargs)
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
-        kwargs = kwargs_formatter(**kwargs)
-
         return Field(
             cls._meta.mutation_output, args=cls._meta.arguments['create'], resolver=cls.create, **kwargs
         )
 
     @classmethod
     def DeleteField(cls, *args, **kwargs):
-        kwargs = kwargs_formatter(**kwargs)
-
         return Field(
             cls._meta.mutation_output, args=cls._meta.arguments['delete'], resolver=cls.delete, **kwargs
         )
 
     @classmethod
     def UpdateField(cls, *args, **kwargs):
-        kwargs = kwargs_formatter(**kwargs)
-
         return Field(
             cls._meta.mutation_output, args=cls._meta.arguments['update'], resolver=cls.update, **kwargs
         )

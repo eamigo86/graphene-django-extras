@@ -90,7 +90,7 @@ def construct_fields(model, registry, only_fields, exclude_fields, input_flag=No
 
     if settings.DEBUG:
         if input_flag == 'create':
-            _model_fields = sorted(_model_fields, key=lambda f: (-is_required(f[1]), f[0]))
+            _model_fields = sorted(_model_fields, key=lambda f: (not is_required(f[1]), f[0]))
         elif not input_flag:
             _model_fields = sorted(_model_fields, key=lambda f: f[0])
 

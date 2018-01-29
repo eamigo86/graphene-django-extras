@@ -18,59 +18,52 @@ except:
     )
 
 
-def object_type_factory(_type, new_model, new_name=None, new_only_fields=(), new_exclude_fields=(),
-                        new_filter_fields=None, new_registry=None, new_skip_registry=False):
+def factory_type(operation, _type, *args, **kwargs):
+    GenericType = None
 
-    class GenericType(_type):
-        class Meta:
-            model = new_model
-            name = new_name or to_camel_case('{}_Generic_Type'.format(new_model.__name__))
-            only_fields = new_only_fields
-            exclude_fields = new_exclude_fields
-            filter_fields = new_filter_fields
-            registry = new_registry
-            skip_registry = new_skip_registry
-            description = 'Auto generated Type for {} model'.format(new_model._meta.verbose_name)
+    if operation == 'output':
+        class GenericType(_type):
+            class Meta:
+                model = kwargs.get('model')
+                name = kwargs.get('name')  or to_camel_case('{}_Generic_Type'.format(kwargs.get('model') .__name__))
+                only_fields = kwargs.get('only_fields')
+                exclude_fields = kwargs.get('exclude_fields')
+                filter_fields = kwargs.get('filter_fields')
+                registry = kwargs.get('registry')
+                skip_registry = kwargs.get('skip_registry')
+                description = 'Auto generated Type for {} model'.format(kwargs.get('model')._meta.verbose_name)
+
+    elif operation == 'input':
+        class GenericType(_type):
+            class Meta:
+                model = kwargs.get('model')
+                name = kwargs.get('name') or to_camel_case('{}_{}_Generic_Type'.format(
+                    kwargs.get('model').__name__, args[0]))
+                only_fields = kwargs.get('only_fields')
+                exclude_fields = kwargs.get('exclude_fields')
+                filter_fields = kwargs.get('filter_fields')
+                nested_fields = kwargs.get('nested_fields')
+                registry = kwargs.get('registry')
+                skip_registry = kwargs.get('skip_registry')
+                input_for = args[0]
+                description = ' Auto generated InputType for {} model'.format(
+                    kwargs.get('model')._meta.verbose_name)
+
+    elif operation == 'list':
+        class GenericType(_type):
+            class Meta:
+                model = kwargs.get('model')
+                name = kwargs.get('name') or to_camel_case('{}_List_Type'.format(kwargs.get('model').__name__))
+                only_fields = kwargs.get('only_fields')
+                exclude_fields = kwargs.get('exclude_fields')
+                filter_fields = kwargs.get('filter_fields')
+                results_field_name = kwargs.get('results_field_name')
+                pagination = kwargs.get('pagination')
+                queryset = kwargs.get('queryset')
+                description = 'Auto generated list Type for {} model'.format(
+                    kwargs.get('model')._meta.verbose_name)
 
     return GenericType
-
-
-def object_list_type_factory(_type, new_model, new_only_fields=(), new_exclude_fields=(), new_results_field_name=None,
-                             new_filter_fields=None, new_name=None, new_pagination=None, new_queryset=None):
-
-    class GenericListType(_type):
-        class Meta:
-            model = new_model
-            name = new_name or to_camel_case('{}_List_Type'.format(new_model.__name__))
-            only_fields = new_only_fields
-            exclude_fields = new_exclude_fields
-            filter_fields = new_filter_fields
-            results_field_name = new_results_field_name
-            pagination = new_pagination
-            queryset = new_queryset
-            description = 'Auto generated list Type for {} model'.format(new_model._meta.verbose_name)
-
-    return GenericListType
-
-
-def input_object_type_factory(input_type, new_model, new_input_for, new_name=None, new_only_fields=(),
-                              new_exclude_fields=(), new_filter_fields=None,new_nested_fields=False,
-                              new_registry=None, new_skip_registry=False):
-
-    class GenericInputType(input_type):
-        class Meta:
-            model = new_model
-            name = new_name or to_camel_case('{}_{}_Generic_Type'.format(new_model.__name__, new_input_for))
-            only_fields = new_only_fields
-            exclude_fields = new_exclude_fields
-            filter_fields = new_filter_fields
-            nested_fields = new_nested_fields
-            registry = new_registry
-            skip_registry = new_skip_registry
-            input_for = new_input_for
-            description = ' Auto generated InputType for {} model'.format(new_model._meta.verbose_name)
-
-    return GenericInputType
 
 
 class DjangoListObjectBase(object):
