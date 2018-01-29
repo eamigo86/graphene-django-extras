@@ -18,49 +18,84 @@ except:
     )
 
 
-def object_type_factory(_type, new_model, new_name=None, new_only_fields=(), new_exclude_fields=(),
-                        new_filter_fields=None, new_registry=None, new_skip_registry=False):
-
+def object_type_factory(
+    _type,
+    new_model,
+    new_name=None,
+    new_only_fields=(),
+    new_exclude_fields=(),
+    new_filter_fields=None,
+    new_registry=None,
+    new_skip_registry=False,
+    filterset_class=None
+):
     class GenericType(_type):
         class Meta:
             model = new_model
-            name = new_name or to_camel_case('{}_Generic_Type'.format(new_model.__name__))
+            name = new_name or to_camel_case(
+                '{}_Generic_Type'.format(new_model.__name__)
+            )
             only_fields = new_only_fields
             exclude_fields = new_exclude_fields
             filter_fields = new_filter_fields
             registry = new_registry
             skip_registry = new_skip_registry
-            description = 'Auto generated Type for {} model'.format(new_model._meta.verbose_name)
+            description = 'Auto generated Type for {} model'.format(
+                new_model._meta.verbose_name
+            )
+            filterset_class = None
 
     return GenericType
 
 
-def object_list_type_factory(_type, new_model, new_only_fields=(), new_exclude_fields=(), new_results_field_name=None,
-                             new_filter_fields=None, new_name=None, new_pagination=None, new_queryset=None):
-
+def object_list_type_factory(
+    _type,
+    new_model,
+    new_only_fields=(),
+    new_exclude_fields=(),
+    new_results_field_name=None,
+    new_filter_fields=None,
+    new_name=None,
+    new_pagination=None,
+    new_queryset=None
+):
     class GenericListType(_type):
         class Meta:
             model = new_model
-            name = new_name or to_camel_case('{}_List_Type'.format(new_model.__name__))
+            name = new_name or to_camel_case(
+                '{}_List_Type'.format(new_model.__name__)
+            )
             only_fields = new_only_fields
             exclude_fields = new_exclude_fields
             filter_fields = new_filter_fields
             results_field_name = new_results_field_name
             pagination = new_pagination
             queryset = new_queryset
-            description = 'Auto generated list Type for {} model'.format(new_model._meta.verbose_name)
+            description = 'Auto generated list Type for {} model'.format(
+                new_model._meta.verbose_name
+            )
 
     return GenericListType
 
 
-def input_object_type_factory(input_type, new_model, new_input_for, new_name=None, new_only_fields=(),
-                              new_exclude_fields=(), new_filter_fields=None,new_nested_fields=False,
-                              new_registry=None, new_skip_registry=False):
-
+def input_object_type_factory(
+    input_type,
+    new_model,
+    new_input_for,
+    new_name=None,
+    new_only_fields=(),
+    new_exclude_fields=(),
+    new_filter_fields=None,
+    new_nested_fields=False,
+    new_registry=None,
+    new_skip_registry=False
+):
     class GenericInputType(input_type):
         class Meta:
             model = new_model
-            name = new_name or to_camel_case('{}_{}_Generic_Type'.format(new_model.__name__, new_input_for))
+            name = new_name or to_camel_case(
+                '{}_{}_Generic_Type'.format(new_model.__name__, new_input_for)
+            )
             only_fields = new_only_fields
             exclude_fields = new_exclude_fields
             filter_fields = new_filter_fields
@@ -68,7 +103,9 @@ def input_object_type_factory(input_type, new_model, new_input_for, new_name=Non
             registry = new_registry
             skip_registry = new_skip_registry
             input_for = new_input_for
-            description = ' Auto generated InputType for {} model'.format(new_model._meta.verbose_name)
+            description = ' Auto generated InputType for {} model'.format(
+                new_model._meta.verbose_name
+            )
 
     return GenericInputType
 
@@ -121,6 +158,7 @@ class Binary(graphene.Scalar):
     """
     BinaryArray is used to convert a Django BinaryField to the string form
     """
+
     @staticmethod
     def binary_to_string(value):
         return binascii.hexlify(value).decode("utf-8")
@@ -135,13 +173,11 @@ class Binary(graphene.Scalar):
 
 
 class CustomDateFormat(object):
-
     def __init__(self, date):
         self.date_str = date
 
 
 class CustomTime(Time):
-
     @staticmethod
     def serialize(time):
         if isinstance(time, CustomDateFormat):
@@ -150,14 +186,13 @@ class CustomTime(Time):
         if isinstance(time, datetime.datetime):
             time = time.time()
 
-        assert isinstance(time, datetime.time), (
-            'Received not compatible time "{}"'.format(repr(time))
-        )
+        assert isinstance(
+            time, datetime.time
+        ), ('Received not compatible time "{}"'.format(repr(time)))
         return time.isoformat()
 
 
 class CustomDate(Date):
-
     @staticmethod
     def serialize(date):
         if isinstance(date, CustomDateFormat):
@@ -165,20 +200,19 @@ class CustomDate(Date):
 
         if isinstance(date, datetime.datetime):
             date = date.date()
-        assert isinstance(date, datetime.date), (
-            'Received not compatible date "{}"'.format(repr(date))
-        )
+        assert isinstance(
+            date, datetime.date
+        ), ('Received not compatible date "{}"'.format(repr(date)))
         return date.isoformat()
 
 
 class CustomDateTime(DateTime):
-
     @staticmethod
     def serialize(dt):
         if isinstance(dt, CustomDateFormat):
             return dt.date_str
 
-        assert isinstance(dt, (datetime.datetime, datetime.date)), (
-            'Received not compatible datetime "{}"'.format(repr(dt))
-        )
+        assert isinstance(
+            dt, (datetime.datetime, datetime.date)
+        ), ('Received not compatible datetime "{}"'.format(repr(dt)))
         return dt.isoformat()
