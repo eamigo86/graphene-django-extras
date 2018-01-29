@@ -81,8 +81,10 @@ class DjangoObjectType(ObjectType):
             'Registry, received "{}".'
         ).format(cls.__name__, registry)
 
-        if not DJANGO_FILTER_INSTALLED and filter_fields:
-            raise Exception("Can only set filter_fields if Django-Filter is installed")
+        if not DJANGO_FILTER_INSTALLED and (filter_fields or filterset_class):
+            raise Exception(
+                "Can only set filter_fields or filterset_class if Django-Filter is installed"
+            )
 
         django_fields = yank_fields_from_attrs(
             construct_fields(model, registry, only_fields, exclude_fields),
