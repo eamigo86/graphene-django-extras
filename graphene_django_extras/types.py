@@ -186,9 +186,18 @@ class DjangoListObjectType(ObjectType):
         abstract = True
 
     @classmethod
-    def __init_subclass_with_meta__(cls, model=None, results_field_name=None, pagination=None,
-                                    only_fields=(), exclude_fields=(), filter_fields=None,
-                                    queryset=None, **options):
+    def __init_subclass_with_meta__(
+        cls,
+        model=None,
+        results_field_name=None,
+        pagination=None,
+        only_fields=(),
+        exclude_fields=(),
+        filter_fields=None,
+        queryset=None,
+        filterset_class=None,
+        **options
+    ):
 
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
@@ -207,8 +216,14 @@ class DjangoListObjectType(ObjectType):
         baseType = get_global_registry().get_type_for_model(model)
 
         if not baseType:
-            baseType = object_type_factory(DjangoObjectType, new_model=model, new_exclude_fields=exclude_fields,
-                                           new_only_fields=only_fields, new_filter_fields=filter_fields)
+            baseType = object_type_factory(
+                DjangoObjectType,
+                new_model=model,
+                new_exclude_fields=exclude_fields,
+                new_only_fields=only_fields,
+                new_filter_fields=filter_fields,
+                filterset_class=filterset_class
+            )
         filter_fields = filter_fields or baseType._meta.filter_fields
 
         if pagination:
@@ -364,7 +379,7 @@ class DjangoSerializerType(ObjectType):
         }
 
         return cls(**resp)
-    
+
     @classmethod
     def get_serializer_kwargs(cls, root, info, **kwargs):
         return {}
