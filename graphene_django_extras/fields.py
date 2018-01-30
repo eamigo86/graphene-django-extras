@@ -11,20 +11,17 @@ from graphene_django_extras.settings import graphql_api_settings
 from graphene_django_extras.filters.filter import get_filterset_class
 from .base_types import DjangoListObjectBase
 from .paginations.pagination import BaseDjangoGraphqlPagination
-from .utils import get_extra_filters, kwargs_formatter, queryset_factory, get_related_fields, find_field
+from .utils import get_extra_filters, queryset_factory, get_related_fields, find_field
 
 
 # *********************************************** #
 # *********** FIELD FOR SINGLE OBJECT *********** #
 # *********************************************** #
 class DjangoObjectField(Field):
-    def __init__(self, _type, preprocess_kwargs=None, *args, **kwargs):
+    def __init__(self, _type, *args, **kwargs):
 
         kwargs.setdefault('args', {})
         kwargs['id'] = ID(required=True, description='Django object unique identification field')
-
-        preprocess_kwargs = preprocess_kwargs or kwargs_formatter
-        kwargs = preprocess_kwargs(**kwargs)
 
         super(DjangoObjectField, self).__init__(_type, *args, **kwargs)
 
@@ -51,7 +48,7 @@ class DjangoObjectField(Field):
 class DjangoFilterListField(Field):
 
     def __init__(self, _type, fields=None, extra_filter_meta=None,
-                 filterset_class=None, preprocess_kwargs=None, *args, **kwargs):
+                 filterset_class=None, *args, **kwargs):
 
         if DJANGO_FILTER_INSTALLED:
             _fields = _type._meta.filter_fields
@@ -73,9 +70,6 @@ class DjangoFilterListField(Field):
 
         if not kwargs.get('description', None):
             kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
-
-        preprocess_kwargs = preprocess_kwargs or kwargs_formatter
-        kwargs = preprocess_kwargs(**kwargs)
 
         super(DjangoFilterListField, self).__init__(List(_type), *args, **kwargs)
 
@@ -132,7 +126,7 @@ class DjangoFilterListField(Field):
 class DjangoFilterPaginateListField(Field):
 
     def __init__(self, _type, pagination=None, fields=None, extra_filter_meta=None,
-                 filterset_class=None, preprocess_kwargs=None, *args, **kwargs):
+                 filterset_class=None, *args, **kwargs):
 
         _fields = _type._meta.filter_fields
         _model = _type._meta.model
@@ -165,9 +159,6 @@ class DjangoFilterPaginateListField(Field):
         if not kwargs.get('description', None):
             kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
 
-        preprocess_kwargs = preprocess_kwargs or kwargs_formatter
-        kwargs = preprocess_kwargs(**kwargs)
-
         super(DjangoFilterPaginateListField, self).__init__(List(_type), *args, **kwargs)
 
     @property
@@ -199,8 +190,7 @@ class DjangoFilterPaginateListField(Field):
 
 class DjangoListObjectField(Field):
 
-    def __init__(self, _type, fields=None, extra_filter_meta=None, filterset_class=None, preprocess_kwargs=None,
-                 *args, **kwargs):
+    def __init__(self, _type, fields=None, extra_filter_meta=None, filterset_class=None, *args, **kwargs):
 
         if DJANGO_FILTER_INSTALLED:
             _fields = _type._meta.filter_fields
@@ -224,9 +214,6 @@ class DjangoListObjectField(Field):
 
         if not kwargs.get('description', None):
             kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
-
-        preprocess_kwargs = preprocess_kwargs or kwargs_formatter
-        kwargs = preprocess_kwargs(**kwargs)
 
         super(DjangoListObjectField, self).__init__(_type, *args, **kwargs)
 
