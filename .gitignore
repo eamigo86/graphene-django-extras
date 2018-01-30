@@ -1,3 +1,9 @@
+build/
+graphene_django_extras.egg-info/
+dist/
+.gitignore
+.idea/
+.vscode/
 .mypy_cache
 *.pyc
 *.egg-info

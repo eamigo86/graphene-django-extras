@@ -19,7 +19,6 @@ except:
 
 
 def factory_type(operation, _type, *args, **kwargs):
-    GenericType = None
 
     if operation == 'output':
         class GenericType(_type):
@@ -33,8 +32,10 @@ def factory_type(operation, _type, *args, **kwargs):
                 skip_registry = kwargs.get('skip_registry')
                 description = 'Auto generated Type for {} model'.format(kwargs.get('model')._meta.verbose_name)
 
+        return GenericType
+
     elif operation == 'input':
-        class GenericType(_type):
+        class GenericInputType(_type):
             class Meta:
                 model = kwargs.get('model')
                 name = kwargs.get('name') or to_camel_case('{}_{}_Generic_Type'.format(
@@ -49,8 +50,10 @@ def factory_type(operation, _type, *args, **kwargs):
                 description = ' Auto generated InputType for {} model'.format(
                     kwargs.get('model')._meta.verbose_name)
 
+        return GenericInputType
+
     elif operation == 'list':
-        class GenericType(_type):
+        class GenericListType(_type):
             class Meta:
                 model = kwargs.get('model')
                 name = kwargs.get('name') or to_camel_case('{}_List_Type'.format(kwargs.get('model').__name__))
@@ -63,7 +66,9 @@ def factory_type(operation, _type, *args, **kwargs):
                 description = 'Auto generated list Type for {} model'.format(
                     kwargs.get('model')._meta.verbose_name)
 
-    return GenericType
+        return GenericListType
+
+    return None
 
 
 class DjangoListObjectBase(object):

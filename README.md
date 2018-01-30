@@ -482,6 +482,10 @@ You can use this shortcuts too:
 
 ## Change Log:
 
+####  v0.3.3:
+    1. Added filterset_class to DjangoObjectType.
+    2. Fixed minor bug on factory_types function.
+
 ####  v0.3.3-alpha1:
     1. Fixed minor bug on *queryset_factory* function.
 
