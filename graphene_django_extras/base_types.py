@@ -114,6 +114,7 @@ class Binary(graphene.Scalar):
     """
     BinaryArray is used to convert a Django BinaryField to the string form
     """
+
     @staticmethod
     def binary_to_string(value):
         return binascii.hexlify(value).decode("utf-8")
@@ -128,13 +129,11 @@ class Binary(graphene.Scalar):
 
 
 class CustomDateFormat(object):
-
     def __init__(self, date):
         self.date_str = date
 
 
 class CustomTime(Time):
-
     @staticmethod
     def serialize(time):
         if isinstance(time, CustomDateFormat):
@@ -143,14 +142,13 @@ class CustomTime(Time):
         if isinstance(time, datetime.datetime):
             time = time.time()
 
-        assert isinstance(time, datetime.time), (
-            'Received not compatible time "{}"'.format(repr(time))
-        )
+        assert isinstance(
+            time, datetime.time
+        ), ('Received not compatible time "{}"'.format(repr(time)))
         return time.isoformat()
 
 
 class CustomDate(Date):
-
     @staticmethod
     def serialize(date):
         if isinstance(date, CustomDateFormat):
@@ -158,20 +156,19 @@ class CustomDate(Date):
 
         if isinstance(date, datetime.datetime):
             date = date.date()
-        assert isinstance(date, datetime.date), (
-            'Received not compatible date "{}"'.format(repr(date))
-        )
+        assert isinstance(
+            date, datetime.date
+        ), ('Received not compatible date "{}"'.format(repr(date)))
         return date.isoformat()
 
 
 class CustomDateTime(DateTime):
-
     @staticmethod
     def serialize(dt):
         if isinstance(dt, CustomDateFormat):
             return dt.date_str
 
-        assert isinstance(dt, (datetime.datetime, datetime.date)), (
-            'Received not compatible datetime "{}"'.format(repr(dt))
-        )
+        assert isinstance(
+            dt, (datetime.datetime, datetime.date)
+        ), ('Received not compatible datetime "{}"'.format(repr(dt)))
         return dt.isoformat()

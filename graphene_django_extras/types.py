@@ -36,6 +36,7 @@ class DjangoObjectOptions(BaseOptions):
     results_field_name = None
     filter_fields = ()
     input_for = None
+    filterset_class = None
 
 
 class DjangoSerializerOptions(BaseOptions):
@@ -56,9 +57,18 @@ class DjangoSerializerOptions(BaseOptions):
 
 class DjangoObjectType(ObjectType):
     @classmethod
-    def __init_subclass_with_meta__(cls, model=None, registry=None, skip_registry=False,
-                                    only_fields=(), exclude_fields=(), filter_fields=None,
-                                    interfaces=(), **options):
+    def __init_subclass_with_meta__(
+        cls,
+        model=None,
+        registry=None,
+        skip_registry=False,
+        only_fields=(),
+        exclude_fields=(),
+        filter_fields=None,
+        interfaces=(),
+        filterset_class=None,
+        **options
+    ):
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -71,8 +81,10 @@ class DjangoObjectType(ObjectType):
             'Registry, received "{}".'
         ).format(cls.__name__, registry)
 
-        if not DJANGO_FILTER_INSTALLED and filter_fields:
-            raise Exception("Can only set filter_fields if Django-Filter is installed")
+        if not DJANGO_FILTER_INSTALLED and (filter_fields or filterset_class):
+            raise Exception(
+                "Can only set filter_fields or filterset_class if Django-Filter is installed"
+            )
 
         django_fields = yank_fields_from_attrs(
             construct_fields(model, registry, only_fields, exclude_fields),
@@ -84,6 +96,7 @@ class DjangoObjectType(ObjectType):
         _meta.registry = registry
         _meta.filter_fields = filter_fields
         _meta.fields = django_fields
+        _meta.filterset_class = filterset_class
 
         super(DjangoObjectType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
 
@@ -186,9 +199,18 @@ class DjangoListObjectType(ObjectType):
         abstract = True
 
     @classmethod
-    def __init_subclass_with_meta__(cls, model=None, results_field_name=None, pagination=None,
-                                    only_fields=(), exclude_fields=(), filter_fields=None,
-                                    queryset=None, **options):
+    def __init_subclass_with_meta__(
+        cls,
+        model=None,
+        results_field_name=None,
+        pagination=None,
+        only_fields=(),
+        exclude_fields=(),
+        filter_fields=None,
+        queryset=None,
+        filterset_class=None,
+        **options
+    ):
 
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
@@ -225,12 +247,16 @@ class DjangoListObjectType(ObjectType):
         else:
             global_paginator = graphql_api_settings.DEFAULT_PAGINATION_CLASS
             if global_paginator:
-                assert issubclass(global_paginator, BaseDjangoGraphqlPagination), (
+                assert issubclass(
+                    global_paginator, BaseDjangoGraphqlPagination
+                ), (
                     'You need to pass a valid DjangoGraphqlPagination class in {}.Meta, received "{}".'
                 ).format(cls.__name__, global_paginator)
 
                 global_paginator = global_paginator()
-                result_container = global_paginator.get_pagination_field(baseType)
+                result_container = global_paginator.get_pagination_field(
+                    baseType
+                )
             else:
                 result_container = DjangoListField(baseType)
 
@@ -242,10 +268,19 @@ class DjangoListObjectType(ObjectType):
         _meta.filter_fields = filter_fields
         _meta.exclude_fields = exclude_fields
         _meta.only_fields = only_fields
-        _meta.fields = OrderedDict([
-            (results_field_name, result_container),
-            ('count', Field(Int, name='totalCount', description="Total count of matches elements"))
-        ])
+        _meta.filterset_class = filterset_class
+        _meta.fields = OrderedDict(
+            [
+                (results_field_name, result_container), (
+                    'count',
+                    Field(
+                        Int,
+                        name='totalCount',
+                        description="Total count of matches elements"
+                    )
+                )
+            ]
+        )
 
         super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
@@ -259,7 +294,9 @@ class DjangoSerializerType(ObjectType):
         DjangoSerializerType definition
     """
 
-    ok = Boolean(description='Boolean field that return mutation result request.')
+    ok = Boolean(
+        description='Boolean field that return mutation result request.'
+    )
     errors = List(ErrorType, description='Errors list for the field')
 
     class Meta:
@@ -378,7 +415,7 @@ class DjangoSerializerType(ObjectType):
         }
 
         return cls(**resp)
-    
+
     @classmethod
     def get_serializer_kwargs(cls, root, info, **kwargs):
         return {}

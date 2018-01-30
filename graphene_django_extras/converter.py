@@ -188,8 +188,10 @@ def convert_binary_to_string(field, registry=None, input_flag=None, nested_field
 @convert_django_field.register(models.FloatField)
 @convert_django_field.register(models.DurationField)
 def convert_field_to_float(field, registry=None, input_flag=None, nested_fields=False):
-    return Float(description=field.help_text or field.verbose_name,
-                 required=is_required(field) and input_flag == 'create')
+    return Float(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.DateField)
@@ -222,7 +224,9 @@ def convert_onetoone_field_to_djangomodel(field, registry=None, input_flag=None,
         if not _type:
             return
 
-        return Field(_type, required=is_required(field) and input_flag == 'create')
+        return Field(
+            _type, required=is_required(field) and input_flag == 'create'
+        )
 
     return Dynamic(dynamic_type)
 
@@ -239,9 +243,15 @@ def convert_field_to_list_or_connection(field, registry=None, input_flag=None, n
         if not _type:
             return
 
-        if _type._meta.filter_fields:
-            return DjangoFilterListField(_type, required=is_required(field) and input_flag == 'create')
-        return DjangoListField(_type, required=is_required(field) and input_flag == 'create')
+        if _type._meta.filter_fields or _type._meta.filterset_class:
+            return DjangoFilterListField(
+                _type,
+                required=is_required(field) and input_flag == 'create',
+                filterset_class=_type._meta.filterset_class
+            )
+        return DjangoListField(
+            _type, required=is_required(field) and input_flag == 'create'
+        )
 
     return Dynamic(dynamic_type)
 
@@ -260,8 +270,10 @@ def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, neste
         if not _type:
             return
 
-        if _type._meta.filter_fields:
-            return DjangoFilterListField(_type)
+        if _type._meta.filter_fields or _type._meta.filterset_class:
+            return DjangoFilterListField(
+                _type, filterset_class=_type._meta.filterset_class
+            )
         return DjangoListField(_type)
 
     return Dynamic(dynamic_type)
