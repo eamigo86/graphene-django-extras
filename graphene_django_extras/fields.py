@@ -58,6 +58,7 @@ class DjangoFilterListField(Field):
             meta = dict(model=_model, fields=self.fields)
             if extra_filter_meta:
                 meta.update(extra_filter_meta)
+            filterset_class = filterset_class or _type._meta.filterset_class
             self.filterset_class = get_filterset_class(filterset_class, **meta)
             self.filtering_args = get_filtering_args_from_filterset(self.filterset_class, _type)
             kwargs.setdefault('args', {})
@@ -135,6 +136,8 @@ class DjangoFilterPaginateListField(Field):
         meta = dict(model=_model, fields=self.fields)
         if extra_filter_meta:
             meta.update(extra_filter_meta)
+
+        filterset_class = filterset_class or _type._meta.filterset_class
         self.filterset_class = get_filterset_class(filterset_class, **meta)
         self.filtering_args = get_filtering_args_from_filterset(self.filterset_class, _type)
         kwargs.setdefault('args', {})
@@ -202,6 +205,7 @@ class DjangoListObjectField(Field):
             if extra_filter_meta:
                 meta.update(extra_filter_meta)
 
+            filterset_class = filterset_class or _type._meta.filterset_class
             self.filterset_class = get_filterset_class(filterset_class, **meta)
             self.filtering_args = get_filtering_args_from_filterset(self.filterset_class, _type)
             kwargs.setdefault('args', {})
