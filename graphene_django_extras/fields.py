@@ -19,8 +19,6 @@ from .utils import get_extra_filters, queryset_factory, get_related_fields, find
 # *********************************************** #
 class DjangoObjectField(Field):
     def __init__(self, _type, *args, **kwargs):
-
-        kwargs.setdefault('args', {})
         kwargs['id'] = ID(required=True, description='Django object unique identification field')
 
         super(DjangoObjectField, self).__init__(_type, *args, **kwargs)
@@ -39,7 +37,10 @@ class DjangoObjectField(Field):
             return None
 
     def get_resolver(self, parent_resolver):
-        return partial(self.object_resolver, self.type._meta.model._default_manager)
+        return partial(
+            self.object_resolver,
+            self.type._meta.model._default_manager
+        )
 
 
 # *********************************************** #
@@ -67,12 +68,18 @@ class DjangoFilterListField(Field):
             if 'id' not in kwargs['args'].keys():
                 self.filtering_args.update({'id': Argument(ID,
                                                            description='Django object unique identification field')})
-                kwargs['args'].update({'id': Argument(ID, description='Django object unique identification field')})
+                kwargs['args'].update({
+                    'id': Argument(ID, description='Django object unique identification field')
+                })
 
         if not kwargs.get('description', None):
-            kwargs['description'] = '{} list'.format(_type._meta.model.__name__)
+            kwargs['description'] = '{} list'.format(
+                _type._meta.model.__name__
+            )
 
-        super(DjangoFilterListField, self).__init__(List(_type), *args, **kwargs)
+        super(DjangoFilterListField, self).__init__(
+            List(_type), *args, **kwargs
+        )
 
     @property
     def model(self):
@@ -121,7 +128,12 @@ class DjangoFilterListField(Field):
         temp = self.type
         while isinstance(temp, Structure):
             temp = temp.of_type
-        return partial(self.list_resolver, temp._meta.model._default_manager, self.filterset_class, self.filtering_args)
+        return partial(
+            self.list_resolver,
+            temp._meta.model._default_manager,
+            self.filterset_class,
+            self.filtering_args
+        )
 
 
 class DjangoFilterPaginateListField(Field):
@@ -188,7 +200,12 @@ class DjangoFilterPaginateListField(Field):
         temp = self.type
         while isinstance(temp, Structure):
             temp = temp.of_type
-        return partial(self.list_resolver, temp._meta.model._default_manager, self.filterset_class, self.filtering_args)
+        return partial(
+            self.list_resolver,
+            temp._meta.model._default_manager,
+            self.filterset_class,
+            self.filtering_args
+        )
 
 
 class DjangoListObjectField(Field):
@@ -241,5 +258,9 @@ class DjangoListObjectField(Field):
         )
 
     def get_resolver(self, parent_resolver):
-        return partial(self.list_resolver, self.type._meta.model._default_manager,
-                       self.filterset_class, self.filtering_args)
+        return partial(
+            self.list_resolver,
+            self.type._meta.model._default_manager,
+            self.filterset_class,
+            self.filtering_args
+        )

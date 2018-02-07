@@ -285,7 +285,11 @@ class DjangoListObjectType(ObjectType):
         super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
     @classmethod
-    def getOne(cls):
+    def RetrieveField(cls, *args, **kwargs):
+        return DjangoObjectField(cls._meta.baseType, **kwargs)
+
+    @classmethod
+    def object_type(cls):
         return cls._meta.baseType
 
 

@@ -193,7 +193,7 @@ You can define traditional mutations that use InputTypes or Mutations based on D
         user = DjangoObjectField(UserType, description=_('Single User query'))
 
         # Another way to define a query to single user
-        user1 = DjangoObjectField(UserListType.getOne(), description=_('User List with pagination and filtering'))
+        user1 = UserListType.RetrieveField(description=_('User List with pagination and filtering'))
 
         # Exist two ways to define single or list user queries with DjangoSerializerType
         user_retrieve1, user_list1 = UserModelType.QueryFields(description='Some description message for both queries',
