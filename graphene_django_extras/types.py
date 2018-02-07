@@ -289,7 +289,7 @@ class DjangoListObjectType(ObjectType):
         return DjangoObjectField(cls._meta.baseType, **kwargs)
 
     @classmethod
-    def object_type(cls):
+    def BaseType(cls):
         return cls._meta.baseType
 
 

@@ -513,6 +513,11 @@ Change Log:
 -----------
 
 **************
+v0.3.4-alpha2:
+**************
+1. Fixed minor bug on DjangoListObjectType.
+
+**************
 v0.3.4-alpha1:
 **************
 1. Added filterset_class to the listing types as default filter.
