@@ -482,6 +482,10 @@ You can use this shortcuts too:
 
 ## Change Log:
 
+#### v0.3.4-alpha1:
+    1. Added filterset_class to the listing types as default filter.
+    2. Changed getOne by RetrieveField on DjangoListObjectType.
+
 ####  v0.3.3:
     1. Added filterset_class to DjangoObjectType.
     2. Fixed minor bug on factory_types function.
