@@ -185,7 +185,7 @@ class DjangoFilterPaginateListField(Field):
 
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
         qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-        qs = filterset_class(data=filter_kwargs, queryset=qs).qs
+        qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
         if root and is_valid_django_model(root._meta.model):
             extra_filters = get_extra_filters(root, manager.model)
