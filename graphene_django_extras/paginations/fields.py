@@ -26,12 +26,14 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
     def __init__(self, _type, default_limit=graphql_api_settings.DEFAULT_PAGE_SIZE,
                  max_limit=graphql_api_settings.MAX_PAGE_SIZE,
-                 limit_query_param='limit', offset_query_param='offset', *args, **kwargs):
+                 limit_query_param='limit', offset_query_param='offset', order_query_param='order',
+                 *args, **kwargs):
 
         kwargs.setdefault('args', {})
 
         self.limit_query_param = limit_query_param
         self.offset_query_param = offset_query_param
+        self.order_query_param = order_query_para
         self.max_limit = max_limit
         self.default_limit = default_limit
         self.limit_query_description = 'Number of results to return per page. Actual \'default_limit\': {}, and ' \
@@ -43,6 +45,9 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
         kwargs[offset_query_param] = Int(default_value=0,
                                          description=self.offset_query_description)
+        
+        kwargs[order_query_param] = String(default_value='',
+                                           description=self.order_query_description)
 
         super(LimitOffsetPaginationField, self).__init__(List(_type), *args, **kwargs)
 
@@ -54,6 +59,10 @@ class LimitOffsetPaginationField(AbstractPaginationField):
             strict=True,
             cutoff=self.max_limit
         )
+
+        order = kwargs.pop(self.order_query_param, None)
+        if order:
+            qs = qs.order_by(order)
 
         if limit < 0:
             offset = kwargs.pop(self.offset_query_param, None) or count

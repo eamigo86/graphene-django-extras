@@ -34,7 +34,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
     def __init__(self, default_limit=graphql_api_settings.DEFAULT_PAGE_SIZE,
                  max_limit=graphql_api_settings.MAX_PAGE_SIZE, limit_query_param='limit',
-                 offset_query_param='offset'):
+                 offset_query_param='offset', order_query_param='order'):
 
         # A numeric value indicating the limit to use if one is not provided by the client in a query parameter.
         self.default_limit = default_limit
@@ -48,23 +48,30 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         # A string value indicating the name of the "offset" query parameter.
         self.offset_query_param = offset_query_param
 
+        # A string value indicating the name of the "order" query parameter. Uses Django order_by syntax
+        self.order_query_param = order_query_param
+
         self.limit_query_description = 'Number of results to return per page. Default \'default_limit\': {}, and ' \
                                        '\'max_limit\': {}'.format(self.default_limit, self.max_limit)
         self.offset_query_description = 'The initial index from which to return the results. Default: 0'
+
+        self.order_query_description = 'The field to order by. Uses Django order_by syntax'
 
     def to_dict(self):
         return {
             'limit_query_param': self.limit_query_param,
             'offset_query_param': self.offset_query_param,
             'default_limit': self.default_limit,
-            'max_limit': self.max_limit
+            'max_limit': self.max_limit,
+            'ordering': self.order_query_description
         }
 
     def to_graphql_fields(self):
         return {
             self.limit_query_param: Int(default_value=self.default_limit,
                                         description=self.limit_query_description),
-            self.offset_query_param: Int(description=self.offset_query_description)
+            self.offset_query_param: Int(description=self.offset_query_description),
+            self.order_query_param: String(description=self.order_query_description)
         }
 
     def paginate_queryset(self, qs, **kwargs):
@@ -77,6 +84,10 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
         if limit is None:
             return None
+
+        order = kwargs.get(self.order_query_param, None)
+        if order:
+            qs = qs.order_by(order)
 
         if limit < 0:
             offset = kwargs.get(self.offset_query_param, count) + limit
