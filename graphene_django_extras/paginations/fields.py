@@ -33,7 +33,7 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
         self.limit_query_param = limit_query_param
         self.offset_query_param = offset_query_param
-        self.order_query_param = order_query_para
+        self.order_query_param = order_query_param
         self.max_limit = max_limit
         self.default_limit = default_limit
         self.limit_query_description = 'Number of results to return per page. Actual \'default_limit\': {}, and ' \
