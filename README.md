@@ -62,7 +62,7 @@ for DjangoListObjectType classes pagination definitions on settings.py like this
 ```python
 from django.contrib.auth.models import User
 from graphene_django_extras import DjangoListObjectType, DjangoSerializerType, DjangoObjectType
-from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
+from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
 
 from .serializers import UserSerializer
 
@@ -139,7 +139,7 @@ class UserSerializerMutation(DjangoSerializerMutation):
 class UserMutation(graphene.Mutation):
     """
          On traditional mutation classes definition you must implement the mutate function
-         
+
     """
 
     user = graphene.Field(UserType, required=False)
