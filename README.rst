@@ -69,7 +69,7 @@ DjangoListObjectType classes pagination definitions on settings.py like this:
     from django.contrib.auth.models import User
     from graphene_django import DjangoObjectType
     from graphene_django_extras import DjangoListObjectType, DjangoSerializerType
-    from graphene_django_extras.pagination import LimitOffsetGraphqlPagination
+    from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
 
     from .serializers import UserSerializer
 
