@@ -41,7 +41,6 @@ Extra functionalities:
   **Paginations:**
     1.	LimitOffsetGraphqlPagination
     2.	PageGraphqlPagination
-    3.	CursorGraphqlPagination (coming soon)
 
 Queries and Mutations examples:
 -------------------------------
@@ -67,8 +66,7 @@ DjangoListObjectType classes pagination definitions on settings.py like this:
 .. code:: python
 
     from django.contrib.auth.models import User
-    from graphene_django import DjangoObjectType
-    from graphene_django_extras import DjangoListObjectType, DjangoSerializerType
+    from graphene_django_extras import DjangoListObjectType, DjangoSerializerType, DjangoObjectType
     from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
 
     from .serializers import UserSerializer
@@ -100,7 +98,7 @@ DjangoListObjectType classes pagination definitions on settings.py like this:
         class Meta:
             description = " User's model type definition "
             serializer_class = UserSerializer
-            pagination = LimitOffsetGraphqlPagination(default_limit=25)
+            pagination = LimitOffsetGraphqlPagination(default_limit=25, ordering="-username") # ordering can be: string, tuple or list
             filter_fields = {
                 'id': ['exact', ],
                 'first_name': ['icontains', 'iexact'],
@@ -511,6 +509,14 @@ You can use this shortcuts too:
 
 Change Log:
 -----------
+
+*******
+v0.3.5:
+*******
+1. Fixed minor bug on ExtraGraphQLDirectiveMiddleware.
+2. Fixed error with DRF 3.8 Compatibility.
+3. Updated List's Fields to pass info.context to filterset as request, this allow filtering by request data.
+4. Added new feature to ordering paginated queries.
 
 **************
 v0.3.4-alpha2:

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from graphql.type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 from promise import Promise
+
 from .registry import get_global_registry
 
 
@@ -21,7 +23,8 @@ class ExtraGraphQLDirectiveMiddleware(object):
 
         new_value = value
         for directive in field.directives:
-            directive_class = registry.get_directive(directive.name.value)
-            new_value = directive_class.resolve(new_value, directive, root, info, **kwargs)
+            if directive.name.value not in (GraphQLIncludeDirective.name, GraphQLSkipDirective.name):
+                directive_class = registry.get_directive(directive.name.value)
+                new_value = directive_class.resolve(new_value, directive, root, info, **kwargs)
 
         return new_value

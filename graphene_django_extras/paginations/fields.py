@@ -25,29 +25,30 @@ class AbstractPaginationField(Field):
 class LimitOffsetPaginationField(AbstractPaginationField):
 
     def __init__(self, _type, default_limit=graphql_api_settings.DEFAULT_PAGE_SIZE,
-                 max_limit=graphql_api_settings.MAX_PAGE_SIZE,
-                 limit_query_param='limit', offset_query_param='offset', order_query_param='order',
+                 max_limit=graphql_api_settings.MAX_PAGE_SIZE, ordering="",
+                 limit_query_param='limit', offset_query_param='offset', ordering_param='order',
                  *args, **kwargs):
 
         kwargs.setdefault('args', {})
 
         self.limit_query_param = limit_query_param
         self.offset_query_param = offset_query_param
-        self.order_query_param = order_query_param
+        self.ordering_param = ordering_param
         self.max_limit = max_limit
         self.default_limit = default_limit
-        self.limit_query_description = 'Number of results to return per page. Actual \'default_limit\': {}, and ' \
-                                       '\'max_limit\': {}'.format(self.default_limit, self.max_limit)
-        self.offset_query_description = 'The initial index from which to return the results.'
+        self.ordering = ordering
 
         kwargs[limit_query_param] = Int(default_value=self.default_limit,
-                                        description=self.limit_query_description)
+                                        description='Number of results to return per page. Actual '
+                                                    '\'default_limit\': {}, and \'max_limit\': {}'.format(
+                                            self.default_limit, self.max_limit))
 
         kwargs[offset_query_param] = Int(default_value=0,
-                                         description=self.offset_query_description)
+                                         description='The initial index from which to return the results.')
         
-        kwargs[order_query_param] = String(default_value='',
-                                           description=self.order_query_description)
+        kwargs[ordering_param] = String(default_value='',
+                                        description='The default ordering for the object, for use when obtaining '
+                                                    'lists of objects. This is a string or tuple/list of strings')
 
         super(LimitOffsetPaginationField, self).__init__(List(_type), *args, **kwargs)
 
@@ -60,9 +61,12 @@ class LimitOffsetPaginationField(AbstractPaginationField):
             cutoff=self.max_limit
         )
 
-        order = kwargs.pop(self.order_query_param, None)
+        order = kwargs.pop(self.ordering_param, None)
         if order:
-            qs = qs.order_by(order)
+            if type(order) in (set, list):
+                qs = qs.order_by(*order)
+            else:
+                qs = qs.order_by(order)
 
         if limit < 0:
             offset = kwargs.pop(self.offset_query_param, None) or count
@@ -75,7 +79,8 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 class PagePaginationField(AbstractPaginationField):
 
     def __init__(self, _type, page_size=graphql_api_settings.DEFAULT_PAGE_SIZE, page_size_query_param=None,
-                 max_page_size=graphql_api_settings.MAX_PAGE_SIZE, *args, **kwargs):
+                 max_page_size=graphql_api_settings.MAX_PAGE_SIZE, ordering="", ordering_param='order',
+                 *args, **kwargs):
 
         kwargs.setdefault('args', {})
 
@@ -93,11 +98,20 @@ class PagePaginationField(AbstractPaginationField):
         # Only relevant if 'page_size_query_param' has also been set.
         self.max_page_size = max_page_size
 
+        self.ordering = ordering
+
+        self.ordering_param = ordering_param
+
         self.page_size_query_description = 'Number of results to return per page. Actual \'page_size\': {}'.format(
             self.page_size)
 
         kwargs[self.page_query_param] = Int(default_value=1,
                                             description='A page number within the result paginated set. Default: 1')
+
+        kwargs[self.ordering_param] = String(default_value='',
+                                             description='The default ordering for the object, for use when obtaining '
+                                                         'lists of objects. This is a string or tuple/list of strings')
+
         if self.page_size_query_param:
             if not page_size:
                 kwargs[self.page_size_query_param] = NonNull(Int, description=self.page_size_query_description)
@@ -128,6 +142,13 @@ class PagePaginationField(AbstractPaginationField):
                                          'declaration to specify a custom page size value through a query parameters')
 
         offset = int(count - fabs(page_size * page)) if page < 0 else page_size * (page - 1)
+
+        order = kwargs.pop(self.ordering_param, None)
+        if order:
+            if type(order) in (set, list):
+                qs = qs.order_by(*order)
+            else:
+                qs = qs.order_by(order)
 
         return qs[offset:offset + page_size]
 

@@ -39,7 +39,6 @@ pip install graphene-django-extras
  **Paginations:**
   1.  LimitOffsetGraphqlPagination
   2.  PageGraphqlPagination
-  3.  CursorGraphqlPagination (*coming soon*)
 
 
 ### Queries and Mutations examples:
@@ -84,7 +83,7 @@ class UserListType(DjangoListObjectType):
     class Meta:
         description = " Type definition for user list "
         model = User
-        pagination = LimitOffsetGraphqlPagination(page_size=20)
+        pagination = LimitOffsetGraphqlPagination(default_limit=25, ordering="-username") # ordering can be: string, tuple or list
 
 
 class UserModelType(DjangoSerializerType):
@@ -93,7 +92,7 @@ class UserModelType(DjangoSerializerType):
     class Meta:
         description = " User's model type definition "
         serializer_class = UserSerializer
-        pagination = LimitOffsetGraphqlPagination(default_limit=25)
+        pagination = LimitOffsetGraphqlPagination(default_limit=25, ordering="-username") # ordering can be: string, tuple or list
         filter_fields = {
             'id': ['exact', ],
             'first_name': ['icontains', 'iexact'],
@@ -480,6 +479,12 @@ You can use this shortcuts too:
 
 
 ## Change Log:
+
+#### v0.3.5:
+    1. Fixed minor bug on ExtraGraphQLDirectiveMiddleware.
+    2. Fixed error with DRF 3.8 Compatibility.
+    3. Updated List's Fields to pass info.context to filterset as request, this allow filtering by request data.
+    4. Added new feature to ordering paginated queries.
 
 #### v0.3.4-alpha2:
     1. Fixed minor bug on DjangoListObjectType.
