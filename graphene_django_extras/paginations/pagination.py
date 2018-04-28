@@ -72,8 +72,8 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
                                                     '\'default_limit\': {}, and \'max_limit\': {}'.format(
                                                         self.default_limit, self.max_limit)),
             self.offset_query_param: Int(description='The initial index from which to return the results. Default: 0'),
-            self.ordering_param: String(description='The default ordering for the object, for use when obtaining '
-                                                    'lists of objects. This is a string or tuple/list of strings')
+            self.ordering_param: String(description='A string or coma separate strings values that indicating the '
+                                                    'default ordering when obtaining lists of objects.')
         }
 
     def paginate_queryset(self, qs, **kwargs):
@@ -89,8 +89,10 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
         order = kwargs.pop(self.ordering_param, None)
         if order:
-            if type(order) in (set, list):
-                qs = qs.order_by(*order)
+            if ',' in order:
+                order = order.strip(',').replace(' ', '').split(',')
+                if order.__len__() > 0:
+                    qs = qs.order_by(*order)
             else:
                 qs = qs.order_by(order)
 
@@ -128,7 +130,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         # Default ordering value: ""
         self.ordering = ordering
 
-        # A string or tuple/list of strings that indicating the default ordering when obtaining lists of objects.
+        # A string or coma separate strings values that indicating the default ordering when obtaining lists of objects.
         # Uses Django order_by syntax
         self.ordering_param = ordering_param
 
@@ -149,8 +151,8 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         paginator_dict = {
             self.page_query_param: Int(default_value=1,
                                        description='A page number within the result paginated set. Default: 1'),
-            self.ordering_param: String(description='The default ordering for the object, for use when obtaining '
-                                                    'lists of objects. This is a string or tuple/list of strings')
+            self.ordering_param: String(description='A string or coma separate strings values that indicating the '
+                                                    'default ordering when obtaining lists of objects.')
         }
 
         if self.page_size_query_param:
@@ -186,8 +188,10 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
         order = kwargs.pop(self.ordering_param, None)
         if order:
-            if type(order) in (set, list):
-                qs = qs.order_by(*order)
+            if ',' in order:
+                order = order.strip(',').replace(' ', '').split(',')
+                if order.__len__() > 0:
+                    qs = qs.order_by(*order)
             else:
                 qs = qs.order_by(order)
 

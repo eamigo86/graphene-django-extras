@@ -481,6 +481,9 @@ You can use this shortcuts too:
 ## Change Log:
 
 #### v0.3.5:
+    1. Improve DjangoSerializerMutation resolvers.
+
+#### v0.3.5:
     1. Fixed minor bug on ExtraGraphQLDirectiveMiddleware.
     2. Fixed error with DRF 3.8 Compatibility.
     3. Updated List's Fields to pass info.context to filterset as request, this allow filtering by request data.

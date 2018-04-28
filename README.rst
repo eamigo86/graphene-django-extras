@@ -511,6 +511,11 @@ Change Log:
 -----------
 
 *******
+v0.3.6:
+*******
+1. Improve DjangoSerializerMutation resolvers.
+
+*******
 v0.3.5:
 *******
 1. Fixed minor bug on ExtraGraphQLDirectiveMiddleware.

@@ -39,7 +39,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), exclude_fields=(),
-                                    create_resolver=None, delete_resolver=None, update_resolver=None,
+                                    save_resolver=None, delete_resolver=None,
                                     input_field_name=None, output_field_name=None, description='',
                                     nested_fields=False, **options):
 
@@ -104,30 +104,25 @@ class DjangoSerializerMutation(ObjectType):
                 })
             global_arguments[operation].update(arguments)
 
-        if not create_resolver:
-            create_mutation = getattr(cls, 'create_mutation', None)
-            create_resolver = get_unbound_function(create_mutation) if create_mutation else None
+        if not save_resolver:
+            save_mutation = getattr(cls, 'save_mutation', None)
+            save_resolver = get_unbound_function(save_mutation) if save_mutation else None
 
         if not delete_resolver:
             delete_mutation = getattr(cls, 'delete_mutation', None)
             delete_resolver = get_unbound_function(delete_mutation) if delete_mutation else None
 
-        if not update_resolver:
-            update_mutation = getattr(cls, 'update_mutation', None)
-            update_resolver = get_unbound_function(update_mutation) if update_mutation else None
-
-        assert (create_resolver or delete_resolver or update_resolver), \
-            'All the SerializerMutations must define at least one of his mutations methods in it: ' \
-            '\'create_mutation\', \'delete_mutation\' or \'update_mutation\''
+        assert (save_resolver or delete_resolver), \
+            'All the SerializerMutations must define at least one of this class  methods: ' \
+            '\'save_mutation\' or \'delete_mutation\''
 
         _meta = SerializerMutationOptions(cls)
         _meta.output = cls
         _meta.arguments = global_arguments
         _meta.fields = django_fields
         _meta.output_type = output_type
-        _meta.create_resolver = create_resolver
+        _meta.save_resolver = save_resolver
         _meta.delete_resolver = delete_resolver
-        _meta.update_resolver = update_resolver
         _meta.model = model
         _meta.serializer_class = serializer_class
         _meta.input_field_name = input_field_name
@@ -161,36 +156,48 @@ class DjangoSerializerMutation(ObjectType):
         return {}
 
     @classmethod
-    def create_mutation(cls, root, info, **kwargs):
+    def save_mutation(cls, root, info, **kwargs):
         new_obj = kwargs.get(cls._meta.input_field_name, None)
 
         if new_obj:
-            serializer = cls._meta.serializer_class(
-                data=new_obj,
-                **cls.get_serializer_kwargs(root, info, **kwargs)
-            )
+            model = cls._meta.model
+            id = new_obj.pop('id', None)
+            if id:
+                old_obj = get_Object_or_None(model, pk=id)
+                if old_obj:
+                    serializer = cls._meta.serializer_class(
+                        old_obj,
+                        data=dict(new_obj),
+                        partial = True,
+                        **cls.get_serializer_kwargs(root, info, **kwargs)
+                    )
+                else:
+                    return cls.get_errors([
+                        ErrorType(
+                            field='id',
+                            messages=['A {} obj with id: {} do not exist'.format(model.__name__, id)])
+                    ])
+            else:
+                serializer = cls._meta.serializer_class(
+                    data=new_obj,
+                    **cls.get_serializer_kwargs(root, info, **kwargs)
+                )
 
             if serializer.is_valid():
                 try:
-                    # cls._meta.model(**serializer.validated_data).full_clean()
                     obj = serializer.save()
                     return cls.perform_mutate(obj, info)
 
                 except ValidationError as e:
-                    errors_list = parse_validation_exc(e)
-
-                    errors = [
+                    return cls.get_errors([
                         ErrorType(**errors)
-                        for errors in errors_list
-                    ]
-                    return cls.get_errors(errors)
-
+                        for errors in parse_validation_exc(e)
+                    ])
             else:
-                errors = [
+                return cls.get_errors([
                     ErrorType(field=key, messages=value)
                     for key, value in serializer.errors.items()
-                ]
-                return cls.get_errors(errors)
+                ])
 
     @classmethod
     def delete_mutation(cls, root, info, **kwargs):
@@ -205,64 +212,16 @@ class DjangoSerializerMutation(ObjectType):
 
                 return cls.perform_mutate(old_obj, info)
             else:
-                errors = [
+                return cls.get_errors([
                     ErrorType(
                         field='id',
                         messages=['A {} obj with id {} do not exist'.format(model.__name__, pk)])
-                ]
-            return cls.get_errors(errors)
-
-    @classmethod
-    def update_mutation(cls, root, info, **kwargs):
-        new_obj = kwargs.get(cls._meta.input_field_name, None)
-
-        if new_obj:
-            model = cls._meta.model
-            id = new_obj.pop('id')
-            old_obj = get_Object_or_None(model, pk=id)
-            if old_obj:
-                new_obj_serialized = dict(cls._meta.serializer_class(
-                    old_obj,
-                    **cls.get_serializer_kwargs(root, info, **kwargs)
-                ).data)
-                new_obj_serialized.update(new_obj)
-                serializer = cls._meta.serializer_class(
-                    old_obj,
-                    data=new_obj_serialized,
-                    **cls.get_serializer_kwargs(root, info, **kwargs)
-                )
-
-                if serializer.is_valid():
-                    try:
-                        # cls._meta.model(**serializer.validated_data).full_clean()
-                        obj = serializer.save()
-                        return cls.perform_mutate(obj, info)
-
-                    except ValidationError as e:
-                        errors_list = parse_validation_exc(e)
-
-                        errors = [
-                            ErrorType(**errors)
-                            for errors in errors_list
-                        ]
-                        return cls.get_errors(errors)
-                else:
-                    errors = [
-                        ErrorType(field=key, messages=value)
-                        for key, value in serializer.errors.items()
-                    ]
-            else:
-                errors = [
-                    ErrorType(
-                        field='id',
-                        messages=['A {} obj with id: {} do not exist'.format(model.__name__, id)])
-                ]
-            return cls.get_errors(errors)
+                ])
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
         return Field(
-            cls._meta.output, args=cls._meta.arguments['create'], resolver=cls._meta.create_resolver, **kwargs
+            cls._meta.output, args=cls._meta.arguments['create'], resolver=cls._meta.save_resolver, **kwargs
         )
 
     @classmethod
@@ -274,7 +233,7 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def UpdateField(cls, *args, **kwargs):
         return Field(
-            cls._meta.output, args=cls._meta.arguments['update'], resolver=cls._meta.update_resolver, **kwargs
+            cls._meta.output, args=cls._meta.arguments['update'], resolver=cls._meta.save_resolver, **kwargs
         )
 
     @classmethod

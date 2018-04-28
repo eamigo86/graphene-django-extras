@@ -47,8 +47,8 @@ class LimitOffsetPaginationField(AbstractPaginationField):
                                          description='The initial index from which to return the results.')
         
         kwargs[ordering_param] = String(default_value='',
-                                        description='The default ordering for the object, for use when obtaining '
-                                                    'lists of objects. This is a string or tuple/list of strings')
+                                        description='A string or coma separate strings values that indicating the '
+                                                    'default ordering when obtaining lists of objects.')
 
         super(LimitOffsetPaginationField, self).__init__(List(_type), *args, **kwargs)
 
@@ -63,8 +63,10 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
         order = kwargs.pop(self.ordering_param, None)
         if order:
-            if type(order) in (set, list):
-                qs = qs.order_by(*order)
+            if ',' in order:
+                order = order.strip(',').replace(' ', '').split(',')
+                if order.__len__() > 0:
+                    qs = qs.order_by(*order)
             else:
                 qs = qs.order_by(order)
 
@@ -109,8 +111,8 @@ class PagePaginationField(AbstractPaginationField):
                                             description='A page number within the result paginated set. Default: 1')
 
         kwargs[self.ordering_param] = String(default_value='',
-                                             description='The default ordering for the object, for use when obtaining '
-                                                         'lists of objects. This is a string or tuple/list of strings')
+                                             description='A string or coma separate strings values that indicating the '
+                                                         'default ordering when obtaining lists of objects.')
 
         if self.page_size_query_param:
             if not page_size:
@@ -145,8 +147,10 @@ class PagePaginationField(AbstractPaginationField):
 
         order = kwargs.pop(self.ordering_param, None)
         if order:
-            if type(order) in (set, list):
-                qs = qs.order_by(*order)
+            if ',' in order:
+                order = order.strip(',').replace(' ', '').split(',')
+                if order.__len__() > 0:
+                    qs = qs.order_by(*order)
             else:
                 qs = qs.order_by(order)
 
