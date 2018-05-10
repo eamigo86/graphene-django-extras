@@ -511,6 +511,11 @@ Change Log:
 -----------
 
 *******
+v0.3.7:
+*******
+1. Improved DjangoListType and DjangoObjectType to share the filterset_class between the two class.
+
+*******
 v0.3.6:
 *******
 1. Improve DjangoSerializerMutation resolvers.

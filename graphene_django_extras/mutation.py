@@ -158,6 +158,8 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def save_mutation(cls, root, info, **kwargs):
         new_obj = kwargs.get(cls._meta.input_field_name, None)
+        files = info.context.FILES
+        data = dict(new_obj, **files)
 
         if new_obj:
             model = cls._meta.model
@@ -167,8 +169,8 @@ class DjangoSerializerMutation(ObjectType):
                 if old_obj:
                     serializer = cls._meta.serializer_class(
                         old_obj,
-                        data=dict(new_obj),
-                        partial = True,
+                        data=data,
+                        partial=True,
                         **cls.get_serializer_kwargs(root, info, **kwargs)
                     )
                 else:
@@ -179,7 +181,7 @@ class DjangoSerializerMutation(ObjectType):
                     ])
             else:
                 serializer = cls._meta.serializer_class(
-                    data=new_obj,
+                    data=data,
                     **cls.get_serializer_kwargs(root, info, **kwargs)
                 )
 
