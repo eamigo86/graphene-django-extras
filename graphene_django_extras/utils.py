@@ -273,11 +273,10 @@ def recursive_params(selection_set, fragments, available_related_fields,
                 None)
         )
 
-        if temp:
-            if (temp.many_to_many or temp.one_to_many) and \
-               temp.name not in prefetch_related:
+        if temp and temp.name not in [prefetch_related + select_related]:
+            if temp.many_to_many or temp.one_to_many:
                 prefetch_related.append(temp.name)
-            elif temp.name not in select_related:
+            else:
                 select_related.append(temp.name)
         elif getattr(field, 'selection_set', None):
             a, b = recursive_params(
