@@ -219,9 +219,9 @@ You can define traditional mutations that use InputTypes or Mutations based on D
         traditional_user_mutation = UserMutation.Field()
 
 
-**************************
-5- Configuring Directives:
-**************************
+***********************
+5- Directives settings:
+***********************
 For use Directives you must follow two simple steps:
 1. You must add **'graphene_django_extras.ExtraGraphQLDirectiveMiddleware'** to your GRAPHENE dict
 config on your settings.py:

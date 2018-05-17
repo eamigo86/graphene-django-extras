@@ -1,18 +1,54 @@
 # -*- coding: utf-8 -*-
+import inspect
 import re
+import six
 from collections import OrderedDict
 
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
 from django.core.exceptions import ValidationError
-from django.db.models import NOT_PROVIDED, QuerySet, Manager
+from django.db.models import NOT_PROVIDED, QuerySet, Manager, Model, ManyToOneRel, ManyToManyRel
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
-from graphene_django.utils import is_valid_django_model, get_reverse_fields
+from graphene_django.utils import is_valid_django_model
 from graphql import GraphQLList, GraphQLNonNull
 from graphql.language.ast import FragmentSpread
-from six import string_types
+
+
+def get_reverse_fields(model):
+    for name, attr in model.__dict__.items():
+        # Django =>1.9 uses 'rel', django <1.9 uses 'related'
+        related = getattr(attr, 'rel', None) or \
+            getattr(attr, 'related', None)
+        if isinstance(related, ManyToOneRel):
+            yield (name, related)
+        elif isinstance(related, ManyToManyRel) and not related.symmetrical:
+            yield (name, related)
+
+
+def _resolve_model(obj):
+    """
+    Resolve supplied `obj` to a Django model class.
+
+    `obj` must be a Django model class itself, or a string
+    representation of one.  Useful in situations like GH #1225 where
+    Django may not have resolved a string-based reference to a model in
+    another model's foreign key definition.
+
+    String representations should have the format:
+        'appname.ModelName'
+    """
+    if isinstance(obj, six.string_types) and len(obj.split('.')) == 2:
+        app_name, model_name = obj.split('.')
+        resolved_model = apps.get_model(app_name, model_name)
+        if resolved_model is None:
+            msg = "Django did not return a model for {0}.{1}"
+            raise ImproperlyConfigured(msg.format(app_name, model_name))
+        return resolved_model
+    elif inspect.isclass(obj) and issubclass(obj, Model):
+        return obj
+    raise ValueError("{0} is not a Django model".format(obj))
 
 
 def to_kebab_case(name):
@@ -22,15 +58,12 @@ def to_kebab_case(name):
 
 def get_related_model(field):
     # Backward compatibility patch for Django versions lower than 1.9.x
-    # Function taken from DRF 3.6.x
     if DJANGO_VERSION < (1, 9):
-        from rest_framework.compat import _resolve_model
         return _resolve_model(field.rel.to)
     return field.remote_field.model
 
 
 def get_model_fields(model):
-
     # Backward compatibility patch for Django versions lower than 1.11.x
     if DJANGO_VERSION >= (1, 11):
         private_fields = model._meta.private_fields
@@ -39,20 +72,21 @@ def get_model_fields(model):
 
     all_fields_list = list(model._meta.fields) + \
         list(model._meta.local_many_to_many) + \
-        list(private_fields) + \
+        list(private_fields)  + \
         list(model._meta.fields_map.values())
+
+    # Make sure we don't duplicate local fields with "reverse" version
+    # and get the real reverse django related_name
+    reverse_fields = list(get_reverse_fields(model))
+    exclude_fields = [field[1] for field in reverse_fields]
 
     local_fields = [
         (field.name, field)
         for field
-        in all_fields_list
+        in all_fields_list if field not in exclude_fields
     ]
 
-    # Make sure we don't duplicate local fields with "reverse" version
-    local_field_names = [field[0] for field in local_fields]
-    reverse_fields = get_reverse_fields(model, local_field_names)
-
-    all_fields = local_fields + list(reverse_fields)
+    all_fields = local_fields + reverse_fields
 
     return all_fields
 
@@ -97,7 +131,7 @@ def create_obj(model, new_obj_key=None, *args, **kwargs):
     """
 
     try:
-        if isinstance(model, string_types):
+        if isinstance(model, six.string_types):
             model = apps.get_model(model)
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model or a string with format: '
