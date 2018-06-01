@@ -5,5 +5,7 @@ dist/
 .idea/
 .vscode/
 .mypy_cache
-*.pyc
+*.py[co]
 *.egg-info
+__pycache__
+*.sw[po]
