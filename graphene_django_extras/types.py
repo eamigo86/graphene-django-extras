@@ -179,7 +179,7 @@ class DjangoInputObjectType(InputObjectType):
         _meta.connection = connection
         _meta.input_for = input_for
 
-        super(InputObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
+        super(DjangoInputObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
         if not skip_registry:
             registry.register(cls, for_input=input_for)
