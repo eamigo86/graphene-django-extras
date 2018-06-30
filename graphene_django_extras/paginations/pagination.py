@@ -85,7 +85,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         )
 
         if limit is None:
-            return None
+            return qs
 
         order = kwargs.pop(self.ordering_param, None)
         if order:
