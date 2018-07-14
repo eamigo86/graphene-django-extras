@@ -9,3 +9,6 @@ dist/
 *.egg-info
 __pycache__
 *.sw[po]
+
+# testing files
+db.sqlite3
