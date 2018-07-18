@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from graphql.type.directives import specified_directives as default_directives
+
 from .list import *
 from .numbers import *
 from .string import *
@@ -33,7 +35,9 @@ string_directives = (
     ReplaceGraphQLDirective
 )
 
-all_directives = date_directives + list_directives + numbers_directives + string_directives
+all_directives = default_directives +  date_directives +  list_directives + \
+    numbers_directives +  string_directives
+
 
 
 def get_all_directives():
