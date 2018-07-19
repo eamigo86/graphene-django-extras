@@ -15,8 +15,14 @@ except ImportError:
     DATEUTIL_INSTALLED = False
 
 
-list_directives = (ShuffleGraphQLDirective, SampleGraphQLDirective)
-numbers_directives = (FloorGraphQLDirective, CeilGraphQLDirective)
+list_directives = (
+    ShuffleGraphQLDirective,
+    SampleGraphQLDirective
+)
+numbers_directives = (
+    FloorGraphQLDirective,
+    CeilGraphQLDirective
+)
 string_directives = (
     DefaultGraphQLDirective,
     Base64GraphQLDirective,
@@ -35,7 +41,7 @@ string_directives = (
     ReplaceGraphQLDirective
 )
 
-all_directives = default_directives + date_directives + list_directives + \
+all_directives = tuple(default_directives) + date_directives + list_directives + \
     numbers_directives + string_directives
 
 

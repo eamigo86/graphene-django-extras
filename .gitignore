@@ -7,5 +7,6 @@ dist/
 .mypy_cache
 *.py[co]
 *.egg-info
+*.sqlite3
 __pycache__
 *.sw[po]
