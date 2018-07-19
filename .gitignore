@@ -11,4 +11,4 @@ __pycache__
 *.sw[po]
 
 # testing files
-db.sqlite3
+*db.sqlite3
