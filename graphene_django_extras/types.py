@@ -132,7 +132,7 @@ class DjangoInputObjectType(InputObjectType):
     @classmethod
     def __init_subclass_with_meta__(cls, model=None, container=None, registry=None, skip_registry=False,
                                     connection=None, use_connection=None, only_fields=(), exclude_fields=(),
-                                    filter_fields=None, input_for="create", nested_fields=False, **options):
+                                    filter_fields=None, input_for="create", nested_fields=(), **options):
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -310,7 +310,7 @@ class DjangoSerializerType(ObjectType):
     @classmethod
     def __init_subclass_with_meta__(cls, serializer_class=None, queryset=None, only_fields=(), exclude_fields=(),
                                     pagination=None, input_field_name=None, output_field_name=None,
-                                    results_field_name=None, nested_fields=False, filter_fields=None, description='',
+                                    results_field_name=None, nested_fields=(), filter_fields=None, description='',
                                     filterset_class=None, **options):
 
         if not serializer_class:

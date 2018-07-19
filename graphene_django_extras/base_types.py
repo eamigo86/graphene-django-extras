@@ -48,7 +48,7 @@ def factory_type(operation, _type, *args, **kwargs):
                 registry = kwargs.get('registry')
                 skip_registry = kwargs.get('skip_registry')
                 input_for = args[0]
-                description = ' Auto generated InputType for {} model'.format(
+                description = 'Auto generated InputType for {} model'.format(
                     kwargs.get('model')._meta.verbose_name)
 
         return GenericInputType
