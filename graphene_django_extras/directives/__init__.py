@@ -45,8 +45,4 @@ all_directives = tuple(default_directives) + date_directives + list_directives +
     numbers_directives + string_directives
 
 
-def get_all_directives():
-    return [d() for d in all_directives]
-
-
 all_directives = [d() for d in all_directives]

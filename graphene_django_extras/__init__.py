@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from graphene.pyutils.version import get_version
 
-from .directives import get_all_directives
+from .directives import all_directives
 from .fields import DjangoObjectField, DjangoFilterListField, DjangoFilterPaginateListField, \
     DjangoListObjectField
 from .middleware import ExtraGraphQLDirectiveMiddleware
@@ -37,6 +37,6 @@ __all__ = (
     'DjangoSerializerType',
 
     # DIRECTIVES
-    'get_all_directives',
+    'all_directives',
     'ExtraGraphQLDirectiveMiddleware'
 )
