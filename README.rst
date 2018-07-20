@@ -245,12 +245,12 @@ you can load like this:
 .. code:: python
 
     # schema.py
-    from graphene_django_extras import get_all_directives
+    from graphene_django_extras import all_directives
 
     schema = graphene.Schema(
         query=RootQuery,
         mutation=RootMutation,
-        directives=get_all_directives()
+        directives=all_directives
     )
 
 **NOTE**: Date directive depends of *dateutils* module, so if you do not have installed it, this directive will not be

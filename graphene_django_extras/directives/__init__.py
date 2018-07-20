@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from graphql.type.directives import specified_directives as default_directives
+
 from .list import *
 from .numbers import *
 from .string import *
@@ -13,8 +15,14 @@ except ImportError:
     DATEUTIL_INSTALLED = False
 
 
-list_directives = (ShuffleGraphQLDirective, SampleGraphQLDirective)
-numbers_directives = (FloorGraphQLDirective, CeilGraphQLDirective)
+list_directives = (
+    ShuffleGraphQLDirective,
+    SampleGraphQLDirective
+)
+numbers_directives = (
+    FloorGraphQLDirective,
+    CeilGraphQLDirective
+)
 string_directives = (
     DefaultGraphQLDirective,
     Base64GraphQLDirective,
@@ -33,8 +41,8 @@ string_directives = (
     ReplaceGraphQLDirective
 )
 
-all_directives = date_directives + list_directives + numbers_directives + string_directives
+all_directives = tuple(default_directives) + date_directives + list_directives + \
+    numbers_directives + string_directives
 
 
-def get_all_directives():
-    return [d() for d in all_directives]
+all_directives = [d() for d in all_directives]

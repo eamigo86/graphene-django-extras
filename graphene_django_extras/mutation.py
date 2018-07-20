@@ -41,7 +41,7 @@ class DjangoSerializerMutation(ObjectType):
     def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), exclude_fields=(),
                                     save_resolver=None, delete_resolver=None,
                                     input_field_name=None, output_field_name=None, description='',
-                                    nested_fields=False, **options):
+                                    nested_fields=(), **options):
 
         if not serializer_class:
             raise Exception('serializer_class is required on all DjangoSerializerMutation')
