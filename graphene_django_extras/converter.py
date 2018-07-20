@@ -109,10 +109,10 @@ def construct_fields(model, registry, only_fields, exclude_fields, nested_fields
         fields['id'] = converted
     else:
         for name, field in _model_fields:
-            nested_field = True if name in nested_fields else False
-
-            if input_flag == 'create' and name == 'id':
+            if (input_flag == 'create' and name == 'id') or not field.editable:
                 continue
+
+            nested_field = True if name in nested_fields else False
 
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields

@@ -41,8 +41,8 @@ string_directives = (
     ReplaceGraphQLDirective
 )
 
-all_directives = tuple(default_directives) + date_directives + list_directives + \
+all_directives = date_directives + list_directives + \
     numbers_directives + string_directives
 
 
-all_directives = [d() for d in all_directives]
+all_directives = [d() for d in all_directives] + default_directives

@@ -72,7 +72,7 @@ def get_model_fields(model):
 
     all_fields_list = list(model._meta.fields) + \
         list(model._meta.local_many_to_many) + \
-        list(private_fields)  + \
+        list(private_fields) + \
         list(model._meta.fields_map.values())
 
     # Make sure we don't duplicate local fields with "reverse" version
