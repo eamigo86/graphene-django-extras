@@ -93,7 +93,7 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None, nes
     return convert_django_field(field, registry, input_flag, nested_field)
 
 
-def construct_fields(model, registry, only_fields, exclude_fields, nested_fields=(), input_flag=None):
+def construct_fields(model, registry, only_fields, exclude_fields, input_flag=None, nested_fields=()):
     _model_fields = get_model_fields(model)
 
     if settings.DEBUG:
