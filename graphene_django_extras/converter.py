@@ -93,7 +93,7 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None, nes
     return convert_django_field(field, registry, input_flag, nested_field)
 
 
-def construct_fields(model, registry, only_fields, exclude_fields, nested_fields, input_flag=None):
+def construct_fields(model, registry, only_fields, exclude_fields, input_flag=None, nested_fields=()):
     _model_fields = get_model_fields(model)
 
     if settings.DEBUG:
@@ -109,10 +109,10 @@ def construct_fields(model, registry, only_fields, exclude_fields, nested_fields
         fields['id'] = converted
     else:
         for name, field in _model_fields:
-            nested_field = True if name in nested_fields else False
-
             if input_flag == 'create' and name == 'id':
                 continue
+
+            nested_field = True if name in nested_fields else False
 
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields
