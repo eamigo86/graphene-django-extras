@@ -10,3 +10,6 @@ dist/
 *.sqlite3
 __pycache__
 *.sw[po]
+
+# testing files
+*db.sqlite3
