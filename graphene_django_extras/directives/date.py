@@ -100,7 +100,7 @@ def _parse(dt):
         return None
 
 
-def _format_relativedelta(rdelta, full=False, two_days=False, dt=None):
+def _format_relativedelta(rdelta, full=False, two_days=False, original_dt=None):
     if not isinstance(rdelta, relativedelta.relativedelta):
         raise ValueError('rdelta must be a relativedelta instance')
     keys = ('years', 'months', 'days', 'hours', 'minutes', 'seconds')
@@ -117,9 +117,9 @@ def _format_relativedelta(rdelta, full=False, two_days=False, dt=None):
             if days == 0:
                 full = False
             else:
-                return dt.strftime('%b %d, %Y')
+                return original_dt.strftime('%b %d, %Y')
         else:
-            return dt.strftime('%b %d, %Y')
+            return original_dt.strftime('%b %d, %Y')
 
     for k, v in rdelta.__dict__.items():
         if k in keys and v != 0:
@@ -149,6 +149,7 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False, two_days=False):
         if now is None:
             now = timezone.localtime(timezone=timezone.get_fixed_timezone(-int(t.timezone / 60)))
 
+        original_dt = dt
         dt = _parse(dt)
         now = _parse(now)
 
@@ -158,7 +159,7 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False, two_days=False):
             raise ValueError('the parameter `now` should be datetime, or datetime formatted string.')
 
         result = relativedelta.relativedelta(dt, now)
-        flag, result = _format_relativedelta(result, full, two_days, dt)
+        flag, result = _format_relativedelta(result, full, two_days, original_dt)
         if ago_in and flag is not None:
             result = 'in {}'.format(result) if flag else '{} ago'.format(result)
         return result
