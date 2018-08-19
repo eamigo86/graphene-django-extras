@@ -126,13 +126,13 @@ def _format_relativedelta(rdelta, full=False, two_days=False, original_dt=None):
             if flag is None:
                 flag = True if v > 0 else False
             key = k
-            if v == 1:
+            abs_v = abs(v)
+            if abs_v == 1:
                 key = key[:-1]
-                key = 'TESTTEST'
             if not full:
-                return flag, '{} {}'.format(abs(v), key)
+                return flag, '{} {}'.format(abs_v, key)
             else:
-                result.append('{} {}'.format(abs(v), key))
+                result.append('{} {}'.format(abs_v, key))
     if len(result) == 0:
         return None, 'Now' if two_days else None, 'just now'
     if len(result) > 1:
