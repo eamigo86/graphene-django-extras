@@ -107,19 +107,19 @@ def _format_relativedelta(rdelta, full=False, two_days=False, original_dt=None):
     result = []
     flag = None
 
-    if two_days:
+    if two_days and original_dt:
         if rdelta.years == 0 and rdelta.months == 0:
             days = rdelta.days
             if days == 1:
-                return True, 'Tomorrow'
+                return None, 'Tomorrow'
             if days == -1:
                 return None, 'Yesterday'
             if days == 0:
                 full = False
             else:
-                return original_dt.strftime('%b %d, %Y')
+                return None, original_dt.strftime('%b %d, %Y')
         else:
-            return original_dt.strftime('%b %d, %Y')
+            return None, original_dt.strftime('%b %d, %Y')
 
     for k, v in rdelta.__dict__.items():
         if k in keys and v != 0:
@@ -150,7 +150,6 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False, two_days=False):
             now = timezone.localtime(timezone=timezone.get_fixed_timezone(-int(t.timezone / 60)))
 
         original_dt = dt
-        return original_dt.strftime('%b %d, %Y')
         dt = _parse(dt)
         now = _parse(now)
 
