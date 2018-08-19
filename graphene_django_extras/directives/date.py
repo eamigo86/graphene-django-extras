@@ -150,6 +150,7 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False, two_days=False):
             now = timezone.localtime(timezone=timezone.get_fixed_timezone(-int(t.timezone / 60)))
 
         original_dt = dt
+        return original_dt.strftime('%b %d, %Y')
         dt = _parse(dt)
         now = _parse(now)
 
