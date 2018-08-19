@@ -100,25 +100,41 @@ def _parse(dt):
         return None
 
 
-def _format_relativedelta(rdelta, full=False):
+def _format_relativedelta(rdelta, full=False, two_days=False, original_dt=None):
     if not isinstance(rdelta, relativedelta.relativedelta):
         raise ValueError('rdelta must be a relativedelta instance')
     keys = ('years', 'months', 'days', 'hours', 'minutes', 'seconds')
     result = []
     flag = None
+
+    if two_days and original_dt:
+        if rdelta.years == 0 and rdelta.months == 0:
+            days = rdelta.days
+            if days == 1:
+                return None, 'Tomorrow'
+            if days == -1:
+                return None, 'Yesterday'
+            if days == 0:
+                full = False
+            else:
+                return None, original_dt.strftime('%b %d, %Y')
+        else:
+            return None, original_dt.strftime('%b %d, %Y')
+
     for k, v in rdelta.__dict__.items():
         if k in keys and v != 0:
             if flag is None:
                 flag = True if v > 0 else False
             key = k
-            if v == 1:
+            abs_v = abs(v)
+            if abs_v == 1:
                 key = key[:-1]
             if not full:
-                return flag, '{} {}'.format(abs(v), key)
+                return flag, '{} {}'.format(abs_v, key)
             else:
-                result.append('{} {}'.format(abs(v), key))
+                result.append('{} {}'.format(abs_v, key))
     if len(result) == 0:
-        return None, 'just now'
+        return None, 'Now' if two_days else None, 'just now'
     if len(result) > 1:
         temp = result.pop()
         result = '{} and {}'.format(', '.join(result), temp)
@@ -128,12 +144,13 @@ def _format_relativedelta(rdelta, full=False):
     return flag, result
 
 
-def _format_time_ago(dt, now=None, full=False, ago_in=False):
+def _format_time_ago(dt, now=None, full=False, ago_in=False, two_days=False):
 
     if not isinstance(dt, timedelta):
         if now is None:
             now = timezone.localtime(timezone=timezone.get_fixed_timezone(-int(t.timezone / 60)))
 
+        original_dt = dt
         dt = _parse(dt)
         now = _parse(now)
 
@@ -143,7 +160,7 @@ def _format_time_ago(dt, now=None, full=False, ago_in=False):
             raise ValueError('the parameter `now` should be datetime, or datetime formatted string.')
 
         result = relativedelta.relativedelta(dt, now)
-        flag, result = _format_relativedelta(result, full)
+        flag, result = _format_relativedelta(result, full, two_days, original_dt)
         if ago_in and flag is not None:
             result = 'in {}'.format(result) if flag else '{} ago'.format(result)
         return result
@@ -160,6 +177,9 @@ def _format_dt(dt, format='default'):
 
     if format_lowered == 'time ago':
         return _format_time_ago(dt, full=True, ago_in=True)
+
+    if format_lowered == 'time ago 2d':
+        return _format_time_ago(dt, full=True, ago_in=True, two_days=True)
 
     if format_lowered == 'iso':
         return dt.strftime('%Y-%b-%dT%H:%M:%S')
