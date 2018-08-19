@@ -107,7 +107,6 @@ def _format_relativedelta(rdelta, full=False, two_days=False, dt=None):
     result = []
     flag = None
 
-    one_time = False
     if two_days:
         if rdelta.years == 0 and rdelta.months == 0:
             days = rdelta.days
@@ -116,7 +115,7 @@ def _format_relativedelta(rdelta, full=False, two_days=False, dt=None):
             if days == -1:
                 return None, 'Yesterday'
             if days == 0:
-                one_time = True
+                full = False
             else:
                 return dt.strftime('%b %d, %Y')
         else:
@@ -135,7 +134,7 @@ def _format_relativedelta(rdelta, full=False, two_days=False, dt=None):
                 result.append('{} {}'.format(abs(v), key))
     if len(result) == 0:
         return None, 'Now' if two_days else None, 'just now'
-    if len(result) > 1 and not one_time:
+    if len(result) > 1:
         temp = result.pop()
         result = '{} and {}'.format(', '.join(result), temp)
     else:
