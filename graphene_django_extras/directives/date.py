@@ -107,23 +107,18 @@ def _format_relativedelta(rdelta, full=False, two_days=False, dt=None):
     result = []
     flag = None
 
-    rdelta_items = rdelta.__dict__.items()
-
     if two_days:
-        days = rdelta_items.get('days', 0)
+        days = abs(rdelta.days)
         if days > 1:
             return dt.strftime('%b %d, %Y')
 
-        if (
-            rdelta_items.get('years', 0) and
-            rdelta_items.get('months', 0)
-        ):
+        if rdelta.years == 0 and rdelta.months == 0:
             if days == 1:
                 return None, 'Yesterday'
 
             keys = ('hours')
 
-    for k, v in rdelta_items:
+    for k, v in rdelta.__dict__.items():
         if k in keys and v != 0:
             if flag is None:
                 flag = True if v > 0 else False
