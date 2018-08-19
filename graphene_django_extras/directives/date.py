@@ -128,6 +128,7 @@ def _format_relativedelta(rdelta, full=False, two_days=False, original_dt=None):
             key = k
             if v == 1:
                 key = key[:-1]
+                key = 'TESTTEST'
             if not full:
                 return flag, '{} {}'.format(abs(v), key)
             else:
