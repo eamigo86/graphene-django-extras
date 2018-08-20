@@ -233,10 +233,10 @@ schema = graphene.Schema(
     directives=all_directives
 )
 ```
-**NOTE**: Date directive depends of *dateutils* module, so if you do not have installed it, this directive will not be
-available. You can install *dateutils* module manually:
+**NOTE**: Date directive depends of *dateutil* module, so if you do not have installed it, this directive will not be
+available. You can install *dateutil* module manually:
 ```
-pip install dateutils
+pip install python-dateutil
 ```
 or like this:
 ```
