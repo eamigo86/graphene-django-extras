@@ -154,32 +154,26 @@ class DjangoInputObjectType(InputObjectType):
         if not DJANGO_FILTER_INSTALLED and filter_fields:
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
-        django_fields = yank_fields_from_attrs(
-            construct_fields(model, registry, only_fields, exclude_fields, None, nested_fields),
-            _as=Field, sort=False
-        )
-
         django_input_fields = yank_fields_from_attrs(
             construct_fields(model, registry, only_fields, exclude_fields, input_for, nested_fields),
             _as=InputField, sort=False
         )
-
-        if container is None:
-            container = type(cls.__name__, (InputObjectTypeContainer, cls), {})
 
         _meta = DjangoObjectOptions(cls)
         _meta.by_polar = True
         _meta.model = model
         _meta.registry = registry
         _meta.filter_fields = filter_fields
-        # _meta.fields = django_fields
         _meta.fields = django_input_fields
         _meta.input_fields = django_input_fields
-        _meta.container = container
         _meta.connection = connection
         _meta.input_for = input_for
 
-        super(DjangoInputObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
+        super(DjangoInputObjectType, cls).__init_subclass_with_meta__(
+            container=container,
+            _meta=_meta,
+            **options
+        )
 
         if not skip_registry:
             registry.register(cls, for_input=input_for)

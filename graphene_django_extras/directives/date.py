@@ -14,7 +14,7 @@ __author__ = 'Ernesto'
 __all__ = ('DateGraphQLDirective', )
 
 
-DEFAULT_DATE_FORMAT = '%d %b %Y %H:%M:%S';
+DEFAULT_DATE_FORMAT = '%d %b %Y %H:%M:%S'
 FORMATS_MAP = {
         # Year
         'YYYY': '%Y',
@@ -80,22 +80,26 @@ def _combine_date_time(d, t):
     return None
 
 
-def _parse(dt):
+def _parse(partial_dt):
     """
-    parse input to datetime
+    parse a partial datetime object to a complete datetime object
     """
+    dt = None
     try:
-        if isinstance(dt, datetime):
-            return dt
-        if isinstance(dt, date):
-            return _combine_date_time(dt, time(0, 0, 0))
-        if isinstance(dt, time):
-            return _combine_date_time(date.today(), dt)
-        if isinstance(dt, (int, float)):
-            return datetime.fromtimestamp(dt)
-        if isinstance(dt, (str, bytes)):
-            return parser.parse(dt, default=datetime.now())
-        return None
+        if isinstance(partial_dt, datetime):
+            dt = partial_dt
+        if isinstance(partial_dt, date):
+            dt = _combine_date_time(partial_dt, time(0, 0, 0))
+        if isinstance(partial_dt, time):
+            dt = _combine_date_time(date.today(), partial_dt)
+        if isinstance(partial_dt, (int, float)):
+            dt = datetime.fromtimestamp(partial_dt)
+        if isinstance(partial_dt, (str, bytes)):
+            dt = parser.parse(partial_dt, default=timezone.now())
+
+        if dt is not None and timezone.is_naive(dt):
+            dt = timezone.make_aware(dt)
+        return dt
     except ValueError:
         return None
 
