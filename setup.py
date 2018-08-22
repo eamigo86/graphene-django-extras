@@ -61,7 +61,7 @@ setup(
     ],
     extras_require={
         'date': [
-            'dateutils>=0.6.6',
+            'python-dateutil>=2.7.3',
         ]
     },
     include_package_data=True,
