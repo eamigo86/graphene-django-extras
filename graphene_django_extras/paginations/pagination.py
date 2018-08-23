@@ -87,7 +87,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         if limit is None:
             return qs
 
-        order = kwargs.pop(self.ordering_param, None)
+        order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
             if ',' in order:
                 order = order.strip(',').replace(' ', '').split(',')
@@ -186,7 +186,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
         offset = max(0, int(count + page_size * page)) if page < 0 else page_size * (page - 1)
 
-        order = kwargs.pop(self.ordering_param, None)
+        order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
             if ',' in order:
                 order = order.strip(',').replace(' ', '').split(',')
