@@ -61,7 +61,7 @@ class LimitOffsetPaginationField(AbstractPaginationField):
             cutoff=self.max_limit
         )
 
-        order = kwargs.pop(self.ordering_param, None)
+        order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
             if ',' in order:
                 order = order.strip(',').replace(' ', '').split(',')
@@ -145,7 +145,7 @@ class PagePaginationField(AbstractPaginationField):
 
         offset = int(count - fabs(page_size * page)) if page < 0 else page_size * (page - 1)
 
-        order = kwargs.pop(self.ordering_param, None)
+        order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
             if ',' in order:
                 order = order.strip(',').replace(' ', '').split(',')
