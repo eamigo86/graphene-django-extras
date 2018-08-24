@@ -159,6 +159,14 @@ class DjangoInputObjectType(InputObjectType):
             _as=InputField, sort=False
         )
 
+        for base in reversed(cls.__mro__):
+            django_input_fields.update(
+                yank_fields_from_attrs(base.__dict__, _as=InputField)
+            )
+
+        if container is None:
+            container = type(cls.__name__, (InputObjectTypeContainer, cls), {})
+
         _meta = DjangoObjectOptions(cls)
         _meta.by_polar = True
         _meta.model = model
@@ -168,9 +176,10 @@ class DjangoInputObjectType(InputObjectType):
         _meta.input_fields = django_input_fields
         _meta.connection = connection
         _meta.input_for = input_for
+        _meta.container = container
 
-        super(DjangoInputObjectType, cls).__init_subclass_with_meta__(
-            container=container,
+        super(InputObjectType, cls).__init_subclass_with_meta__(
+            # container=container,
             _meta=_meta,
             **options
         )
