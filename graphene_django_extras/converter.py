@@ -111,24 +111,21 @@ def construct_fields(model, registry, only_fields, exclude_fields, input_flag=No
         for name, field in _model_fields:
             if input_flag == 'create' and name == 'id':
                 continue
-
             nested_field = True if name in nested_fields else False
-
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields
             is_excluded = exclude_fields and name in exclude_fields  # or is_already_created
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith('+')
-            # if is_not_in_only or is_excluded or is_no_backref or not field.editable or field.hidden:
-            if is_not_in_only or is_excluded or is_no_backref:
+            # if is_not_in_only or is_excluded or is_no_backref:
+            if is_not_in_only or is_excluded or is_no_backref or field.hidden or (
+                    not isinstance(field, models.fields.related.ForeignObjectRel) and not field.editable):
                 # We skip this field if we specify only_fields and is not
                 # in there. Or when we exclude this field in exclude_fields.
                 # Or when there is no back reference.
                 continue
             converted = convert_django_field_with_choices(field, registry, input_flag, nested_field)
-
             fields[name] = converted
-
     return fields
 
 
@@ -146,22 +143,31 @@ def convert_django_field(field, registry=None, input_flag=None, nested_field=Fal
 @convert_django_field.register(models.GenericIPAddressField)
 @convert_django_field.register(models.FileField)
 def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False):
-    return String(description=field.help_text or field.verbose_name,
-                  required=is_required(field) and input_flag == 'create')
+    return String(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.AutoField)
 def convert_field_to_id(field, registry=None, input_flag=None, nested_field=False):
     if input_flag:
-        return ID(description=field.help_text or 'Django object unique identification field',
-                  required=input_flag == 'update')
-    return ID(description=field.help_text or 'Django object unique identification field', required=not field.null)
+        return ID(
+            description=field.help_text or 'Django object unique identification field',
+            required=input_flag == 'update'
+        )
+    return ID(
+        description=field.help_text or 'Django object unique identification field',
+        required=not field.null
+    )
 
 
 @convert_django_field.register(models.UUIDField)
 def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=False):
-    return UUID(description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
+    return UUID(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.PositiveIntegerField)
@@ -170,8 +176,10 @@ def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=Fa
 @convert_django_field.register(models.BigIntegerField)
 @convert_django_field.register(models.IntegerField)
 def convert_field_to_int(field, registry=None, input_flag=None, nested_field=False):
-    return Int(description=field.help_text or field.verbose_name,
-               required=is_required(field) and input_flag == 'create')
+    return Int(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.BooleanField)
@@ -184,14 +192,18 @@ def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field
 
 @convert_django_field.register(models.NullBooleanField)
 def convert_field_to_nullboolean(field, registry=None, input_flag=None, nested_field=False):
-    return Boolean(description=field.help_text or field.verbose_name,
-                   required=is_required(field) and input_flag == 'create')
+    return Boolean(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.BinaryField)
 def convert_binary_to_string(field, registry=None, input_flag=None, nested_field=False):
-    return Binary(description=field.help_text or field.verbose_name,
-                  required=is_required(field) and input_flag == 'create')
+    return Binary(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.DecimalField)
@@ -206,20 +218,26 @@ def convert_field_to_float(field, registry=None, input_flag=None, nested_field=F
 
 @convert_django_field.register(models.DateField)
 def convert_date_to_string(field, registry=None, input_flag=None, nested_field=False):
-    return CustomDate(description=field.help_text or field.verbose_name,
-                      required=is_required(field) and input_flag == 'create')
+    return CustomDate(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.DateTimeField)
 def convert_date_to_string(field, registry=None, input_flag=None, nested_field=False):
-    return CustomDateTime(description=field.help_text or field.verbose_name,
-                          required=is_required(field) and input_flag == 'create')
+    return CustomDateTime(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.TimeField)
 def convert_time_to_string(field, registry=None, input_flag=None, nested_field=False):
-    return CustomTime(description=field.help_text or field.verbose_name,
-                      required=is_required(field) and input_flag == 'create')
+    return CustomTime(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(models.OneToOneRel)
@@ -229,15 +247,12 @@ def convert_onetoone_field_to_djangomodel(field, registry=None, input_flag=None,
     def dynamic_type():
         if input_flag and not nested_field:
             return ID()
-
         _type = registry.get_type_for_model(model, for_input=input_flag)
         if not _type:
             return
-
         return Field(
             _type, required=is_required(field) and input_flag == 'create'
         )
-
     return Dynamic(dynamic_type)
 
 
@@ -247,22 +262,26 @@ def convert_field_to_list_or_connection(field, registry=None, input_flag=None, n
 
     def dynamic_type():
         if input_flag and not nested_field:
-            return DjangoListField(ID, required=is_required(field) and input_flag == 'create')
-
-        _type = registry.get_type_for_model(model, for_input=input_flag)
-        if not _type:
-            return
-
-        if _type._meta.filter_fields or _type._meta.filterset_class:
-            return DjangoFilterListField(
-                _type,
-                required=is_required(field) and input_flag == 'create',
-                filterset_class=_type._meta.filterset_class
+            return DjangoListField(
+                ID,
+                required=is_required(field) and input_flag == 'create'
             )
-        return DjangoListField(
-            _type, required=is_required(field) and input_flag == 'create'
-        )
-
+        else:
+            _type = registry.get_type_for_model(model, for_input=input_flag)
+            if not _type:
+                return
+            elif input_flag and nested_field:
+                return DjangoListField(_type)
+            elif _type._meta.filter_fields or _type._meta.filterset_class:
+                return DjangoFilterListField(
+                    _type,
+                    required=is_required(field) and input_flag == 'create',
+                    filterset_class=_type._meta.filterset_class
+                )
+            else:
+                return DjangoListField(
+                    _type, required=is_required(field) and input_flag == 'create'
+                )
     return Dynamic(dynamic_type)
 
 
@@ -275,17 +294,22 @@ def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, neste
     def dynamic_type():
         if input_flag and not nested_field:
             return DjangoListField(ID)
-
-        _type = registry.get_type_for_model(model, for_input=input_flag)
-        if not _type:
-            return
-
-        if _type._meta.filter_fields or _type._meta.filterset_class:
-            return DjangoFilterListField(
-                _type, filterset_class=_type._meta.filterset_class
-            )
-        return DjangoListField(_type)
-
+        else:
+            _type = registry.get_type_for_model(model, for_input=input_flag)
+            if not _type:
+                return
+            elif input_flag and nested_field:
+                return DjangoListField(_type)
+            elif _type._meta.filter_fields or _type._meta.filterset_class:
+                return DjangoFilterListField(
+                    _type,
+                    required=is_required(field) and input_flag == 'create',
+                    filterset_class=_type._meta.filterset_class
+                )
+            else:
+                return DjangoListField(
+                    _type, required=is_required(field) and input_flag == 'create'
+                )
     return Dynamic(dynamic_type)
 
 
@@ -299,16 +323,18 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
         if isinstance(field, models.OneToOneField) and issubclass(field.model, field.related_model):
             return
         if input_flag and not nested_field:
-            return ID(description=field.help_text or field.verbose_name,
-                      required=is_required(field) and input_flag == 'create')
-
+            return ID(
+                description=field.help_text or field.verbose_name,
+                required=is_required(field) and input_flag == 'create'
+            )
         _type = registry.get_type_for_model(model, for_input=input_flag)
         if not _type:
             return
-
-        return Field(_type, description=field.help_text or field.verbose_name,
-                     required=is_required(field) and input_flag == 'create')
-
+        return Field(
+            _type,
+            description=field.help_text or field.verbose_name,
+            required=is_required(field) and input_flag == 'create'
+        )
     return Dynamic(dynamic_type)
 
 
@@ -337,17 +363,20 @@ def convert_generic_foreign_key_to_object(field, registry=None, input_flag=None,
             required = (is_required(ct_field) and is_required(fk_field)) or required
 
         if input_flag:
-            return GenericForeignKeyInputType(description='Input Type for a GenericForeignKey field',
-                                              required=required and input_flag == 'create')
+            return GenericForeignKeyInputType(
+                description='Input Type for a GenericForeignKey field',
+                required=required and input_flag == 'create'
+            )
 
         _type = registry.get_type_for_enum(key)
         if not _type:
             _type = GenericForeignKeyType
-
         # return Field(_type, description=field.help_text or field.verbose_name, required=field.null)
-        return Field(_type, description='Type for a GenericForeignKey field',
-                     required=required and input_flag == 'create')
-
+        return Field(
+            _type,
+            description='Type for a GenericForeignKey field',
+            required=required and input_flag == 'create'
+        )
     return Dynamic(dynamic_type)
 
 
@@ -358,13 +387,10 @@ def convert_generic_relation_to_object_list(field, registry=None, input_flag=Non
     def dynamic_type():
         if input_flag:
             return
-
         _type = registry.get_type_for_model(model)
         if not _type:
             return
-
         return DjangoListField(_type)
-
     return Dynamic(dynamic_type)
 
 
@@ -373,15 +399,20 @@ def convert_postgres_array_to_list(field, registry=None, input_flag=None, nested
     base_type = convert_django_field(field.base_field)
     if not isinstance(base_type, (List, NonNull)):
         base_type = type(base_type)
-    return List(base_type, description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
+    return List(
+        base_type,
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(HStoreField)
 @convert_django_field.register(JSONField)
 def convert_postgres_field_to_string(field, registry=None, input_flag=None, nested_field=False):
-    return JSONString(description=field.help_text or field.verbose_name,
-                      required=is_required(field) and input_flag == 'create')
+    return JSONString(
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )
 
 
 @convert_django_field.register(RangeField)
@@ -389,5 +420,8 @@ def convert_postgres_range_to_string(field, registry=None, input_flag=None, nest
     inner_type = convert_django_field(field.base_field)
     if not isinstance(inner_type, (List, NonNull)):
         inner_type = type(inner_type)
-    return List(inner_type, description=field.help_text or field.verbose_name,
-                required=is_required(field) and input_flag == 'create')
+    return List(
+        inner_type,
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == 'create'
+    )

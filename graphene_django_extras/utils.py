@@ -7,7 +7,7 @@ from collections import OrderedDict
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.db.models import NOT_PROVIDED, QuerySet, Manager, Model, ManyToOneRel, ManyToManyRel
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
@@ -119,10 +119,10 @@ def get_obj(app_label, model_name, object_id):
         raise Exception(e.__str__())
 
 
-def create_obj(model, new_obj_key=None, *args, **kwargs):
+def create_obj(django_model, new_obj_key=None, *args, **kwargs):
     """
     Function used by my on traditional Mutations to create objs
-    :param model: A valid Django Model or a string with format:
+    :param django_model: A valid Django Model or a string with format:
     <app_label>.<model_name>
     :param new_obj_key: Key into kwargs that contains de data: new_person
     :param args:
@@ -131,15 +131,15 @@ def create_obj(model, new_obj_key=None, *args, **kwargs):
     """
 
     try:
-        if isinstance(model, six.string_types):
-            model = apps.get_model(model)
-        assert is_valid_django_model(model), (
+        if isinstance(django_model, six.string_types):
+            django_model = apps.get_model(django_model)
+        assert is_valid_django_model(django_model), (
             'You need to pass a valid Django Model or a string with format: '
             '<app_label>.<model_name> to "create_obj"'
-            ' function, received "{}".').format(model)
+            ' function, received "{}".').format(django_model)
 
         data = kwargs.get(new_obj_key, None) if new_obj_key else kwargs
-        new_obj = model(**data)
+        new_obj = django_model(**data)
         new_obj.full_clean()
         new_obj.save()
         return new_obj

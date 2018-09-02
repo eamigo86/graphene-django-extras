@@ -53,6 +53,7 @@ class DjangoSerializerOptions(BaseOptions):
     output_field_name = None
     output_type = None
     output_list_type = None
+    nested_fields = None
 
 
 class DjangoObjectType(ObjectType):
@@ -394,6 +395,7 @@ class DjangoSerializerType(ObjectType):
         _meta.serializer_class = serializer_class
         _meta.input_field_name = input_field_name
         _meta.output_field_name = output_field_name
+        _meta.nested_fields = nested_fields
 
         super(DjangoSerializerType, cls).__init_subclass_with_meta__(_meta=_meta, description=description, **options)
 
@@ -430,88 +432,112 @@ class DjangoSerializerType(ObjectType):
         return {}
 
     @classmethod
+    def manage_nested_fields(cls, data, root, info):
+        nested_objs = {}
+        if cls._meta.nested_fields and type(cls._meta.nested_fields) == dict:
+            for field in cls._meta.nested_fields:
+                sub_data = data.pop(field, None)
+                if sub_data:
+                    serialized_data = cls._meta.nested_fields[field](
+                        data=sub_data,
+                        many=True if type(sub_data) == list else False
+                    )
+                    ok, result = cls.save(serialized_data, root, info)
+                    if not ok:
+                        return cls.get_errors(result)
+                    if type(sub_data) == list:
+                        nested_objs.update({field: result})
+                    else:
+                        data.update({field: result.id})
+        return nested_objs
+
+    @classmethod
     def create(cls, root, info, **kwargs):
-        new_obj = kwargs.get(cls._meta.input_field_name, None)
+        data = kwargs.get(cls._meta.input_field_name)
+        request_type = info.context.META.get("CONTENT_TYPE", '')
+        if "multipart/form-data" in request_type:
+            data.update({name: value for name, value in info.context.FILES.items()})
 
-        if new_obj:
-            serializer = cls._meta.serializer_class(
-                data=new_obj,
-                **cls.get_serializer_kwargs(root, info, **kwargs)
-            )
+        nested_objs = cls.manage_nested_fields(data, root, info)
+        serializer = cls._meta.serializer_class(
+            data=data,
+            **cls.get_serializer_kwargs(root, info, **kwargs)
+        )
 
-            if serializer.is_valid():
-                obj = serializer.save()
-                return cls.perform_mutate(obj, info)
-
-            else:
-                errors = [
-                    ErrorType(field=key, messages=value)
-                    for key, value in serializer.errors.items()
-                ]
-                return cls.get_errors(errors)
+        ok, obj = cls.save(serializer, root, info)
+        if nested_objs:
+            [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
+        return cls.perform_mutate(obj, info) if ok else cls.get_errors(obj)
 
     @classmethod
     def delete(cls, root, info, **kwargs):
-        pk = kwargs.get('id', None)
+        pk = kwargs.get('id')
 
-        if id:
-            model = cls._meta.model
-            old_obj = get_Object_or_None(model, pk=pk)
-            if old_obj:
-                old_obj.delete()
-                old_obj.id = pk
-
-                return cls.perform_mutate(old_obj, info)
-            else:
-                errors = [
-                    ErrorType(
-                        field='id',
-                        messages=['A {} obj with id {} do not exist'.format(model.__name__, pk)])
-                ]
-            return cls.get_errors(errors)
+        old_obj = get_Object_or_None(cls._meta.model, pk=pk)
+        if old_obj:
+            old_obj.delete()
+            old_obj.id = pk
+            return cls.perform_mutate(old_obj, info)
+        else:
+            return cls.get_errors([
+                ErrorType(
+                    field='id',
+                    messages=['A {} obj with id {} do not exist'.format(
+                        cls._meta.model.__name__,
+                        pk
+                    )])
+            ])
 
     @classmethod
     def update(cls, root, info, **kwargs):
-        new_obj = kwargs.get(cls._meta.input_field_name, None)
+        data = kwargs.get(cls._meta.input_field_name)
+        request_type = info.context.META.get("CONTENT_TYPE", '')
+        if "multipart/form-data" in request_type:
+            data.update({name: value for name, value in info.context.FILES.items()})
 
-        if new_obj:
-            model = cls._meta.model
-            id = new_obj.pop('id')
-            old_obj = get_Object_or_None(model, pk=id)
-            if old_obj:
-                new_obj_serialized = dict(cls._meta.serializer_class(
-                    old_obj,
-                    **cls.get_serializer_kwargs(root, info, **kwargs)
-                ).data)
-                new_obj_serialized.update(new_obj)
-                serializer = cls._meta.serializer_class(
-                    old_obj,
-                    data=new_obj_serialized,
-                    **cls.get_serializer_kwargs(root, info, **kwargs)
-                )
+        pk = data.pop('id')
+        old_obj = get_Object_or_None(cls._meta.model, pk=pk)
+        if old_obj:
+            nested_objs = cls.manage_nested_fields(data, root, info)
+            serializer = cls._meta.serializer(
+                old_obj,
+                data=data,
+                partial=True,
+                **cls.get_serializer_kwargs(root, info, **kwargs)
+            )
 
-                if serializer.is_valid():
-                    obj = serializer.save()
-                    return cls.perform_mutate(obj, info)
-                else:
-                    errors = [
-                        ErrorType(field=key, messages=value)
-                        for key, value in serializer.errors.items()
-                    ]
-            else:
-                errors = [
-                    ErrorType(
-                        field='id',
-                        messages=['A {} obj with id: {} do not exist'.format(model.__name__, id)])
-                ]
-            return cls.get_errors(errors)
+            ok, obj = cls.save(serializer, root, info)
+            if nested_objs:
+                [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
+            return cls.perform_mutate(obj, info) if ok else cls.get_errors(obj)
+        else:
+            return cls.get_errors([
+                ErrorType(
+                    field='id',
+                    messages=['A {} obj with id: {} do not exist'.format(
+                        cls._meta.model.__name__, pk
+                    )])
+            ])
+
+    @classmethod
+    def save(cls, serialized_obj, root, info, **kwargs):
+        if serialized_obj.is_valid():
+            obj = serialized_obj.save()
+            return True, obj
+
+        else:
+            errors = [
+                ErrorType(field=key, messages=value)
+                for key, value in serialized_obj.errors.items()
+            ]
+            return False, errors
 
     @classmethod
     def retrieve(cls, manager, root, info, **kwargs):
-        id = kwargs.pop('id', None)
+        pk = kwargs.pop('id', None)
 
         try:
-            return manager.get_queryset().get(pk=id)
+            return manager.get_queryset().get(pk=pk)
         except manager.model.DoesNotExist:
             return None
 
