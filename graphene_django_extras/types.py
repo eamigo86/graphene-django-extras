@@ -475,9 +475,11 @@ class DjangoSerializerType(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
-        if nested_objs:
+        if not ok:
+            return cls.get_errors(obj)
+        elif nested_objs:
             [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
-        return cls.perform_mutate(obj, info) if ok else cls.get_errors(obj)
+        return cls.perform_mutate(obj, info)
 
     @classmethod
     def delete(cls, root, info, **kwargs):
@@ -509,7 +511,7 @@ class DjangoSerializerType(ObjectType):
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
         if old_obj:
             nested_objs = cls.manage_nested_fields(data, root, info)
-            serializer = cls._meta.serializer(
+            serializer = cls._meta.serializer_class(
                 old_obj,
                 data=data,
                 partial=True,
@@ -517,9 +519,11 @@ class DjangoSerializerType(ObjectType):
             )
 
             ok, obj = cls.save(serializer, root, info)
-            if nested_objs:
+            if not ok:
+                return cls.get_errors(obj)
+            elif nested_objs:
                 [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
-            return cls.perform_mutate(obj, info) if ok else cls.get_errors(obj)
+            return cls.perform_mutate(obj, info)
         else:
             return cls.get_errors([
                 ErrorType(

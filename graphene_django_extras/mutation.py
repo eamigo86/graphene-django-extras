@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from django.core.exceptions import ValidationError
 from graphene import Boolean, List, Field, ID, Argument, ObjectType
 from graphene.types.base import BaseOptions
 from graphene.utils.deprecated import warn_deprecation
-from graphene.utils.get_unbound_function import get_unbound_function
 from graphene.utils.props import props
 from graphene_django.rest_framework.types import ErrorType
 
 from .base_types import factory_type
 from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
-from .utils import get_Object_or_None, parse_validation_exc
+from .utils import get_Object_or_None
 
 
 class SerializerMutationOptions(BaseOptions):
@@ -180,9 +178,11 @@ class DjangoSerializerMutation(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
-        if nested_objs:
+        if not ok:
+            return cls.get_errors(obj)
+        elif nested_objs:
             [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
-        return cls.perform_mutate(obj, info) if ok else cls.get_errors(obj)
+        return cls.perform_mutate(obj, info)
 
     @classmethod
     def delete(cls, root, info, **kwargs):
@@ -214,7 +214,7 @@ class DjangoSerializerMutation(ObjectType):
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
         if old_obj:
             nested_objs = cls.manage_nested_fields(data, root, info)
-            serializer = cls._meta.serializer(
+            serializer = cls._meta.serializer_class(
                 old_obj,
                 data=data,
                 partial=True,
@@ -222,9 +222,11 @@ class DjangoSerializerMutation(ObjectType):
             )
 
             ok, obj = cls.save(serializer, root, info)
-            if nested_objs:
+            if not ok:
+                return cls.get_errors(obj)
+            elif nested_objs:
                 [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
-            return cls.perform_mutate(obj, info) if ok else cls.get_errors(obj)
+            return cls.perform_mutate(obj, info)
         else:
             return cls.get_errors([
                 ErrorType(
