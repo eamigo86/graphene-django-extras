@@ -119,7 +119,7 @@ def construct_fields(
         for name, field in _model_fields:
             if input_flag == 'create' and name == 'id':
                 continue
-            is_include = include_fields and name in include_fields
+            is_included = include_fields and name in include_fields
             nested_field = True if name in nested_fields else False
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields
@@ -127,7 +127,7 @@ def construct_fields(
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith('+')
             # if is_not_in_only or is_excluded or is_no_backref:
-            if not is_include and (
+            if not is_included and (
                     is_not_in_only or is_excluded or is_no_backref or field.hidden or (
                     not isinstance(field, models.fields.related.ForeignObjectRel) and (
                     not field.editable and input_flag))):
