@@ -157,7 +157,15 @@ class DjangoInputObjectType(InputObjectType):
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
         django_input_fields = yank_fields_from_attrs(
-            construct_fields(model, registry, only_fields, exclude_fields, input_for, nested_fields),
+            construct_fields(
+                model,
+                registry,
+                only_fields,
+                None,
+                exclude_fields,
+                input_for,
+                nested_fields
+            ),
             _as=InputField, sort=False
         )
 
