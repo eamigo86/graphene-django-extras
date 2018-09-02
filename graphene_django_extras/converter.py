@@ -127,14 +127,15 @@ def construct_fields(
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith('+')
             # if is_not_in_only or is_excluded or is_no_backref:
-            if not is_included and (
-                    is_not_in_only or is_excluded or is_no_backref or field.hidden or (
-                    not isinstance(field, models.fields.related.ForeignObjectRel) and (
-                    not field.editable and input_flag))):
+            if not is_included and (is_not_in_only or is_excluded or is_no_backref):
                 # We skip this field if we specify only_fields and is not
                 # in there. Or when we exclude this field in exclude_fields.
                 # Or when there is no back reference.
                 continue
+            if input_flag and not field.editable and not isinstance(
+                    field, (models.fields.related.ForeignObjectRel, GenericForeignKey)):
+                continue
+
             converted = convert_django_field_with_choices(field, registry, input_flag, nested_field)
             fields[name] = converted
     return fields
