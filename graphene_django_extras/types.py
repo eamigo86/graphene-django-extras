@@ -65,6 +65,7 @@ class DjangoObjectType(ObjectType):
         skip_registry=False,
         only_fields=(),
         exclude_fields=(),
+        include_fields=(),
         filter_fields=None,
         interfaces=(),
         filterset_class=None,
@@ -88,7 +89,7 @@ class DjangoObjectType(ObjectType):
             )
 
         django_fields = yank_fields_from_attrs(
-            construct_fields(model, registry, only_fields, exclude_fields),
+            construct_fields(model, registry, only_fields, include_fields, exclude_fields),
             _as=Field,
         )
 
@@ -312,8 +313,8 @@ class DjangoSerializerType(ObjectType):
         abstract = True
 
     @classmethod
-    def __init_subclass_with_meta__(cls, serializer_class=None, queryset=None, only_fields=(), exclude_fields=(),
-                                    pagination=None, input_field_name=None, output_field_name=None,
+    def __init_subclass_with_meta__(cls, serializer_class=None, queryset=None, only_fields=(), include_fields=(),
+                                    exclude_fields=(), pagination=None, input_field_name=None, output_field_name=None,
                                     results_field_name=None, nested_fields=(), filter_fields=None, description='',
                                     filterset_class=None, **options):
 
@@ -345,6 +346,7 @@ class DjangoSerializerType(ObjectType):
         factory_kwargs = {
             'model': model,
             'only_fields': only_fields,
+            'include_fields': include_fields,
             'exclude_fields': exclude_fields,
             'filter_fields': filter_fields,
             'pagination': pagination,

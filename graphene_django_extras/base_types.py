@@ -27,6 +27,7 @@ def factory_type(operation, _type, *args, **kwargs):
                 name = kwargs.get('name')  or to_camel_case('{}_Generic_Type'.format(kwargs.get('model') .__name__))
                 only_fields = kwargs.get('only_fields')
                 exclude_fields = kwargs.get('exclude_fields')
+                include_fields = kwargs.get('include_fields')
                 filter_fields = kwargs.get('filter_fields')
                 filterset_class = kwargs.get('filterset_class')
                 registry = kwargs.get('registry')

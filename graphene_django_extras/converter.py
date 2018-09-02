@@ -93,7 +93,7 @@ def convert_django_field_with_choices(field, registry=None, input_flag=None, nes
     return convert_django_field(field, registry, input_flag, nested_field)
 
 
-def construct_fields(model, registry, only_fields, exclude_fields, input_flag=None, nested_fields=()):
+def construct_fields(model, registry, only_fields, include_fields, exclude_fields, input_flag=None, nested_fields=()):
     _model_fields = get_model_fields(model)
 
     if settings.DEBUG:
@@ -111,6 +111,7 @@ def construct_fields(model, registry, only_fields, exclude_fields, input_flag=No
         for name, field in _model_fields:
             if input_flag == 'create' and name == 'id':
                 continue
+            is_include = include_fields and name in include_fields
             nested_field = True if name in nested_fields else False
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields
@@ -118,8 +119,8 @@ def construct_fields(model, registry, only_fields, exclude_fields, input_flag=No
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith('+')
             # if is_not_in_only or is_excluded or is_no_backref:
-            if is_not_in_only or is_excluded or is_no_backref or field.hidden or (
-                    not isinstance(field, models.fields.related.ForeignObjectRel) and not field.editable):
+            if not is_include and (is_not_in_only or is_excluded or is_no_backref or field.hidden or (
+                    not isinstance(field, models.fields.related.ForeignObjectRel) and not field.editable)):
                 # We skip this field if we specify only_fields and is not
                 # in there. Or when we exclude this field in exclude_fields.
                 # Or when there is no back reference.

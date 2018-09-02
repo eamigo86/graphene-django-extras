@@ -39,9 +39,9 @@ class DjangoSerializerMutation(ObjectType):
         abstract = True
 
     @classmethod
-    def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), exclude_fields=(),
-                                    input_field_name=None, output_field_name=None, description='',
-                                    nested_fields=(), **options):
+    def __init_subclass_with_meta__(cls, serializer_class=None, only_fields=(), include_fields=(),
+                                    exclude_fields=(), input_field_name=None, output_field_name=None,
+                                    description='', nested_fields=(), **options):
 
         if not serializer_class:
             raise Exception('serializer_class is required on all DjangoSerializerMutation')
@@ -71,6 +71,7 @@ class DjangoSerializerMutation(ObjectType):
         factory_kwargs = {
             'model': model,
             'only_fields': only_fields,
+            'include_fields': include_fields,
             'exclude_fields': exclude_fields,
             'nested_fields': nested_fields,
             'registry': registry,
