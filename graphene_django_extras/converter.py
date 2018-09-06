@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 import re
 from collections import OrderedDict
-
+from .settings import graphql_api_settings
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation, GenericRel
 from django.db import models
@@ -17,7 +18,7 @@ from graphene_django.utils import import_single_dispatch
 from .base_types import (
     GenericForeignKeyType, GenericForeignKeyInputType, CustomDateTime, CustomTime, CustomDate, Binary
 )
-from .fields import DjangoFilterListField
+from .fields import DjangoFilterListField, DjangoListObjectField
 from .utils import is_required, get_model_fields, get_related_model
 
 singledispatch = import_single_dispatch()
@@ -339,9 +340,11 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
                 description=field.help_text or field.verbose_name,
                 required=is_required(field) and input_flag == 'create'
             )
-        _type = registry.get_type_for_model(model, for_input=input_flag)
+
+        _type = registry.get_type(model, _type=input_flag)
         if not _type:
             return
+
         return Field(
             _type,
             description=field.help_text or field.verbose_name,
@@ -383,6 +386,7 @@ def convert_generic_foreign_key_to_object(field, registry=None, input_flag=None,
         _type = registry.get_type_for_enum(key)
         if not _type:
             _type = GenericForeignKeyType
+
         # return Field(_type, description=field.help_text or field.verbose_name, required=field.null)
         return Field(
             _type,
@@ -399,7 +403,8 @@ def convert_generic_relation_to_object_list(field, registry=None, input_flag=Non
     def dynamic_type():
         if input_flag:
             return
-        _type = registry.get_type_for_model(model)
+
+        _type = registry.get_type(model)
         if not _type:
             return
         return DjangoListField(_type)

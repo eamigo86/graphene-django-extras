@@ -166,10 +166,10 @@ from .mutations import UserMutation, UserSerializerMutation
 
 class Queries(graphene.ObjectType):
     # Possible User list queries definitions
-    all_users = DjangoListObjectField(UserListType, description=_('All Users query'))
-    all_users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
-    all_users2 = DjangoFilterListField(UserType)
-    all_users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
+    users = DjangoListObjectField(UserListType, description=_('All Users query'))
+    users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
+    users2 = DjangoFilterListField(UserType)
+    users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
 
     # Defining a query for a single user
     # The DjangoObjectField have a ID type input field, that allow filter by id and is't necessary to define resolve function

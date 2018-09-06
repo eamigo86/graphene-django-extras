@@ -9,14 +9,6 @@ from graphene.types.datetime import Date, Time, DateTime
 from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
 
-try:
-    import iso8601
-except:
-    raise ImportError(
-        "iso8601 package is required for DateTime Scalar.\n"
-        "You can install it using: pip install iso8601."
-    )
-
 
 def factory_type(operation, _type, *args, **kwargs):
 
@@ -24,7 +16,9 @@ def factory_type(operation, _type, *args, **kwargs):
         class GenericType(_type):
             class Meta:
                 model = kwargs.get('model')
-                name = kwargs.get('name')  or to_camel_case('{}_Generic_Type'.format(kwargs.get('model') .__name__))
+                name = kwargs.get('name') or to_camel_case('{}_Generic_Type'.format(
+                    kwargs.get('model') .__name__)
+                )
                 only_fields = kwargs.get('only_fields')
                 exclude_fields = kwargs.get('exclude_fields')
                 include_fields = kwargs.get('include_fields')
@@ -32,7 +26,10 @@ def factory_type(operation, _type, *args, **kwargs):
                 filterset_class = kwargs.get('filterset_class')
                 registry = kwargs.get('registry')
                 skip_registry = kwargs.get('skip_registry')
-                description = 'Auto generated Type for {} model'.format(kwargs.get('model')._meta.verbose_name)
+                fields = kwargs.get('fields')
+                description = 'Auto generated Type for {} model'.format(
+                    kwargs.get('model').__name__
+                )
 
         return GenericType
 
@@ -44,13 +41,13 @@ def factory_type(operation, _type, *args, **kwargs):
                     kwargs.get('model').__name__, args[0]))
                 only_fields = kwargs.get('only_fields')
                 exclude_fields = kwargs.get('exclude_fields')
-                filter_fields = kwargs.get('filter_fields')
                 nested_fields = kwargs.get('nested_fields')
                 registry = kwargs.get('registry')
                 skip_registry = kwargs.get('skip_registry')
                 input_for = args[0]
                 description = 'Auto generated InputType for {} model'.format(
-                    kwargs.get('model')._meta.verbose_name)
+                    kwargs.get('model').__name__
+                )
 
         return GenericInputType
 
@@ -58,7 +55,9 @@ def factory_type(operation, _type, *args, **kwargs):
         class GenericListType(_type):
             class Meta:
                 model = kwargs.get('model')
-                name = kwargs.get('name') or to_camel_case('{}_List_Type'.format(kwargs.get('model').__name__))
+                name = kwargs.get('name') or to_camel_case('{}_List_Type'.format(
+                    kwargs.get('model').__name__
+                ))
                 only_fields = kwargs.get('only_fields')
                 exclude_fields = kwargs.get('exclude_fields')
                 filter_fields = kwargs.get('filter_fields')
@@ -66,8 +65,12 @@ def factory_type(operation, _type, *args, **kwargs):
                 results_field_name = kwargs.get('results_field_name')
                 pagination = kwargs.get('pagination')
                 queryset = kwargs.get('queryset')
+                registry = kwargs.get('registry')
+                skip_registry = kwargs.get('skip_registry')
                 description = 'Auto generated list Type for {} model'.format(
-                    kwargs.get('model')._meta.verbose_name)
+                    kwargs.get('model').__name__
+                )
+                resolver = kwargs.get('list_resolver')
 
         return GenericListType
 
