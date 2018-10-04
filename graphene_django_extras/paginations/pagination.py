@@ -72,7 +72,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
                                                     '\'default_limit\': {}, and \'max_limit\': {}'.format(
                                                         self.default_limit, self.max_limit)),
             self.offset_query_param: Int(description='The initial index from which to return the results. Default: 0'),
-            self.ordering_param: String(description='A string or coma separate strings values that indicating the '
+            self.ordering_param: String(description='A string or comma delimited string values that indicate the '
                                                     'default ordering when obtaining lists of objects.')
         }
 
@@ -130,7 +130,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         # Default ordering value: ""
         self.ordering = ordering
 
-        # A string or coma separate strings values that indicating the default ordering when obtaining lists of objects.
+        # A string or comma delimited string values that indicate the default ordering when obtaining lists of objects.
         # Uses Django order_by syntax
         self.ordering_param = ordering_param
 
@@ -151,7 +151,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         paginator_dict = {
             self.page_query_param: Int(default_value=1,
                                        description='A page number within the result paginated set. Default: 1'),
-            self.ordering_param: String(description='A string or coma separate strings values that indicating the '
+            self.ordering_param: String(description='A string or comma delimited string values that indicate the '
                                                     'default ordering when obtaining lists of objects.')
         }
 
