@@ -13,7 +13,7 @@ from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model
 from graphql import GraphQLList, GraphQLNonNull
-from graphql.language.ast import FragmentSpread
+from graphql.language.ast import FragmentSpread, InlineFragment
 
 
 def get_reverse_fields(model):
@@ -291,6 +291,18 @@ def recursive_params(selection_set, fragments, available_related_fields,
         if isinstance(field, FragmentSpread) and fragments:
             a, b = recursive_params(
                 fragments[field.name.value].selection_set,
+                fragments,
+                available_related_fields,
+                select_related, prefetch_related
+            )
+            [select_related.append(x) for x in a if x not in select_related]
+            [prefetch_related.append(x)
+             for x in b if x not in prefetch_related]
+            continue
+        
+        if isinstance(field, InlineFragment):
+            a, b = recursive_params(
+                field.selection_set,
                 fragments,
                 available_related_fields,
                 select_related, prefetch_related
