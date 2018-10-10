@@ -180,11 +180,13 @@ class DjangoFilterPaginateListField(Field):
     def model(self):
         return self.type.of_type._meta.node._meta.model
 
+    def get_queryset(self, manager, info, **kwargs):
+        return queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
+
     def list_resolver(self, manager, filterset_class, filtering_args,
                       root, info, **kwargs):
-
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
-        qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
+        qs = self.get_queryset(manager, info, **kwargs)
         qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
         if root and is_valid_django_model(root._meta.model):
