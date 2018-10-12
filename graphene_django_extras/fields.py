@@ -116,7 +116,7 @@ class DjangoFilterListField(Field):
 
         if qs is None:
             qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-            qs = filterset_class(data=filter_kwargs, queryset=qs).qs
+            qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
