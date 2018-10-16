@@ -93,7 +93,7 @@ DjangoListObjectType classes pagination definitions on settings.py like this:
 
 
     class UserModelType(DjangoSerializerType):
-        """ With this type definition it't necessary a mutation definition for models """
+        """ With this type definition it's necessary a mutation definition for models """
 
         class Meta:
             description = " User's model type definition "
