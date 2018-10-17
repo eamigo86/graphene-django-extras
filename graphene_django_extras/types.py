@@ -362,7 +362,8 @@ class DjangoSerializerType(ObjectType):
             'nested_fields': nested_fields,
             'registry': registry,
             'skip_registry': False,
-            'filterset_class': filterset_class
+            'filterset_class': filterset_class,
+            'results_field_name': results_field_name,
         }
 
         output_type = registry.get_type_for_model(model)
