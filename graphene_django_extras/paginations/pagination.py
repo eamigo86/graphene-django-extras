@@ -77,7 +77,6 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def paginate_queryset(self, qs, **kwargs):
-        count = _get_count(qs)
         limit = _nonzero_int(
             kwargs.get(self.limit_query_param, None),
             strict=True,
@@ -96,13 +95,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
             else:
                 qs = qs.order_by(order)
 
-        if limit < 0:
-            offset = kwargs.get(self.offset_query_param, count) + limit
-        else:
-            offset = kwargs.get(self.offset_query_param, 0)
-
-        if count == 0 or offset > count or offset < 0:
-            return []
+        offset = kwargs.get(self.offset_query_param, 0)
 
         return qs[offset:offset + fabs(limit)]
 
