@@ -20,7 +20,6 @@ from .utils import clean_dict
 
 
 class ExtraGraphQLView(GraphQLView, APIView):
-
     def get_operation_ast(self, request):
         data = self.parse_body(request)
         query = request.GET.get('query') or data.get('query')

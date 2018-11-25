@@ -125,12 +125,12 @@ class DjangoFilterListField(Field):
         return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
-        temp = self.type
-        while isinstance(temp, Structure):
-            temp = temp.of_type
+        current_type = self.type
+        while isinstance(current_type, Structure):
+            current_type = current_type.of_type
         return partial(
             self.list_resolver,
-            temp._meta.model._default_manager,
+            current_type._meta.model._default_manager,
             self.filterset_class,
             self.filtering_args
         )
@@ -199,12 +199,12 @@ class DjangoFilterPaginateListField(Field):
         return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
-        temp = self.type
-        while isinstance(temp, Structure):
-            temp = temp.of_type
+        current_type = self.type
+        while isinstance(current_type, Structure):
+            current_type = current_type.of_type
         return partial(
             self.list_resolver,
-            temp._meta.model._default_manager,
+            current_type._meta.model._default_manager,
             self.filterset_class,
             self.filtering_args
         )

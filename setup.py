@@ -33,7 +33,7 @@ setup(
     url='https://github.com/eamigo86/graphene-django-extras',
 
     author='Ernesto Perez Amigo',
-    author_email='eamigo@nauta.cu',
+    author_email='eamigop86@gmail.com',
 
     license='MIT',
 
