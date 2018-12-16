@@ -58,7 +58,7 @@ setup(
         'graphql-core>=2.1.0',
         'graphene>=2.1.3',
         'graphene-django>=2.2.0',
-        'django-filter>=1.1.0',
+        'django-filter>1.1.0',
         'djangorestframework>=3.6.0'
     ],
     extras_require={
