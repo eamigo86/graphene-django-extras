@@ -341,7 +341,7 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
                 required=is_required(field) and input_flag == 'create'
             )
 
-        _type = registry.get_type(model, _type=input_flag)
+        _type = registry.get_type_for_model(model, for_input=input_flag)
         if not _type:
             return
 
@@ -404,7 +404,7 @@ def convert_generic_relation_to_object_list(field, registry=None, input_flag=Non
         if input_flag:
             return
 
-        _type = registry.get_type(model)
+        _type = registry.get_type_for_model(model)
         if not _type:
             return
         return DjangoListField(_type)
