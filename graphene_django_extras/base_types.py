@@ -26,7 +26,7 @@ def factory_type(operation, _type, *args, **kwargs):
                 filterset_class = kwargs.get('filterset_class')
                 registry = kwargs.get('registry')
                 skip_registry = kwargs.get('skip_registry')
-                fields = kwargs.get('fields')
+                # fields = kwargs.get('fields')
                 description = 'Auto generated Type for {} model'.format(
                     kwargs.get('model').__name__
                 )
