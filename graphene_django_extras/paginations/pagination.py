@@ -160,7 +160,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         page = kwargs.pop(self.page_query_param, 1)
         if self.page_size_query_param:
             page_size = _nonzero_int(
-                kwargs.get(self.page_size_query_param, None),
+                kwargs.get(self.page_size_query_param, self.page_size),
                 strict=True,
                 cutoff=self.max_page_size
             )
