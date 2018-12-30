@@ -69,7 +69,6 @@ def factory_type(operation, _type, *args, **kwargs):
                 description = 'Auto generated list Type for {} model'.format(
                     kwargs.get('model').__name__
                 )
-                resolver = kwargs.get('list_resolver')
 
         return GenericListType
 
