@@ -66,7 +66,6 @@ def factory_type(operation, _type, *args, **kwargs):
                 pagination = kwargs.get('pagination')
                 queryset = kwargs.get('queryset')
                 registry = kwargs.get('registry')
-                skip_registry = kwargs.get('skip_registry')
                 description = 'Auto generated list Type for {} model'.format(
                     kwargs.get('model').__name__
                 )

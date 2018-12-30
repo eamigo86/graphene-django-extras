@@ -215,6 +215,7 @@ class DjangoListObjectType(ObjectType):
     def __init_subclass_with_meta__(
         cls,
         model=None,
+        registry=None,
         results_field_name=None,
         pagination=None,
         only_fields=(),
@@ -250,6 +251,7 @@ class DjangoListObjectType(ObjectType):
                 'filterset_class': filterset_class,
                 'pagination': pagination,
                 'queryset': queryset,
+                'registry': registry,
                 'skip_registry': False
             }
             baseType = factory_type('output', DjangoObjectType, **factory_kwargs)
