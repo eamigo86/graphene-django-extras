@@ -2,7 +2,7 @@
 from functools import partial
 
 import graphene
-from django.core.exceptions import ValidationError
+from django.db import DatabaseError
 
 from ..base_types import DjangoListObjectBase
 
@@ -72,5 +72,5 @@ def _get_count(queryset):
     """
     try:
         return queryset.count()
-    except (AttributeError, TypeError):
+    except (AttributeError, TypeError, DatabaseError):
         return len(queryset)
