@@ -26,7 +26,7 @@ def factory_type(operation, _type, *args, **kwargs):
                 filterset_class = kwargs.get('filterset_class')
                 registry = kwargs.get('registry')
                 skip_registry = kwargs.get('skip_registry')
-                fields = kwargs.get('fields')
+                # fields = kwargs.get('fields')
                 description = 'Auto generated Type for {} model'.format(
                     kwargs.get('model').__name__
                 )
@@ -66,11 +66,9 @@ def factory_type(operation, _type, *args, **kwargs):
                 pagination = kwargs.get('pagination')
                 queryset = kwargs.get('queryset')
                 registry = kwargs.get('registry')
-                skip_registry = kwargs.get('skip_registry')
                 description = 'Auto generated list Type for {} model'.format(
                     kwargs.get('model').__name__
                 )
-                resolver = kwargs.get('list_resolver')
 
         return GenericListType
 

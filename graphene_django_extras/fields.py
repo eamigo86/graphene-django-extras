@@ -116,7 +116,7 @@ class DjangoFilterListField(Field):
 
         if qs is None:
             qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-            qs = filterset_class(data=filter_kwargs, queryset=qs).qs
+            qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
@@ -125,12 +125,12 @@ class DjangoFilterListField(Field):
         return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
-        temp = self.type
-        while isinstance(temp, Structure):
-            temp = temp.of_type
+        current_type = self.type
+        while isinstance(current_type, Structure):
+            current_type = current_type.of_type
         return partial(
             self.list_resolver,
-            temp._meta.model._default_manager,
+            current_type._meta.model._default_manager,
             self.filterset_class,
             self.filtering_args
         )
@@ -180,11 +180,13 @@ class DjangoFilterPaginateListField(Field):
     def model(self):
         return self.type.of_type._meta.node._meta.model
 
+    def get_queryset(self, manager, info, **kwargs):
+        return queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
+
     def list_resolver(self, manager, filterset_class, filtering_args,
                       root, info, **kwargs):
-
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
-        qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
+        qs = self.get_queryset(manager, info, **kwargs)
         qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
         if root and is_valid_django_model(root._meta.model):
@@ -197,12 +199,12 @@ class DjangoFilterPaginateListField(Field):
         return maybe_queryset(qs)
 
     def get_resolver(self, parent_resolver):
-        temp = self.type
-        while isinstance(temp, Structure):
-            temp = temp.of_type
+        current_type = self.type
+        while isinstance(current_type, Structure):
+            current_type = current_type.of_type
         return partial(
             self.list_resolver,
-            temp._meta.model._default_manager,
+            current_type._meta.model._default_manager,
             self.filterset_class,
             self.filtering_args
         )
