@@ -341,7 +341,7 @@ def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_f
                 required=is_required(field) and input_flag == 'create'
             )
 
-        _type = registry.get_type_for_model(model, input_flag)
+        _type = registry.get_type_for_model(model, for_input=input_flag)
         if not _type:
             return
 

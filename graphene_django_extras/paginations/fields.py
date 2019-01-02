@@ -47,7 +47,7 @@ class LimitOffsetPaginationField(AbstractPaginationField):
                                          description='The initial index from which to return the results.')
         
         kwargs[ordering_param] = String(default_value='',
-                                        description='A string or coma separate strings values that indicating the '
+                                        description='A string or comma delimited string values that indicate the '
                                                     'default ordering when obtaining lists of objects.')
 
         super(LimitOffsetPaginationField, self).__init__(List(_type), *args, **kwargs)
