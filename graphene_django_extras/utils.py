@@ -17,10 +17,15 @@ from graphql.language.ast import FragmentSpread, InlineFragment
 
 
 def get_reverse_fields(model):
-    for name, attr in model.__dict__.items():
+    reverse_fields = {
+        f.name: f for f in model._meta.get_fields()
+        if f.auto_created and not f.concrete
+    }
+
+    for name, field in reverse_fields.items():
         # Django =>1.9 uses 'rel', django <1.9 uses 'related'
-        related = getattr(attr, 'rel', None) or \
-            getattr(attr, 'related', None)
+        related = getattr(field, 'rel', None) or \
+            getattr(field, 'related', None)
         if isinstance(related, ManyToOneRel):
             yield (name, related)
         elif isinstance(related, ManyToManyRel) and not related.symmetrical:
@@ -93,7 +98,7 @@ def get_model_fields(model):
 
 def get_obj(app_label, model_name, object_id):
     """
-    Function used by my to get objst
+    Function used to get a object
     :param app_label: A valid Django Model or a string with format: <app_label>.<model_name>
     :param model_name: Key into kwargs that contains de data: new_person
     :param object_id:
