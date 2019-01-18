@@ -13,15 +13,22 @@ class GenericPaginationField(graphene.Field):
     """
 
     def __init__(self, _type, paginator_instance, *args, **kwargs):
-        kwargs.setdefault('args', {})
+        kwargs.setdefault("args", {})
 
         self.paginator_instance = paginator_instance
 
         kwargs.update(self.paginator_instance.to_graphql_fields())
-        kwargs.update({'description': '{} list, paginated by {}'.format(_type._meta.model.__name__,
-                                                                        paginator_instance.__name__)})
+        kwargs.update(
+            {
+                "description": "{} list, paginated by {}".format(
+                    _type._meta.model.__name__, paginator_instance.__name__
+                )
+            }
+        )
 
-        super(GenericPaginationField, self).__init__(graphene.List(_type), *args, **kwargs)
+        super(GenericPaginationField, self).__init__(
+            graphene.List(_type), *args, **kwargs
+        )
 
     @property
     def model(self):
@@ -33,7 +40,9 @@ class GenericPaginationField(graphene.Field):
         return None
 
     def get_resolver(self, parent_resolver):
-        return partial(self.list_resolver, self.type.of_type._meta.model._default_manager)
+        return partial(
+            self.list_resolver, self.type.of_type._meta.model._default_manager
+        )
 
 
 def _positive_int(integer_string, strict=False, cutoff=None):

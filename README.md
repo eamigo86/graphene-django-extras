@@ -1,8 +1,19 @@
 
 ---
 
-# Graphene-Django-Extras [![PyPI version](https://badge.fury.io/py/graphene-django-extras.svg)](https://badge.fury.io/py/graphene-django-extras)
+# Graphene-Django-Extras
+[![build-status-image]][travis]
+[![coverage-status-image]][codecov]
+[![pypi-version]][pypi]
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
+
+[build-status-image]: https://secure.travis-ci.org/encode/graphene-django-extras.svg?branch=master
+[travis]: https://travis-ci.org/eamigo86/graphene-django-extras?branch=master
+[coverage-status-image]: https://img.shields.io/codecov/c/gh/encode/graphene-django-extras/master.svg
+[codecov]: https://codecov.io/gh/eamigo86/graphene-django-extras?branch=master
+[pypi-version]: https://img.shields.io/pypi/v/graphene_django_extras.svg
+[pypi]: https://pypi.org/project/graphene_django_extras/
 
 This package add some extra functionalities to graphene-django to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.

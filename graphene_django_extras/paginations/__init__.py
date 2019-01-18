@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from .pagination import *
+from .pagination import LimitOffsetGraphqlPagination, PageGraphqlPagination
 
 __all__ = [
-    'LimitOffsetGraphqlPagination',
-    'PageGraphqlPagination',
+    "LimitOffsetGraphqlPagination",
+    "PageGraphqlPagination",
     # 'CursorGraphqlPagination',  # Not implemented yet
 ]

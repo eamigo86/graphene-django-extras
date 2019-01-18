@@ -5,7 +5,6 @@ from ..registry import get_global_registry
 
 
 class BaseExtraGraphQLDirective(GraphQLDirective):
-
     def __init__(self):
         registry = get_global_registry()
         super(BaseExtraGraphQLDirective, self).__init__(
@@ -16,13 +15,13 @@ class BaseExtraGraphQLDirective(GraphQLDirective):
                 DirectiveLocation.FIELD,
                 DirectiveLocation.FRAGMENT_SPREAD,
                 DirectiveLocation.INLINE_FRAGMENT,
-            ]
+            ],
         )
         registry.register_directive(self.get_name(), self)
 
     @classmethod
     def get_name(cls):
-        return to_snake_case(cls.__name__.replace('GraphQLDirective', ''))
+        return to_snake_case(cls.__name__.replace("GraphQLDirective", ""))
 
     @staticmethod
     def get_args():

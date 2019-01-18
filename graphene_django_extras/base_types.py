@@ -12,62 +12,66 @@ from graphql.language import ast
 
 def factory_type(operation, _type, *args, **kwargs):
 
-    if operation == 'output':
+    if operation == "output":
+
         class GenericType(_type):
             class Meta:
-                model = kwargs.get('model')
-                name = kwargs.get('name') or to_camel_case('{}_Generic_Type'.format(
-                    kwargs.get('model') .__name__)
+                model = kwargs.get("model")
+                name = kwargs.get("name") or to_camel_case(
+                    "{}_Generic_Type".format(kwargs.get("model").__name__)
                 )
-                only_fields = kwargs.get('only_fields')
-                exclude_fields = kwargs.get('exclude_fields')
-                include_fields = kwargs.get('include_fields')
-                filter_fields = kwargs.get('filter_fields')
-                filterset_class = kwargs.get('filterset_class')
-                registry = kwargs.get('registry')
-                skip_registry = kwargs.get('skip_registry')
+                only_fields = kwargs.get("only_fields")
+                exclude_fields = kwargs.get("exclude_fields")
+                include_fields = kwargs.get("include_fields")
+                filter_fields = kwargs.get("filter_fields")
+                filterset_class = kwargs.get("filterset_class")
+                registry = kwargs.get("registry")
+                skip_registry = kwargs.get("skip_registry")
                 # fields = kwargs.get('fields')
-                description = 'Auto generated Type for {} model'.format(
-                    kwargs.get('model').__name__
+                description = "Auto generated Type for {} model".format(
+                    kwargs.get("model").__name__
                 )
 
         return GenericType
 
-    elif operation == 'input':
+    elif operation == "input":
+
         class GenericInputType(_type):
             class Meta:
-                model = kwargs.get('model')
-                name = kwargs.get('name') or to_camel_case('{}_{}_Generic_Type'.format(
-                    kwargs.get('model').__name__, args[0]))
-                only_fields = kwargs.get('only_fields')
-                exclude_fields = kwargs.get('exclude_fields')
-                nested_fields = kwargs.get('nested_fields')
-                registry = kwargs.get('registry')
-                skip_registry = kwargs.get('skip_registry')
+                model = kwargs.get("model")
+                name = kwargs.get("name") or to_camel_case(
+                    "{}_{}_Generic_Type".format(kwargs.get("model").__name__, args[0])
+                )
+                only_fields = kwargs.get("only_fields")
+                exclude_fields = kwargs.get("exclude_fields")
+                nested_fields = kwargs.get("nested_fields")
+                registry = kwargs.get("registry")
+                skip_registry = kwargs.get("skip_registry")
                 input_for = args[0]
-                description = 'Auto generated InputType for {} model'.format(
-                    kwargs.get('model').__name__
+                description = "Auto generated InputType for {} model".format(
+                    kwargs.get("model").__name__
                 )
 
         return GenericInputType
 
-    elif operation == 'list':
+    elif operation == "list":
+
         class GenericListType(_type):
             class Meta:
-                model = kwargs.get('model')
-                name = kwargs.get('name') or to_camel_case('{}_List_Type'.format(
-                    kwargs.get('model').__name__
-                ))
-                only_fields = kwargs.get('only_fields')
-                exclude_fields = kwargs.get('exclude_fields')
-                filter_fields = kwargs.get('filter_fields')
-                filterset_class = kwargs.get('filterset_class')
-                results_field_name = kwargs.get('results_field_name')
-                pagination = kwargs.get('pagination')
-                queryset = kwargs.get('queryset')
-                registry = kwargs.get('registry')
-                description = 'Auto generated list Type for {} model'.format(
-                    kwargs.get('model').__name__
+                model = kwargs.get("model")
+                name = kwargs.get("name") or to_camel_case(
+                    "{}_List_Type".format(kwargs.get("model").__name__)
+                )
+                only_fields = kwargs.get("only_fields")
+                exclude_fields = kwargs.get("exclude_fields")
+                filter_fields = kwargs.get("filter_fields")
+                filterset_class = kwargs.get("filterset_class")
+                results_field_name = kwargs.get("results_field_name")
+                pagination = kwargs.get("pagination")
+                queryset = kwargs.get("queryset")
+                registry = kwargs.get("registry")
+                description = "Auto generated list Type for {} model".format(
+                    kwargs.get("model").__name__
                 )
 
         return GenericListType
@@ -76,7 +80,7 @@ def factory_type(operation, _type, *args, **kwargs):
 
 
 class DjangoListObjectBase(object):
-    def __init__(self, results, count, results_field_name='results'):
+    def __init__(self, results, count, results_field_name="results"):
         self.results = results
         self.count = count
         self.results_field_name = results_field_name
@@ -84,16 +88,16 @@ class DjangoListObjectBase(object):
     def to_dict(self):
         return {
             self.results_field_name: [e.to_dict() for e in self.results],
-            'count': self.count,
+            "count": self.count,
         }
 
 
 def resolver(attr_name, root, instance, info):
-    if attr_name == 'app_label':
+    if attr_name == "app_label":
         return instance._meta.app_label
-    elif attr_name == 'id':
+    elif attr_name == "id":
         return instance.id
-    elif attr_name == 'model_name':
+    elif attr_name == "model_name":
         return instance._meta.model.__name__
 
 
@@ -103,7 +107,7 @@ class GenericForeignKeyType(graphene.ObjectType):
     model_name = graphene.String()
 
     class Meta:
-        description = ' Auto generated Type for a model\'s GenericForeignKey field '
+        description = " Auto generated Type for a model's GenericForeignKey field "
         default_resolver = resolver
 
 
@@ -113,7 +117,7 @@ class GenericForeignKeyInputType(graphene.InputObjectType):
     model_name = graphene.Argument(graphene.String, required=True)
 
     class Meta:
-        description = ' Auto generated InputType for a model\'s GenericForeignKey field '
+        description = " Auto generated InputType for a model's GenericForeignKey field "
 
 
 # ************************************************ #
@@ -153,7 +157,7 @@ class CustomTime(Time):
 
         assert isinstance(
             time, datetime.time
-        ), ('Received not compatible time "{}"'.format(repr(time)))
+        ), 'Received not compatible time "{}"'.format(repr(time))
         return time.isoformat()
 
 
@@ -167,7 +171,7 @@ class CustomDate(Date):
             date = date.date()
         assert isinstance(
             date, datetime.date
-        ), ('Received not compatible date "{}"'.format(repr(date)))
+        ), 'Received not compatible date "{}"'.format(repr(date))
         return date.isoformat()
 
 
@@ -179,5 +183,5 @@ class CustomDateTime(DateTime):
 
         assert isinstance(
             dt, (datetime.datetime, datetime.date)
-        ), ('Received not compatible datetime "{}"'.format(repr(dt)))
+        ), 'Received not compatible datetime "{}"'.format(repr(dt))
         return dt.isoformat()

@@ -13,3 +13,9 @@ __pycache__
 
 # testing files
 *db.sqlite3
+
+# Specific Files & Folders
+.coverage*
+.tox/
+.pytest*/
+
