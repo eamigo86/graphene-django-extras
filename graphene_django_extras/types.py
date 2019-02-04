@@ -11,7 +11,11 @@ from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
 from graphene_django.fields import DjangoListField
 from graphene_django.rest_framework.types import ErrorType
-from graphene_django.utils import is_valid_django_model, DJANGO_FILTER_INSTALLED, maybe_queryset
+from graphene_django.utils import (
+    is_valid_django_model,
+    DJANGO_FILTER_INSTALLED,
+    maybe_queryset,
+)
 
 from .base_types import DjangoListObjectBase, factory_type
 from .converter import construct_fields
@@ -21,7 +25,12 @@ from .registry import get_global_registry, Registry
 from .settings import graphql_api_settings
 from .utils import get_Object_or_None, queryset_factory
 
-__all__ = ('DjangoObjectType', 'DjangoInputObjectType', 'DjangoListObjectType', 'DjangoSerializerType')
+__all__ = (
+    "DjangoObjectType",
+    "DjangoInputObjectType",
+    "DjangoListObjectType",
+    "DjangoSerializerType",
+)
 
 
 class DjangoObjectOptions(BaseOptions):
@@ -69,7 +78,7 @@ class DjangoObjectType(ObjectType):
         filter_fields=None,
         interfaces=(),
         filterset_class=None,
-        **options
+        **options,
     ):
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
@@ -79,7 +88,7 @@ class DjangoObjectType(ObjectType):
             registry = get_global_registry()
 
         assert isinstance(registry, Registry), (
-            'The attribute registry in {} needs to be an instance of '
+            "The attribute registry in {} needs to be an instance of "
             'Registry, received "{}".'
         ).format(cls.__name__, registry)
 
@@ -89,7 +98,9 @@ class DjangoObjectType(ObjectType):
             )
 
         django_fields = yank_fields_from_attrs(
-            construct_fields(model, registry, only_fields, include_fields, exclude_fields),
+            construct_fields(
+                model, registry, only_fields, include_fields, exclude_fields
+            ),
             _as=Field,
         )
 
@@ -100,7 +111,9 @@ class DjangoObjectType(ObjectType):
         _meta.fields = django_fields
         _meta.filterset_class = filterset_class
 
-        super(DjangoObjectType, cls).__init_subclass_with_meta__(_meta=_meta, interfaces=interfaces, **options)
+        super(DjangoObjectType, cls).__init_subclass_with_meta__(
+            _meta=_meta, interfaces=interfaces, **options
+        )
 
         if not skip_registry:
             registry.register(cls)
@@ -116,9 +129,7 @@ class DjangoObjectType(ObjectType):
         if isinstance(root, cls):
             return True
         if not is_valid_django_model(type(root)):
-            raise Exception((
-                'Received incompatible instance "{}".'
-            ).format(root))
+            raise Exception(('Received incompatible instance "{}".').format(root))
         model = root._meta.model
         return model == cls._meta.model
 
@@ -132,9 +143,21 @@ class DjangoObjectType(ObjectType):
 
 class DjangoInputObjectType(InputObjectType):
     @classmethod
-    def __init_subclass_with_meta__(cls, model=None, container=None, registry=None, skip_registry=False,
-                                    connection=None, use_connection=None, only_fields=(), exclude_fields=(),
-                                    filter_fields=None, input_for="create", nested_fields=(), **options):
+    def __init_subclass_with_meta__(
+        cls,
+        model=None,
+        container=None,
+        registry=None,
+        skip_registry=False,
+        connection=None,
+        use_connection=None,
+        only_fields=(),
+        exclude_fields=(),
+        filter_fields=None,
+        input_for="create",
+        nested_fields=(),
+        **options,
+    ):
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -143,11 +166,11 @@ class DjangoInputObjectType(InputObjectType):
             registry = get_global_registry()
 
         assert isinstance(registry, Registry), (
-            'The attribute registry in {} needs to be an instance of '
+            "The attribute registry in {} needs to be an instance of "
             'Registry, received "{}".'
         ).format(cls.__name__, registry)
 
-        assert input_for.lower not in ('create', 'delete', 'update'), (
+        assert input_for.lower not in ("create", "delete", "update"), (
             'You need to pass a valid input_for value in {}.Meta, received "{}".'
         ).format(cls.__name__, input_for)
 
@@ -164,9 +187,10 @@ class DjangoInputObjectType(InputObjectType):
                 None,
                 exclude_fields,
                 input_for,
-                nested_fields
+                nested_fields,
             ),
-            _as=InputField, sort=False
+            _as=InputField,
+            sort=False,
         )
 
         for base in reversed(cls.__mro__):
@@ -191,7 +215,7 @@ class DjangoInputObjectType(InputObjectType):
         super(InputObjectType, cls).__init_subclass_with_meta__(
             # container=container,
             _meta=_meta,
-            **options
+            **options,
         )
 
         if not skip_registry:
@@ -207,7 +231,6 @@ class DjangoInputObjectType(InputObjectType):
 
 
 class DjangoListObjectType(ObjectType):
-
     class Meta:
         abstract = True
 
@@ -223,7 +246,7 @@ class DjangoListObjectType(ObjectType):
         filter_fields=None,
         queryset=None,
         filterset_class=None,
-        **options
+        **options,
     ):
 
         assert is_valid_django_model(model), (
@@ -234,27 +257,27 @@ class DjangoListObjectType(ObjectType):
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
         assert isinstance(queryset, QuerySet) or queryset is None, (
-            'The attribute queryset in {} needs to be an instance of '
+            "The attribute queryset in {} needs to be an instance of "
             'Django model queryset, received "{}".'
         ).format(cls.__name__, queryset)
 
-        results_field_name = results_field_name or 'results'
+        results_field_name = results_field_name or "results"
 
         baseType = get_global_registry().get_type_for_model(model)
 
         if not baseType:
             factory_kwargs = {
-                'model': model,
-                'only_fields': only_fields,
-                'exclude_fields': exclude_fields,
-                'filter_fields': filter_fields,
-                'filterset_class': filterset_class,
-                'pagination': pagination,
-                'queryset': queryset,
-                'registry': registry,
-                'skip_registry': False
+                "model": model,
+                "only_fields": only_fields,
+                "exclude_fields": exclude_fields,
+                "filter_fields": filter_fields,
+                "filterset_class": filterset_class,
+                "pagination": pagination,
+                "queryset": queryset,
+                "registry": registry,
+                "skip_registry": False,
             }
-            baseType = factory_type('output', DjangoObjectType, **factory_kwargs)
+            baseType = factory_type("output", DjangoObjectType, **factory_kwargs)
 
         filter_fields = filter_fields or baseType._meta.filter_fields
 
@@ -263,16 +286,12 @@ class DjangoListObjectType(ObjectType):
         else:
             global_paginator = graphql_api_settings.DEFAULT_PAGINATION_CLASS
             if global_paginator:
-                assert issubclass(
-                    global_paginator, BaseDjangoGraphqlPagination
-                ), (
+                assert issubclass(global_paginator, BaseDjangoGraphqlPagination), (
                     'You need to pass a valid DjangoGraphqlPagination class in {}.Meta, received "{}".'
                 ).format(cls.__name__, global_paginator)
 
                 global_paginator = global_paginator()
-                result_container = global_paginator.get_pagination_field(
-                    baseType
-                )
+                result_container = global_paginator.get_pagination_field(baseType)
             else:
                 result_container = DjangoListField(baseType)
 
@@ -287,18 +306,21 @@ class DjangoListObjectType(ObjectType):
         _meta.filterset_class = filterset_class
         _meta.fields = OrderedDict(
             [
-                (results_field_name, result_container), (
-                    'count',
+                (results_field_name, result_container),
+                (
+                    "count",
                     Field(
                         Int,
-                        name='totalCount',
-                        description="Total count of matches elements"
-                    )
-                )
+                        name="totalCount",
+                        description="Total count of matches elements",
+                    ),
+                ),
             ]
         )
 
-        super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
+        super(DjangoListObjectType, cls).__init_subclass_with_meta__(
+            _meta=_meta, **options
+        )
 
     @classmethod
     def RetrieveField(cls, *args, **kwargs):
@@ -314,38 +336,54 @@ class DjangoSerializerType(ObjectType):
         DjangoSerializerType definition
     """
 
-    ok = Boolean(
-        description='Boolean field that return mutation result request.'
-    )
-    errors = List(ErrorType, description='Errors list for the field')
+    ok = Boolean(description="Boolean field that return mutation result request.")
+    errors = List(ErrorType, description="Errors list for the field")
 
     class Meta:
         abstract = True
 
     @classmethod
-    def __init_subclass_with_meta__(cls, serializer_class=None, queryset=None, only_fields=(), include_fields=(),
-                                    exclude_fields=(), pagination=None, input_field_name=None, output_field_name=None,
-                                    results_field_name=None, nested_fields=(), filter_fields=None, description='',
-                                    filterset_class=None, **options):
+    def __init_subclass_with_meta__(
+        cls,
+        serializer_class=None,
+        queryset=None,
+        only_fields=(),
+        include_fields=(),
+        exclude_fields=(),
+        pagination=None,
+        input_field_name=None,
+        output_field_name=None,
+        results_field_name=None,
+        nested_fields=(),
+        filter_fields=None,
+        description="",
+        filterset_class=None,
+        **options,
+    ):
 
         if not serializer_class:
-            raise Exception('serializer_class is required on all ModelSerializerType')
+            raise Exception("serializer_class is required on all ModelSerializerType")
 
         model = serializer_class.Meta.model
 
-        description = description or 'ModelSerializerType for {} model'.format(model.__name__)
+        description = description or "ModelSerializerType for {} model".format(
+            model.__name__
+        )
 
-        input_field_name = input_field_name or 'new_{}'.format(model._meta.model_name)
+        input_field_name = input_field_name or "new_{}".format(model._meta.model_name)
         output_field_name = output_field_name or model._meta.model_name
 
-        input_class = getattr(cls, 'Arguments', None)
+        input_class = getattr(cls, "Arguments", None)
         if not input_class:
-            input_class = getattr(cls, 'Input', None)
+            input_class = getattr(cls, "Input", None)
             if input_class:
-                warn_deprecation(("Please use {name}.Arguments instead of {name}.Input."
-                                  "Input is now only used in ClientMutationID.\nRead more: "
-                                  "https://github.com/graphql-python/graphene/blob/2.0/UPGRADE-v2.0.md#mutation-input").
-                                 format(name=cls.__name__))
+                warn_deprecation(
+                    (
+                        "Please use {name}.Arguments instead of {name}.Input."
+                        "Input is now only used in ClientMutationID.\nRead more: "
+                        "https://github.com/graphql-python/graphene/blob/2.0/UPGRADE-v2.0.md#mutation-input"
+                    ).format(name=cls.__name__)
+                )
         if input_class:
             arguments = props(input_class)
         else:
@@ -354,47 +392,55 @@ class DjangoSerializerType(ObjectType):
         registry = get_global_registry()
 
         factory_kwargs = {
-            'model': model,
-            'only_fields': only_fields,
-            'include_fields': include_fields,
-            'exclude_fields': exclude_fields,
-            'filter_fields': filter_fields,
-            'pagination': pagination,
-            'queryset': queryset,
-            'nested_fields': nested_fields,
-            'registry': registry,
-            'skip_registry': False,
-            'filterset_class': filterset_class,
-            'results_field_name': results_field_name,
+            "model": model,
+            "only_fields": only_fields,
+            "include_fields": include_fields,
+            "exclude_fields": exclude_fields,
+            "filter_fields": filter_fields,
+            "pagination": pagination,
+            "queryset": queryset,
+            "nested_fields": nested_fields,
+            "registry": registry,
+            "skip_registry": False,
+            "filterset_class": filterset_class,
+            "results_field_name": results_field_name,
         }
 
         output_type = registry.get_type_for_model(model)
 
         if not output_type:
-            output_type = factory_type('output', DjangoObjectType, **factory_kwargs)
+            output_type = factory_type("output", DjangoObjectType, **factory_kwargs)
 
-        output_list_type = factory_type('list', DjangoListObjectType, **factory_kwargs)
+        output_list_type = factory_type("list", DjangoListObjectType, **factory_kwargs)
 
         django_fields = OrderedDict({output_field_name: Field(output_type)})
 
         global_arguments = {}
-        for operation in ('create', 'delete', 'update'):
+        for operation in ("create", "delete", "update"):
             global_arguments.update({operation: OrderedDict()})
 
-            if operation != 'delete':
+            if operation != "delete":
                 input_type = registry.get_type_for_model(model, for_input=operation)
 
                 if not input_type:
                     # factory_kwargs.update({'skip_registry': True})
-                    input_type = factory_type('input', DjangoInputObjectType, operation, **factory_kwargs)
+                    input_type = factory_type(
+                        "input", DjangoInputObjectType, operation, **factory_kwargs
+                    )
 
-                global_arguments[operation].update({
-                    input_field_name: Argument(input_type, required=True)
-                })
+                global_arguments[operation].update(
+                    {input_field_name: Argument(input_type, required=True)}
+                )
             else:
-                global_arguments[operation].update({
-                    'id': Argument(ID, required=True, description='Django object unique identification field')
-                })
+                global_arguments[operation].update(
+                    {
+                        "id": Argument(
+                            ID,
+                            required=True,
+                            description="Django object unique identification field",
+                        )
+                    }
+                )
             global_arguments[operation].update(arguments)
 
         _meta = DjangoSerializerOptions(cls)
@@ -410,7 +456,9 @@ class DjangoSerializerType(ObjectType):
         _meta.output_field_name = output_field_name
         _meta.nested_fields = nested_fields
 
-        super(DjangoSerializerType, cls).__init_subclass_with_meta__(_meta=_meta, description=description, **options)
+        super(DjangoSerializerType, cls).__init_subclass_with_meta__(
+            _meta=_meta, description=description, **options
+        )
 
     @classmethod
     def list_object_type(cls):
@@ -422,21 +470,13 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def get_errors(cls, errors):
-        errors_dict = {
-            cls._meta.output_field_name: None,
-            'ok': False,
-            'errors': errors
-        }
+        errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
 
         return cls(**errors_dict)
 
     @classmethod
     def perform_mutate(cls, obj, info):
-        resp = {
-            cls._meta.output_field_name: obj,
-            'ok': True,
-            'errors': None
-        }
+        resp = {cls._meta.output_field_name: obj, "ok": True, "errors": None}
 
         return cls(**resp)
 
@@ -452,8 +492,7 @@ class DjangoSerializerType(ObjectType):
                 sub_data = data.pop(field, None)
                 if sub_data:
                     serialized_data = cls._meta.nested_fields[field](
-                        data=sub_data,
-                        many=True if type(sub_data) == list else False
+                        data=sub_data, many=True if type(sub_data) == list else False
                     )
                     ok, result = cls.save(serialized_data, root, info)
                     if not ok:
@@ -467,14 +506,13 @@ class DjangoSerializerType(ObjectType):
     @classmethod
     def create(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name)
-        request_type = info.context.META.get("CONTENT_TYPE", '')
+        request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update({name: value for name, value in info.context.FILES.items()})
 
         nested_objs = cls.manage_nested_fields(data, root, info)
         serializer = cls._meta.serializer_class(
-            data=data,
-            **cls.get_serializer_kwargs(root, info, **kwargs)
+            data=data, **cls.get_serializer_kwargs(root, info, **kwargs)
         )
 
         ok, obj = cls.save(serializer, root, info)
@@ -486,7 +524,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def delete(cls, root, info, **kwargs):
-        pk = kwargs.get('id')
+        pk = kwargs.get("id")
 
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
         if old_obj:
@@ -494,23 +532,27 @@ class DjangoSerializerType(ObjectType):
             old_obj.id = pk
             return cls.perform_mutate(old_obj, info)
         else:
-            return cls.get_errors([
-                ErrorType(
-                    field='id',
-                    messages=['A {} obj with id {} do not exist'.format(
-                        cls._meta.model.__name__,
-                        pk
-                    )])
-            ])
+            return cls.get_errors(
+                [
+                    ErrorType(
+                        field="id",
+                        messages=[
+                            "A {} obj with id {} do not exist".format(
+                                cls._meta.model.__name__, pk
+                            )
+                        ],
+                    )
+                ]
+            )
 
     @classmethod
     def update(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name)
-        request_type = info.context.META.get("CONTENT_TYPE", '')
+        request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update({name: value for name, value in info.context.FILES.items()})
 
-        pk = data.pop('id')
+        pk = data.pop("id")
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
         if old_obj:
             nested_objs = cls.manage_nested_fields(data, root, info)
@@ -518,7 +560,7 @@ class DjangoSerializerType(ObjectType):
                 old_obj,
                 data=data,
                 partial=True,
-                **cls.get_serializer_kwargs(root, info, **kwargs)
+                **cls.get_serializer_kwargs(root, info, **kwargs),
             )
 
             ok, obj = cls.save(serializer, root, info)
@@ -528,13 +570,18 @@ class DjangoSerializerType(ObjectType):
                 [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
             return cls.perform_mutate(obj, info)
         else:
-            return cls.get_errors([
-                ErrorType(
-                    field='id',
-                    messages=['A {} obj with id: {} do not exist'.format(
-                        cls._meta.model.__name__, pk
-                    )])
-            ])
+            return cls.get_errors(
+                [
+                    ErrorType(
+                        field="id",
+                        messages=[
+                            "A {} obj with id: {} do not exist".format(
+                                cls._meta.model.__name__, pk
+                            )
+                        ],
+                    )
+                ]
+            )
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
@@ -551,7 +598,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def retrieve(cls, manager, root, info, **kwargs):
-        pk = kwargs.pop('id', None)
+        pk = kwargs.pop("id", None)
 
         try:
             return manager.get_queryset().get(pk=pk)
@@ -561,7 +608,9 @@ class DjangoSerializerType(ObjectType):
     @classmethod
     def list(cls, manager, filterset_class, filtering_args, root, info, **kwargs):
 
-        qs = queryset_factory(cls._meta.queryset or manager, info.field_asts, info.fragments, **kwargs)
+        qs = queryset_factory(
+            cls._meta.queryset or manager, info.field_asts, info.fragments, **kwargs
+        )
 
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
 
@@ -571,7 +620,7 @@ class DjangoSerializerType(ObjectType):
         return DjangoListObjectBase(
             count=count,
             results=maybe_queryset(qs),
-            results_field_name=cls.list_object_type()._meta.results_field_name
+            results_field_name=cls.list_object_type()._meta.results_field_name,
         )
 
     @classmethod
@@ -580,24 +629,35 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def ListField(cls, *args, **kwargs):
-        return DjangoListObjectField(cls._meta.output_list_type, resolver=cls.list, **kwargs)
+        return DjangoListObjectField(
+            cls._meta.output_list_type, resolver=cls.list, **kwargs
+        )
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
         return Field(
-            cls._meta.mutation_output, args=cls._meta.arguments['create'], resolver=cls.create, **kwargs
+            cls._meta.mutation_output,
+            args=cls._meta.arguments["create"],
+            resolver=cls.create,
+            **kwargs,
         )
 
     @classmethod
     def DeleteField(cls, *args, **kwargs):
         return Field(
-            cls._meta.mutation_output, args=cls._meta.arguments['delete'], resolver=cls.delete, **kwargs
+            cls._meta.mutation_output,
+            args=cls._meta.arguments["delete"],
+            resolver=cls.delete,
+            **kwargs,
         )
 
     @classmethod
     def UpdateField(cls, *args, **kwargs):
         return Field(
-            cls._meta.mutation_output, args=cls._meta.arguments['update'], resolver=cls.update, **kwargs
+            cls._meta.mutation_output,
+            args=cls._meta.arguments["update"],
+            resolver=cls.update,
+            **kwargs,
         )
 
     @classmethod

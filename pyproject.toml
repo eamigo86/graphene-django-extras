@@ -1,0 +1,63 @@
+[tool.black]
+line-length = 88
+py36 = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | docs
+)/
+'''
+
+[tool.poetry]
+name = "graphene-django-extras"
+version = "0.4.3"
+description = '''
+graphene_django_extras add some extra funcionalities to graphene-django to facilitate
+the graphql use without Relay, allow paginations and filtering integration and add some
+extra directives
+'''
+readme = "README.md"
+authors = ["Ernesto Perez Amigo <eamigop86@gmail.com>"]
+license = "MIT"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+keywords=["api", "graphql", "protocol", "rest", "graphene", "django"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+graphql-core = "^2.1"
+graphene = "^2.1"
+graphene-django = "^2.2"
+django-filter = "^2.0"
+djangorestframework = "^3.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.5"
+black = "^18.3-alpha.0"
+tox = "^3.7"
+factory_boy = "^2.11"
+pytest-django = "^3.4"
+ipdb = "^0.11.0"
+flake8 = "^3.6"
+bandit = "^1.5"
+pytest-cov = "^2.6"
+pyflakes = "^2.0"
+
+[tool.poetry.extras]
+date = ["python-dateutil>=2.7.3"]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

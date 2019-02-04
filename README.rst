@@ -2,6 +2,9 @@
 Graphene-Django-Extras
 ======================
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
+
 This package add some extra functionalities to **graphene-django** to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.
   2. Allows to define DjangoRestFramework serializers based Mutations.

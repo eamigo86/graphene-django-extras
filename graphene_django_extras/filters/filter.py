@@ -20,7 +20,7 @@ def setup_filterset(filterset_class):
     """ Wrap a provided filterset in Graphene-specific functionality
     """
     return type(
-        'Graphene{}'.format(filterset_class.__name__),
+        "Graphene{}".format(filterset_class.__name__),
         (filterset_class, GrapheneFilterSetMixin),
         {},
     )
@@ -30,16 +30,11 @@ def custom_filterset_factory(model, filterset_base_class=FilterSet, **meta):
     """
         Create a filterset for the given model using the provided meta data
     """
-    meta.update({
-        'model': model,
-        'exclude': []
-    })
-    meta_class = type(str('Meta'), (object,), meta)
+    meta.update({"model": model, "exclude": []})
+    meta_class = type(str("Meta"), (object,), meta)
     filterset = type(
-        str('%sFilterSet' % model._meta.object_name),
+        str("%sFilterSet" % model._meta.object_name),
         (filterset_base_class, GrapheneFilterSetMixin),
-        {
-            'Meta': meta_class
-        }
+        {"Meta": meta_class},
     )
     return filterset
