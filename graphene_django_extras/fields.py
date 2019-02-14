@@ -118,7 +118,10 @@ class DjangoFilterListField(Field):
                         "{}.filter".format(
                             getattr(field, "related_name", None) or field.name
                         )
-                    )(root)(**filter_kwargs)
+                    )(root)()
+                    qs = filterset_class(
+                        data=filter_kwargs, queryset=qs, request=info.context
+                    ).qs
                 else:
                     qs = operator.attrgetter(
                         "{}.all".format(
