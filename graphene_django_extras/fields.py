@@ -289,11 +289,11 @@ class DjangoListObjectField(Field):
         if not kwargs.get("description", None):
             kwargs["description"] = "{} list".format(_type._meta.model.__name__)
 
-        super(DjangoListObjectField, self).__init__(_type, *args, **kwargs)
+        super(DjangoListObjectField, self).__init__(List(_type), *args, **kwargs)
 
     @property
     def model(self):
-        return self.type._meta.model
+        return self.type.of_type._meta.model
 
     def list_resolver(
         self, manager, filterset_class, filtering_args, root, info, **kwargs
@@ -309,13 +309,13 @@ class DjangoListObjectField(Field):
         return DjangoListObjectBase(
             count=count,
             results=maybe_queryset(qs),
-            results_field_name=self.type._meta.results_field_name,
+            results_field_name=self.type.of_type._meta.results_field_name,
         )
 
     def get_resolver(self, parent_resolver):
         return partial(
             self.list_resolver,
-            self.type._meta.model._default_manager,
+            self.type.of_type._meta.model._default_manager,
             self.filterset_class,
             self.filtering_args,
         )
