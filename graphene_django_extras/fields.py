@@ -113,21 +113,15 @@ class DjangoFilterListField(Field):
 
         if field is not None:
             try:
-                if filter_kwargs:
-                    qs = operator.attrgetter(
-                        "{}.filter".format(
-                            getattr(field, "related_name", None) or field.name
-                        )
-                    )(root)()
-                    qs = filterset_class(
-                        data=filter_kwargs, queryset=qs, request=info.context
-                    ).qs
-                else:
-                    qs = operator.attrgetter(
+                qs = operator.attrgetter(
                         "{}.all".format(
                             getattr(field, "related_name", None) or field.name
                         )
                     )(root)()
+                if filter_kwargs:
+                    qs = filterset_class(
+                        data=filter_kwargs, queryset=qs, request=info.context
+                    ).qs
             except AttributeError:
                 qs = None
 
