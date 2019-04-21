@@ -343,6 +343,54 @@ If the optional argument 'count' is given, only the first 'count' occurrences ar
 }
 ```
 
+#### 7b- Queryset-level fields:
+When creating a DjangoListObjectType subclass, it's now possible to pass a qs_fields list as shown below.
+
+```python
+def avg_email_length(qs):
+    return sum([len(user.email) for user in qs])/len(qs)
+
+class ByLetterType(graphene.ObjectType):
+    letter = graphene.String()
+    users = graphene.List(ActeType)
+
+def by_letter(qs):
+    return [ByLetterType(letter = letter, users = qs.filter(first_name__startswith=letter)[:3]) for letter in list('ABCDE')]
+
+class UserListType(DjangoListObjectType):
+    class Meta:
+        description = " Type definition for user list "
+        model = User
+        pagination = LimitOffsetGraphqlPagination(default_limit=25, ordering="-username")
+        qs_fields = [
+            {'name': 'avgEmailLength', 'type': graphene.Float, 'description': 'Average email length', 'function': avg_email_length},
+            {'name': 'byLetter', 'type': graphene.List(ByLetterType), 'description': 'Sample of users by the first letter of their first name.', 'function': by_letter}
+        ]
+```
+
+Any field included in qs_fields is then accessible in the query language, as shown in the following query.
+
+```js
+{
+  allUsers(username_Icontains:"john"){
+    results(limit:5, offset:5){
+      id
+      username
+      firstName
+      lastName
+    }
+    totalCount
+    avgEmailLength
+    byLetter {
+      letter
+      users {
+        firstName
+      }
+    }
+  }
+}
+```
+
 #### 8- Mutations's examples:
 
 ```js

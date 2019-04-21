@@ -80,10 +80,11 @@ def factory_type(operation, _type, *args, **kwargs):
 
 
 class DjangoListObjectBase(object):
-    def __init__(self, results, count, results_field_name="results"):
+    def __init__(self, results, count, results_field_name="results", qs_fields=[]):
         self.results = results
         self.count = count
         self.results_field_name = results_field_name
+        self.__dict__.update({field['name']: field['function'](results) for field in qs_fields})
 
     def to_dict(self):
         return {

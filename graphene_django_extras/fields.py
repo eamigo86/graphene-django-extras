@@ -310,6 +310,7 @@ class DjangoListObjectField(Field):
             count=count,
             results=maybe_queryset(qs),
             results_field_name=self.type._meta.results_field_name,
+            qs_fields=self.type._meta.qs_fields,
         )
 
     def get_resolver(self, parent_resolver):

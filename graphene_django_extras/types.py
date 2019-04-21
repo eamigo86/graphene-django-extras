@@ -246,6 +246,7 @@ class DjangoListObjectType(ObjectType):
         filter_fields=None,
         queryset=None,
         filterset_class=None,
+        qs_fields=[],
         **options,
     ):
 
@@ -304,6 +305,7 @@ class DjangoListObjectType(ObjectType):
         _meta.exclude_fields = exclude_fields
         _meta.only_fields = only_fields
         _meta.filterset_class = filterset_class
+        _meta.qs_fields = qs_fields
         _meta.fields = OrderedDict(
             [
                 (results_field_name, result_container),
@@ -315,6 +317,7 @@ class DjangoListObjectType(ObjectType):
                         description="Total count of matches elements",
                     ),
                 ),
+                *[(field['name'], Field(field['type'], name=field['name'], description=field['description'])) for field in qs_fields],
             ]
         )
 
