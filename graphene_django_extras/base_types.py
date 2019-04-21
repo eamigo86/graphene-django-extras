@@ -84,7 +84,9 @@ class DjangoListObjectBase(object):
         self.results = results
         self.count = count
         self.results_field_name = results_field_name
-        self.__dict__.update({field['name']: field['function'](results) for field in qs_fields})
+        self.__dict__.update(
+            {field["name"]: field["function"](results) for field in qs_fields}
+        )
 
     def to_dict(self):
         return {

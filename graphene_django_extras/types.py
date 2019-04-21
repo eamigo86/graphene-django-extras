@@ -317,7 +317,17 @@ class DjangoListObjectType(ObjectType):
                         description="Total count of matches elements",
                     ),
                 ),
-                *[(field['name'], Field(field['type'], name=field['name'], description=field['description'])) for field in qs_fields],
+                *[
+                    (
+                        field["name"],
+                        Field(
+                            field["type"],
+                            name=field["name"],
+                            description=field["description"],
+                        ),
+                    )
+                    for field in qs_fields
+                ],
             ]
         )
 
