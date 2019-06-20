@@ -10,7 +10,7 @@ from graphene.types.utils import yank_fields_from_attrs
 from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
 from graphene_django.fields import DjangoListField
-from graphene_django.rest_framework.types import ErrorType
+from graphene_django.types import ErrorType
 from graphene_django.utils import (
     is_valid_django_model,
     DJANGO_FILTER_INSTALLED,
