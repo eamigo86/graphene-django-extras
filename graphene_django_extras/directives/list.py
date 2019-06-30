@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import random
+
 from graphql import GraphQLArgument, GraphQLNonNull, GraphQLInt
+
 from .base import BaseExtraGraphQLDirective
 
 __all__ = ("ShuffleGraphQLDirective", "SampleGraphQLDirective")

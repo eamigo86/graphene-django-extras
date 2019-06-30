@@ -5,8 +5,8 @@ import six
 from graphene.utils.str_converters import to_snake_case, to_camel_case
 from graphql import GraphQLArgument, GraphQLNonNull, GraphQLString, GraphQLInt
 
-from ..utils import to_kebab_case
 from .base import BaseExtraGraphQLDirective
+from ..utils import to_kebab_case
 
 __all__ = (
     "DefaultGraphQLDirective",

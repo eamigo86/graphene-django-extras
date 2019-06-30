@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from collections import OrderedDict
+
 from django.conf import settings
 from django.contrib.contenttypes.fields import (
     GenericForeignKey,

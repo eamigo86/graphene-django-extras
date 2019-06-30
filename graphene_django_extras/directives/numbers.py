@@ -2,6 +2,7 @@
 import math
 
 from graphql import GraphQLString
+
 from .base import BaseExtraGraphQLDirective
 
 __all__ = ("FloorGraphQLDirective", "CeilGraphQLDirective")

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from graphql import DirectiveLocation, GraphQLDirective
 from graphene.utils.str_converters import to_snake_case
+from graphql import DirectiveLocation, GraphQLDirective
+
 from ..registry import get_global_registry
 
 

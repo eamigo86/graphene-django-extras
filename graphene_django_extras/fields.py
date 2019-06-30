@@ -10,9 +10,9 @@ from graphene_django.utils import (
     is_valid_django_model,
     DJANGO_FILTER_INSTALLED,
 )
-from graphene_django_extras.settings import graphql_api_settings
 
 from graphene_django_extras.filters.filter import get_filterset_class
+from graphene_django_extras.settings import graphql_api_settings
 from .base_types import DjangoListObjectBase
 from .paginations.pagination import BaseDjangoGraphqlPagination
 from .utils import get_extra_filters, queryset_factory, get_related_fields, find_field

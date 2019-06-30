@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import inspect
 import re
-import six
 from collections import OrderedDict
 
+import six
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
