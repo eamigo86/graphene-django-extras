@@ -4,7 +4,7 @@ from graphene.utils.str_converters import to_camel_case
 
 class Registry(object):
     """
-        Custom registry implementation for use on DjangoObjectType and DjangoInputObjectType
+    Custom registry implementation for use on DjangoObjectType and DjangoInputObjectType
     """
 
     def __init__(self):

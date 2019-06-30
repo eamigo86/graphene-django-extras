@@ -184,17 +184,17 @@ You can define traditional mutations that use InputTypes or Mutations based on D
 
     class Queries(graphene.ObjectType):
         # Possible User list queries definitions
-        users = DjangoListObjectField(UserListType, description=_('All Users query'))
+        users = DjangoListObjectField(UserListType, description='All Users query')
         users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
         users2 = DjangoFilterListField(UserType)
-        users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description=_('All Users query'))
+        users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description='All Users query')
 
         # Defining a query for a single user
         # The DjangoObjectField have a ID type input field, that allow filter by id and is't necessary to define resolve function
-        user = DjangoObjectField(UserType, description=_('Single User query'))
+        user = DjangoObjectField(UserType, description='Single User query')
 
         # Another way to define a query to single user
-        user1 = UserListType.RetrieveField(description=_('User List with pagination and filtering'))
+        user1 = UserListType.RetrieveField(description='User List with pagination and filtering')
 
         # Exist two ways to define single or list user queries with DjangoSerializerType
         user_retrieve1, user_list1 = UserModelType.QueryFields(description='Some description message for both queries',
@@ -512,6 +512,12 @@ You can use this shortcuts too:
 
 Change Log:
 -----------
+*******
+v0.4.5:
+*******
+1. Fixed compatibilities issues to use graphene-django==2.3.2.
+2. Improved code quality and use Black code format.
+3. Fixed minor bug with "time ago" date directive.
 
 *******
 v0.3.7:

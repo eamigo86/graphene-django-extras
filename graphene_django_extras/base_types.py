@@ -11,7 +11,6 @@ from graphql.language import ast
 
 
 def factory_type(operation, _type, *args, **kwargs):
-
     if operation == "output":
 
         class GenericType(_type):

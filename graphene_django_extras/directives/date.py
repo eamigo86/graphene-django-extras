@@ -10,7 +10,6 @@ from graphql import GraphQLArgument, GraphQLString
 from .base import BaseExtraGraphQLDirective
 from ..base_types import CustomDateFormat
 
-__author__ = "Ernesto"
 __all__ = ("DateGraphQLDirective",)
 
 
