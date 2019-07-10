@@ -36,7 +36,7 @@ script:
 
 after_success:
   - pip install codecov
-  - codecov -e TOXENV,DJANGO
+  - codecov --file coverage/lcov.info --disable search
 
 notifications:
     email: false

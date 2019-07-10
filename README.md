@@ -2,14 +2,14 @@
 ---
 
 # Graphene-Django-Extras
-[![build-status-image]][travis]
-[![coverage-status-image]][codecov]
+[![build-badget]][travis]
+[![codecov.io][codecov-badget]][codecov]
 [![pypi-version]][pypi]
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-[build-status-image]: https://travis-ci.org/eamigo86/graphene-django-extras.svg?branch=master
+[build-badget]: https://travis-ci.org/eamigo86/graphene-django-extras.svg?branch=master
 [travis]: https://travis-ci.org/eamigo86/graphene-django-extras
-[coverage-status-image]: https://img.shields.io/codecov/c/gh/encode/graphene-django-extras/master.svg
+[codecov-badget]: https://codecov.io/gh/eamigo86/graphene-diango-extras/coverage.svg?branch=master
 [codecov]: https://codecov.io/gh/eamigo86/graphene-django-extras?branch=master
 [pypi-version]: https://img.shields.io/pypi/v/graphene_django_extras.svg
 [pypi]: https://pypi.org/project/graphene_django_extras/
