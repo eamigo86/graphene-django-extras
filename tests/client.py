@@ -1,5 +1,5 @@
-from django.urls import reverse
 from django.test import Client as BaseClient
+from django.urls import reverse
 
 
 class Client(BaseClient):

@@ -1,8 +1,8 @@
 from django.test import TestCase
 
-from tests.client import Client
 from tests import factories
 from tests import queries
+from tests.client import Client
 
 
 class DjangoListObjectFieldTest(TestCase):
