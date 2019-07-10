@@ -1,9 +1,7 @@
 
 Graphene-Django-Extras
 ======================
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/ambv/black
+|build-status| |python-support| |license| |code-style|
 
 This package add some extra functionalities to **graphene-django** to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.
@@ -515,7 +513,7 @@ Change Log:
 *******
 v0.4.5:
 *******
-1. Fixed compatibilities issues to use graphene-django==2.3.2.
+1. Fixed compatibilities issues to use graphene-django>=2.3.2.
 2. Improved code quality and use Black code format.
 3. Fixed minor bug with "time ago" date directive.
 
@@ -746,3 +744,21 @@ v0.0.1-beta.5:
 v0.0.1-beta.4:
 **************
 1. First commit
+
+
+.. references-marker
+.. |latest-version| image:: https://img.shields.io/pypi/v/graphene-django-extras.svg
+    :target: https://pypi.python.org/pypi/graphene-django-extras/
+    :alt: Latest version
+.. |build-status| image:: https://img.shields.io/travis/eamigo86/graphene-django-extras/master.svg
+    :target: https://travis-ci.org/eamigo86/graphene-django-extras
+    :alt: Build status
+.. |python-support| image:: https://img.shields.io/pypi/pyversions/graphene-django-extras.svg
+    :target: https://pypi.python.org/pypi/graphene-django-extras
+    :alt: Python versions
+.. |license| image:: https://img.shields.io/pypi/l/graphene-django-extras.svg
+    :target: https://github.com/eamigo86/graphene-django-extras/blob/master/LICENSE
+    :alt: Software license
+.. |code-style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
+    :alt: Black

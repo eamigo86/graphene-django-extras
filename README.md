@@ -3,14 +3,14 @@
 
 # Graphene-Django-Extras
 [![build-badget]][travis]
-[![codecov.io][codecov-badget]][codecov]
+[![codecov][codecov-badget]][codecov]
 [![pypi-version]][pypi]
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 [build-badget]: https://travis-ci.org/eamigo86/graphene-django-extras.svg?branch=master
 [travis]: https://travis-ci.org/eamigo86/graphene-django-extras
-[codecov-badget]: https://codecov.io/gh/eamigo86/graphene-diango-extras/coverage.svg?branch=master
-[codecov]: https://codecov.io/gh/eamigo86/graphene-django-extras?branch=master
+[codecov-badget]: https://codecov.io/gh/eamigo86/graphene-django-extras/branch/master/graph/badge.svg
+[codecov]: https://codecov.io/gh/eamigo86/graphene-django-extras
 [pypi-version]: https://img.shields.io/pypi/v/graphene_django_extras.svg
 [pypi]: https://pypi.org/project/graphene_django_extras/
 
@@ -497,7 +497,7 @@ You can use this shortcuts too:
 
 ## Change Log:
 #### v0.4.5:
-    1. Fixed compatibilities issues to use graphene-django==2.3.2.
+    1. Fixed compatibilities issues to use graphene-django>=2.3.2.
     2. Improved code quality and use Black code format.
     3. Fixed minor bug with "time ago" date directive.
 
