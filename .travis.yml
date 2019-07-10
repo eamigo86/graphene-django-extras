@@ -15,11 +15,13 @@ matrix:
   include:
       - { python: "3.6", env: DJANGO=2.0 }
       - { python: "3.6", env: DJANGO=2.1 }
+      - { python: "3.6", env: DJANGO=2.2 }
 
       - { python: "3.7", env: DJANGO=2.0 }
       - { python: "3.7", env: DJANGO=2.1 }
+      - { python: "3.7", env: DJANGO=2.2 }
 
-      - { python: "3.6", env: TOXENV=quality }
+      - { python: "3.7", env: TOXENV=quality }
 
 before_install:
   - pip install codecov
