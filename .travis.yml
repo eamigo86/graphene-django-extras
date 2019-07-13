@@ -5,11 +5,6 @@ stages:
   - quality
   - test
 
-cache:
-  pip: true
-  directories:
-    - $HOME/.cache/pypoetry
-
 matrix:
   fast_finish: true
   include:
