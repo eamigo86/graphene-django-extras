@@ -26,6 +26,7 @@ extra directives
 readme = "README.md"
 authors = ["Ernesto Perez Amigo <eamigop86@gmail.com>"]
 license = "MIT"
+url="https://github.com/eamigo86/graphene-django-extras"
 classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries",
@@ -41,7 +42,7 @@ graphql-core = "^2.1"
 graphene = "^2.1.6"
 graphene-django = "^2.3.2"
 django-filter = "^2.0"
-djangorestframework = "^3.9.4"
+djangorestframework = "^no"
 python-dateutil = "^2.8.0"
 
 [tool.poetry.dev-dependencies]
