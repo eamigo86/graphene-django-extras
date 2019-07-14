@@ -1,7 +1,7 @@
 
 Graphene-Django-Extras
 ======================
-|build-status| |python-support| |license| |code-style|
+|build-status| |coverage-status| |python-support| |license| |code-style|
 
 This package add some extra functionalities to **graphene-django** to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.
@@ -753,6 +753,9 @@ v0.0.1-beta.4:
 .. |build-status| image:: https://img.shields.io/travis/eamigo86/graphene-django-extras/master.svg
     :target: https://travis-ci.org/eamigo86/graphene-django-extras
     :alt: Build status
+.. |coverage-status| image:: https://codecov.io/gh/eamigo86/graphene-django-extras/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/eamigo86/graphene-django-extras
+    :alt: Coverage status
 .. |python-support| image:: https://img.shields.io/pypi/pyversions/graphene-django-extras.svg
     :target: https://pypi.python.org/pypi/graphene-django-extras
     :alt: Python versions
