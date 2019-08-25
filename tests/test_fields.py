@@ -44,7 +44,7 @@ class DjangoFilterPaginateListFieldTest(ParentTest, TestCase):
         "data": {
             "allUsers1": [
                 {
-                    "id": 1,
+                    "id": "1",
                     "username": "graphql",
                     "firstName": "Ernesto",
                     "lastName": "Perez Amigo",
@@ -109,7 +109,7 @@ class DjangoSerializerTypeTest(ParentTest, TestCase):
             "users": {
                 "results": [
                     {
-                        "id": 1,
+                        "id": "1",
                         "username": "graphql",
                         "email": "eamigop86@gmail.com",
                     }
