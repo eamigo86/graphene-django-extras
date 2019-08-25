@@ -5,94 +5,174 @@ from tests import queries
 from tests.client import Client
 
 
-class DjangoListObjectFieldTest(TestCase):
-    def test_field(self):
-        user = factories.UserFactory()
-        client = Client()
-        response = client.query(queries.ALL_USERS)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("data", data)
-        self.assertIn("allUsers", data["data"])
-        self.assertIn("results", data["data"]["allUsers"])
-        self.assertTrue(data["data"]["allUsers"]["results"])
-        self.assertEqual(data["data"]["allUsers"]["results"][0]["id"], str(user.id))
+class ParentTest(TestCase):
+    @property
+    def query(self):
+        raise NotImplementedError()
 
+    @property
+    def expected_status_code(self):
+        raise NotImplementedError()
 
-class DjangoFilterPaginateListFieldTest(TestCase):
-    def test_field(self):
-        user = factories.UserFactory()
-        client = Client()
-        response = client.query(queries.ALL_USERS1)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("data", data)
-        self.assertIn("allUsers1", data["data"])
-        #  self.assertIn("results", data["data"]["allUsers1"])
-        self.assertTrue(data["data"]["allUsers1"])
-        self.assertEqual(data["data"]["allUsers1"][0]["id"], str(user.id))
+    @property
+    def expected_return_payload(self):
+        raise NotImplementedError()
 
+    def setUp(self):
+        self.user = factories.UserFactory()
+        self.client = Client()
+        self.response = self.client.query(self.query)
+        self.data = self.response.json()
 
-class DjangoFilterListFieldTest(TestCase):
-    def test_field(self):
-        user = factories.UserFactory()
-        client = Client()
-        response = client.query(queries.ALL_USERS2)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("allUsers2", data["data"])
-        self.assertTrue(data["data"]["allUsers2"])
-        self.assertEqual(data["data"]["allUsers2"][0]["id"], str(user.id))
+    def test_should_return_expected_status_code(self):
+        self.assertEqual(self.response.status_code, self.expected_status_code)
 
-
-class DjangoListObjectFieldWithFiltersetTest(TestCase):
-    def test_filter_id(self):
-        user = factories.UserFactory()
-        query = queries.ALL_USERS3_WITH_FILTER % {
-            "filter": "id: %s" % user.id,
-            "fields": "username",
-        }
-        client = Client()
-        response = client.query(query)
-        self.assertEqual(response.status_code, 200, response.content)
-        data = response.json()
-        self.assertIn("allUsers3", data["data"])
-        self.assertIn("results", data["data"]["allUsers3"])
-        self.assertTrue(data["data"]["allUsers3"]["results"])
+    def test_should_return_expected_payload(self):
         self.assertEqual(
-            data["data"]["allUsers3"]["results"][0]["username"], user.username
+            self.response.json(), self.expected_return_payload, self.response.content
         )
 
-    def test_filter_charfield_icontains(self):
-        user = factories.UserFactory()
-        query = queries.ALL_USERS3_WITH_FILTER % {
-            "filter": 'email_Icontains: "%s"' % user.email.split("@")[0],
+
+class DjangoListObjectFieldTest(ParentTest):
+    query = queries.ALL_USERS
+    expected_status_code = 200
+    expected_return_payload = {
+        "data": {
+            "allUsers": {
+                "results": [
+                    {
+                        "id": 1,
+                        "username": "graphql",
+                        "firstName": "Ernesto",
+                        "lastName": "Perez Amigo",
+                        "email": "eamigop86@gmail.com",
+                    }
+                ]
+            }
+        }
+    }
+
+    def test_field(self):
+        self.assertEqual(
+            self.data["data"]["allUsers"]["results"][0]["id"], str(self.user.id)
+        )
+
+
+class DjangoFilterPaginateListFieldTest(ParentTest):
+    query = queries.ALL_USERS1
+    expected_status_code = 200
+    expected_return_payload = {
+        "data": {
+            "allUsers1": [
+                {
+                    "id": 1,
+                    "username": "graphql",
+                    "firstName": "Ernesto",
+                    "lastName": "Perez Amigo",
+                    "email": "eamigop86@gmail.com",
+                }
+            ]
+        }
+    }
+
+
+class DjangoFilterListFieldTest(ParentTest):
+    query = queries.ALL_USERS2
+    expected_status_code = 200
+    expected_return_payload = {
+        "data": {
+            "allUsers2": [
+                {
+                    "id": 1,
+                    "username": "graphql",
+                    "firstName": "Ernesto",
+                    "lastName": "Perez Amigo",
+                    "email": "eamigop86@gmail.com",
+                }
+            ]
+        }
+    }
+
+
+class DjangoListObjectFieldWithFiltersetTest(ParentTest):
+    expected_status_code = 200
+    expected_return_payload = {
+        "data": {"allUsers3": {"results": [{"username": "graphql"}]}}
+    }
+
+    @property
+    def query(self):
+        return queries.ALL_USERS3_WITH_FILTER % {
+            "filter": "id: %s" % self.user.id,
             "fields": "username",
         }
-        client = Client()
-        response = client.query(query)
+
+    def test_filter_charfield_icontains(self):
+        query = queries.ALL_USERS3_WITH_FILTER % {
+            "filter": 'email_Icontains: "%s"' % self.user.email.split("@")[0],
+            "fields": "username",
+        }
+        response = self.client.query(query)
         self.assertEqual(response.status_code, 200, response.content)
         data = response.json()
         self.assertIn("allUsers3", data["data"])
         self.assertIn("results", data["data"]["allUsers3"])
         self.assertTrue(data["data"]["allUsers3"]["results"])
         self.assertEqual(
-            data["data"]["allUsers3"]["results"][0]["username"], user.username
+            data["data"]["allUsers3"]["results"][0]["username"], self.user.username
         )
 
     def test_filter_charfield_iexact(self):
-        user = factories.UserFactory()
         query = queries.ALL_USERS3_WITH_FILTER % {
-            "filter": 'email_Iexact: "%s"' % user.email,
+            "filter": 'email_Iexact: "%s"' % self.user.email,
             "fields": "username",
         }
-        client = Client()
-        response = client.query(query)
+        response = self.client.query(query)
         self.assertEqual(response.status_code, 200, response.content)
         data = response.json()
         self.assertIn("allUsers3", data["data"])
         self.assertIn("results", data["data"]["allUsers3"])
         self.assertTrue(data["data"]["allUsers3"]["results"])
         self.assertEqual(
-            data["data"]["allUsers3"]["results"][0]["username"], user.username
+            data["data"]["allUsers3"]["results"][0]["username"], self.user.username
         )
+
+
+class DjangoSerializerTypeTest(ParentTest):
+    expected_status_code = 200
+    expected_return_payload = {
+        "data": {
+            "users": {
+                "results": [
+                    {
+                        "id": 1,
+                        "username": "graphql",
+                        "firstName": "Ernesto",
+                        "lastName": "Perez Amigo",
+                        "email": "eamigop86@gmail.com",
+                    }
+                ],
+                "totalCount": 1,
+            }
+        }
+    }
+
+    @property
+    def query(self):
+        return queries.USERS % {
+            "filter": 'firstName_Icontains: "{}"'.format(self.user.first_name[:5]),
+            "pagination": "limit: 1",
+            "fields": "id, username",
+        }
+
+    def test_filter_single_object(self):
+        query = queries.USER % {
+            "filter": "id: {}".format(self.user.id),
+            "fields": "username",
+        }
+        response = self.client.query(query)
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        self.assertIn("user2", data["data"])
+        self.assertTrue(data["data"]["user2"])
+        self.assertEqual(data["data"]["user2"]["username"], self.user.username)

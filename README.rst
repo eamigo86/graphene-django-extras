@@ -78,11 +78,12 @@ DjangoListObjectType classes pagination definitions on settings.py like this:
             model = User
             description = " Type definition for a single user object "
             filter_fields = {
-                'id': ['exact', ],
-                'first_name': ['icontains', 'iexact'],
-                'last_name': ['icontains', 'iexact'],
-                'username': ['icontains', 'iexact'],
-                'email': ['icontains', 'iexact']
+                "id": ("exact", ),
+                "first_name": ("icontains", "iexact"),
+                "last_name": ("icontains", "iexact"),
+                "username": ("icontains", "iexact"),
+                "email": ("icontains", "iexact"),
+                "is_staff": ("exact", ),
             }
 
 
@@ -97,16 +98,16 @@ DjangoListObjectType classes pagination definitions on settings.py like this:
         """ With this type definition it't necessary a mutation definition for models """
 
         class Meta:
-            description = " User's model type definition "
+            description = " User model type definition "
             serializer_class = UserSerializer
             pagination = LimitOffsetGraphqlPagination(default_limit=25, ordering="-username") # ordering can be: string, tuple or list
             filter_fields = {
-                'id': ['exact', ],
-                'first_name': ['icontains', 'iexact'],
-                'last_name': ['icontains', 'iexact'],
-                'username': ['icontains', 'iexact'],
-                'email': ['icontains', 'iexact'],
-                'is_staff': ['exact']
+                "id": ("exact", ),
+                "first_name": ("icontains", "iexact"),
+                "last_name": ("icontains", "iexact"),
+                "username": ("icontains", "iexact"),
+                "email": ("icontains", "iexact"),
+                "is_staff": ("exact", ),
             }
 
 

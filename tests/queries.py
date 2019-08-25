@@ -32,3 +32,21 @@ ALL_USERS3_WITH_FILTER = """query {
   }
 }
 """
+
+# Queries for DjangoSerializerType
+USER = """query {
+  user2 (%(filter)s) {
+      %(fields)s
+  }
+}
+"""
+
+USERS = """query {
+  users(%(filter)s){
+    results(%(pagination)s){
+        %(fields)s
+    },
+    totalCount
+  }
+}
+"""

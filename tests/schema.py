@@ -2,12 +2,12 @@ import graphene
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from graphene_django_extras import (
+from graphene_django_extras.types import (
     DjangoListObjectType,
-    #  DjangoSerializerType,
+    DjangoSerializerType,
     DjangoObjectType,
 )
-from graphene_django_extras import (
+from graphene_django_extras.fields import (
     DjangoObjectField,
     DjangoListObjectField,
     DjangoFilterPaginateListField,
@@ -15,8 +15,8 @@ from graphene_django_extras import (
 )
 from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
 
-#  from . import serializers
-from . import filtersets
+from .serializers import UserSerializer
+from .filtersets import UserFilterSet
 
 
 class UserType(DjangoObjectType):
@@ -39,6 +39,16 @@ class UserListType(DjangoListObjectType):
         pagination = LimitOffsetGraphqlPagination(
             default_limit=25, ordering="-username"
         )
+
+
+class UserModelType(DjangoSerializerType):
+    class Meta:
+        description = " Serializer Type definition for user "
+        serializer_class = UserSerializer
+        pagination = LimitOffsetGraphqlPagination(
+            default_limit=25, ordering="-username"
+        )
+        filterset_class = UserFilterSet
 
 
 # class UserModelType(DjangoSerializerType):
@@ -66,9 +76,7 @@ class Query(graphene.ObjectType):
     )
     all_users2 = DjangoFilterListField(UserType)
     all_users3 = DjangoListObjectField(
-        UserListType,
-        filterset_class=filtersets.UserFilter,
-        description=_("All Users query"),
+        UserListType, filterset_class=UserFilterSet, description=_("All Users query")
     )
 
     # Defining a query for a single user
@@ -82,18 +90,7 @@ class Query(graphene.ObjectType):
     )
 
     # Exist two ways to define single or list user queries with DjangoSerializerType
-    # user_retrieve1, user_list1 = UserModelType.QueryFields(
-    #   description='Some description message for both queries',
-    #   deprecation_reason='Some deprecation message for both queries'
-    # )
-    # user_retrieve2 = UserModelType.RetrieveField(
-    #   description='Some description message for retrieve query',
-    #   deprecation_reason='Some deprecation message for retrieve query'
-    # )
-    # user_list2 = UserModelType.ListField(
-    #   description='Some description message for list query',
-    #   deprecation_reason='Some deprecation message for list query'
-    # )
+    user2, users = UserModelType.QueryFields()
 
 
 schema = graphene.Schema(query=Query)

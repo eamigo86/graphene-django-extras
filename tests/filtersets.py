@@ -2,7 +2,7 @@ import django_filters as filters
 from django.contrib.auth import models as auth_models
 
 
-class UserFilter(filters.FilterSet):
+class UserFilterSet(filters.FilterSet):
     class Meta:
         model = auth_models.User
         fields = {
