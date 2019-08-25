@@ -30,21 +30,7 @@ class ParentTest:
 
 class DjangoListObjectFieldTest(ParentTest, TestCase):
     query = queries.ALL_USERS
-    expected_return_payload = {
-        "data": {
-            "allUsers": {
-                "results": [
-                    {
-                        "id": 1,
-                        "username": "graphql",
-                        "firstName": "Ernesto",
-                        "lastName": "Perez Amigo",
-                        "email": "eamigop86@gmail.com",
-                    }
-                ]
-            }
-        }
-    }
+    expected_return_payload = {"data": {"allUsers": {"results": [{"id": "1"}]}}}
 
     def test_field(self):
         self.assertEqual(
@@ -71,22 +57,10 @@ class DjangoFilterPaginateListFieldTest(ParentTest, TestCase):
 
 class DjangoFilterListFieldTest(ParentTest, TestCase):
     query = queries.ALL_USERS2
-    expected_return_payload = {
-        "data": {
-            "allUsers2": [
-                {
-                    "id": 1,
-                    "username": "graphql",
-                    "firstName": "Ernesto",
-                    "lastName": "Perez Amigo",
-                    "email": "eamigop86@gmail.com",
-                }
-            ]
-        }
-    }
+    expected_return_payload = {"data": {"allUsers2": [{"username": "graphql"}]}}
 
 
-class DjangoListObjectFieldWithFiltersetTest(ParentTest, TestCase):
+class DjangoListObjectFieldWithFilterSetTest(ParentTest, TestCase):
     expected_return_payload = {
         "data": {"allUsers3": {"results": [{"username": "graphql"}]}}
     }
@@ -137,8 +111,6 @@ class DjangoSerializerTypeTest(ParentTest, TestCase):
                     {
                         "id": 1,
                         "username": "graphql",
-                        "firstName": "Ernesto",
-                        "lastName": "Perez Amigo",
                         "email": "eamigop86@gmail.com",
                     }
                 ],
@@ -152,7 +124,7 @@ class DjangoSerializerTypeTest(ParentTest, TestCase):
         return queries.USERS % {
             "filter": 'firstName_Icontains: "{}"'.format(self.user.first_name[:5]),
             "pagination": "limit: 1",
-            "fields": "id, username",
+            "fields": "id, username, email",
         }
 
     def test_filter_single_object(self):

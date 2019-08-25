@@ -9,12 +9,16 @@ ALL_USERS = """query {
 ALL_USERS1 = """query {
   allUsers1 {
       id
+      username
+      firstName
+      lastName
+      email
   }
 }
 """
 ALL_USERS2 = """query {
   allUsers2 {
-      id
+      username
   }
 }
 """
