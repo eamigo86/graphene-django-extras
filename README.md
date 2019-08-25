@@ -501,6 +501,14 @@ You can use this shortcuts too:
 
 
 ## Change Log:
+#### v0.4.6:
+    1. Bump graphql-core dependencies to >= 2.2.1.
+    2. Bump graphene dependencies to >= 2.1.8.
+    3. Bump graphene-django dependencies to >= 2.5.0.
+    4. Bump django-filter dependencies to >= 2.2.0.
+    5. Fixed bug 'DjangoSerializerOptions' object has no attribute 'interfaces' after update to graphene==2.1.8.
+    6. The tests were refactored and added some extra tests for DjangoSerializerType.
+    
 #### v0.4.5:
     1. Fixed compatibilities issues to use graphene-django>=2.3.2.
     2. Improved code quality and use Black code format.
