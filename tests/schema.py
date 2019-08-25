@@ -32,7 +32,7 @@ class UserType(DjangoObjectType):
         }
 
 
-class UserListType(DjangoListObjectType):
+class User1ListType(DjangoListObjectType):
     class Meta:
         description = " Type definition for user list "
         model = User
@@ -70,13 +70,13 @@ class UserModelType(DjangoSerializerType):
 
 class Query(graphene.ObjectType):
     # Possible User list queries definitions
-    all_users = DjangoListObjectField(UserListType, description=_("All Users query"))
+    all_users = DjangoListObjectField(User1ListType, description=_("All Users query"))
     all_users1 = DjangoFilterPaginateListField(
         UserType, pagination=LimitOffsetGraphqlPagination()
     )
     all_users2 = DjangoFilterListField(UserType)
     all_users3 = DjangoListObjectField(
-        UserListType, filterset_class=UserFilterSet, description=_("All Users query")
+        User1ListType, filterset_class=UserFilterSet, description=_("All Users query")
     )
 
     # Defining a query for a single user
@@ -85,7 +85,7 @@ class Query(graphene.ObjectType):
     user = DjangoObjectField(UserType, description=_("Single User query"))
 
     # Another way to define a query to single user
-    user1 = UserListType.RetrieveField(
+    user1 = User1ListType.RetrieveField(
         description=_("User List with pagination and filtering")
     )
 
