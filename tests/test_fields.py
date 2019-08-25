@@ -108,11 +108,7 @@ class DjangoSerializerTypeTest(ParentTest, TestCase):
         "data": {
             "users": {
                 "results": [
-                    {
-                        "id": "1",
-                        "username": "graphql",
-                        "email": "eamigop86@gmail.com",
-                    }
+                    {"id": "1", "username": "graphql", "email": "eamigop86@gmail.com"}
                 ],
                 "totalCount": 1,
             }
