@@ -5,17 +5,12 @@ from tests import queries
 from tests.client import Client
 
 
-class ParentTest(TestCase):
+class ParentTest:
+    expected_status_code = 200
+    expected_return_payload = {}
+
     @property
     def query(self):
-        raise NotImplementedError()
-
-    @property
-    def expected_status_code(self):
-        raise NotImplementedError()
-
-    @property
-    def expected_return_payload(self):
         raise NotImplementedError()
 
     def setUp(self):
@@ -33,9 +28,8 @@ class ParentTest(TestCase):
         )
 
 
-class DjangoListObjectFieldTest(ParentTest):
+class DjangoListObjectFieldTest(ParentTest, TestCase):
     query = queries.ALL_USERS
-    expected_status_code = 200
     expected_return_payload = {
         "data": {
             "allUsers": {
@@ -58,9 +52,8 @@ class DjangoListObjectFieldTest(ParentTest):
         )
 
 
-class DjangoFilterPaginateListFieldTest(ParentTest):
+class DjangoFilterPaginateListFieldTest(ParentTest, TestCase):
     query = queries.ALL_USERS1
-    expected_status_code = 200
     expected_return_payload = {
         "data": {
             "allUsers1": [
@@ -76,9 +69,8 @@ class DjangoFilterPaginateListFieldTest(ParentTest):
     }
 
 
-class DjangoFilterListFieldTest(ParentTest):
+class DjangoFilterListFieldTest(ParentTest, TestCase):
     query = queries.ALL_USERS2
-    expected_status_code = 200
     expected_return_payload = {
         "data": {
             "allUsers2": [
@@ -94,8 +86,7 @@ class DjangoFilterListFieldTest(ParentTest):
     }
 
 
-class DjangoListObjectFieldWithFiltersetTest(ParentTest):
-    expected_status_code = 200
+class DjangoListObjectFieldWithFiltersetTest(ParentTest, TestCase):
     expected_return_payload = {
         "data": {"allUsers3": {"results": [{"username": "graphql"}]}}
     }
@@ -138,8 +129,7 @@ class DjangoListObjectFieldWithFiltersetTest(ParentTest):
         )
 
 
-class DjangoSerializerTypeTest(ParentTest):
-    expected_status_code = 200
+class DjangoSerializerTypeTest(ParentTest, TestCase):
     expected_return_payload = {
         "data": {
             "users": {

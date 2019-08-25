@@ -63,6 +63,7 @@ class DjangoSerializerOptions(BaseOptions):
     output_type = None
     output_list_type = None
     nested_fields = None
+    interfaces = ()
 
 
 class DjangoObjectType(ObjectType):
