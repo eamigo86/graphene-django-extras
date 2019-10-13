@@ -11,7 +11,7 @@ if django.VERSION >= (2, 0):
         path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True)), name="graphql"),
     ]
 else:
-    from django.urls import url
+    from django.conf.urls import url
 
     urlpatterns = [
         url("admin/", admin.site.urls),
