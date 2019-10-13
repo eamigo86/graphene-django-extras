@@ -40,5 +40,8 @@ after_success:
   - pip install codecov
   - codecov -e TOXENV,DJANGO
 
+after_script:
+  - bash ./telegram_notification.sh
+
 notifications:
     email: false
