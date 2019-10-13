@@ -41,7 +41,7 @@ after_success:
   - codecov -e TOXENV,DJANGO
 
 after_script:
-  - bash ./scripts/telegram_notification.sh
+  - bash ./scripts/travis_telegram_notification.sh
 
 notifications:
     email: false
