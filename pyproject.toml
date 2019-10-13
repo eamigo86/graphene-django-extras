@@ -30,7 +30,6 @@ documentation="https://github.com/eamigo86/graphene-django-extras"
 classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
@@ -40,7 +39,7 @@ classifiers = [
 keywords=["api", "graphql", "protocol", "rest", "graphene", "django"]
 
 [tool.poetry.dependencies]
-python = "~2.7 || ^3.6 || ^3.7"
+python = "^3.6 || ^3.7"
 graphql-core = "^2.2.1"
 graphene = "^2.1.8"
 graphene-django = "^2.5.0"
