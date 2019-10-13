@@ -33,15 +33,16 @@ install:
   - pip install tox-travis
   - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
   - source $HOME/.poetry/env
+
 script:
   - tox
+
+after_script:
+  - bash ./scripts/travis_telegram_notification.sh
 
 after_success:
   - pip install codecov
   - codecov -e TOXENV,DJANGO
-
-after_script:
-  - bash ./scripts/travis_telegram_notification.sh
 
 notifications:
     email: false

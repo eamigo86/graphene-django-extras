@@ -701,8 +701,8 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "333ca6563941f7796bb38ed08e2932ad54a364930b9dc8e9de052bd655b8f61a"
-python-versions = "^3.6"
+content-hash = "63834d44627221f84ab70a281bee8bce17901ada0887e088fa72e23a181a566d"
+python-versions = "^3.6 || ^3.7"
 
 [metadata.hashes]
 aniso8601 = ["513d2b6637b7853806ae79ffaca6f3e8754bdd547048f5ccc1420aec4b714f1e", "d10a4bf949f619f719b227ef5386e31f49a2b6d453004b21f02661ccc8670c7b"]

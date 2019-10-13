@@ -28,6 +28,7 @@ send_msg "
 Travis build *${build_status}!*
 \`Repository:  ${TRAVIS_REPO_SLUG}\`
 \`Branch:      ${TRAVIS_BRANCH}\`
+\`ENV:       ${TRAVIS_PYTHON_VERSION}-${DJANGO}\`
 *Commit Msg:*
 ${TRAVIS_COMMIT_MESSAGE}
 [Job Log here](${TRAVIS_JOB_WEB_URL})
