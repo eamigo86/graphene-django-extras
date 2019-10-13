@@ -2,21 +2,13 @@
 ---
 
 # Graphene-Django-Extras
-[![build-badget]][travis]
-[![codecov][codecov-badget]][codecov]
-[![pypi-version]][pypi]
-[![python-support]](https://pypi.python.org/pypi/graphene-django-extras)
-[![license]](https://github.com/eamigo86/graphene-django-extras/blob/master/LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-
-[build-badget]: https://travis-ci.org/eamigo86/graphene-django-extras.svg?branch=master
-[travis]: https://travis-ci.org/eamigo86/graphene-django-extras
-[codecov-badget]: https://codecov.io/gh/eamigo86/graphene-django-extras/branch/master/graph/badge.svg
-[codecov]: https://codecov.io/gh/eamigo86/graphene-django-extras
-[pypi-version]: https://img.shields.io/pypi/v/graphene_django_extras.svg
-[pypi]: https://pypi.org/project/graphene_django_extras/
-[python-support]: https://img.shields.io/pypi/pyversions/graphene-django-extras.svg
-[license]: https://img.shields.io/pypi/l/graphene-django-extras.svg
+![Travis (.org) branch](https://img.shields.io/travis/eamigo86/graphene-django-extras/master)
+![Codecov](https://img.shields.io/codecov/c/github/eamigo86/graphene-django-extras)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/graphene-django-extras)
+![PyPI](https://img.shields.io/pypi/v/graphene-django-extras?color=blue)
+![PyPI - License](https://img.shields.io/pypi/l/graphene-django-extras)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/graphene-django-extras?style=flat)
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 This package adds some extra functionalities to graphene-django to facilitate the graphql use without Relay:
   1. Allow pagination and filtering on Queries.
@@ -501,11 +493,14 @@ You can use this shortcuts too:
 
 
 ## Change Log:
+#### v0.4.7:
+    1. Upgrade graphene-django dependency to version == 2.6.0.
+
 #### v0.4.6:
-    1. Bump graphql-core dependencies to >= 2.2.1.
-    2. Bump graphene dependencies to >= 2.1.8.
-    3. Bump graphene-django dependencies to >= 2.5.0.
-    4. Bump django-filter dependencies to >= 2.2.0.
+    1. Upgrade graphql-core dependency to version >= 2.2.1.
+    2. Upgrade graphene dependency to version >= 2.1.8.
+    3. Upgrade graphene-django dependency to version >= 2.5.0.
+    4. Upgrade django-filter dependency to version >= 2.2.0.
     5. Fixed bug 'DjangoSerializerOptions' object has no attribute 'interfaces' after update to graphene==2.1.8.
     6. The tests were refactored and added some extra tests for DjangoSerializerType.
     

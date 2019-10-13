@@ -1,7 +1,7 @@
 
 Graphene-Django-Extras
 ======================
-|build-status| |coverage-status| |python-support| |license| |code-style|
+|build-status| |coverage-status| |python-support| |license| |code-style| |pypi-downloads|
 
 This package add some extra functionalities to **graphene-django** to facilitate the graphql use without Relay:
   1. Allows pagination and filtering on Queries.
@@ -512,12 +512,17 @@ You can use this shortcuts too:
 Change Log:
 -----------
 *******
+v0.4.7:
+*******
+1. Upgrade graphene-django dependency to version == 2.6.0.
+
+*******
 v0.4.6:
 *******
-1. Bump graphql-core dependencies to >= 2.2.1.
-2. Bump graphene dependencies to >= 2.1.8.
-3. Bump graphene-django dependencies to >= 2.5.0.
-4. Bump django-filter dependencies to >= 2.2.0.
+1. Upgrade graphql-core dependency to version >= 2.2.1.
+2. Upgrade graphene dependency to version >= 2.1.8.
+3. Upgrade graphene-django dependency to version >= 2.5.0.
+4. Upgrade django-filter dependency to version >= 2.2.0.
 5. Fixed bug 'DjangoSerializerOptions' object has no attribute 'interfaces' after update to graphene==2.1.8.
 6. The tests were refactored and added some extra tests for DjangoSerializerType.
 
@@ -776,3 +781,6 @@ v0.0.1-beta.4:
 .. |code-style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
     :alt: Black
+.. |pypi-downloads| image:: https://img.shields.io/pypi/dm/graphene-django-extras?style=flat
+    :target: https://pypi.python.org/pypi/graphene-django-extras
+    :alt: PyPI Downloads
