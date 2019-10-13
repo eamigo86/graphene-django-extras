@@ -13,15 +13,15 @@ cache:
 matrix:
   fast_finish: true
   include:
-      - { python: "3.6", env: DJANGO=1.11 }
-      - { python: "3.6", env: DJANGO=2.0 }
-      - { python: "3.6", env: DJANGO=2.1 }
-      - { python: "3.6", env: DJANGO=2.2 }
+      - { python: "3.6", env: DJANGO=1.11, TOXENV=py36-django111 }
+      - { python: "3.6", env: DJANGO=2.0, TOXENV=py36-django20 }
+      - { python: "3.6", env: DJANGO=2.1, TOXENV=py36-django21 }
+      - { python: "3.6", env: DJANGO=2.2, TOXENV=py36-django22 }
 
-      - { python: "3.7", env: DJANGO=1.11 }
-      - { python: "3.7", env: DJANGO=2.0 }
-      - { python: "3.7", env: DJANGO=2.1 }
-      - { python: "3.7", env: DJANGO=2.2 }
+      - { python: "3.7", env: DJANGO=1.11, TOXENV=py37-django111 }
+      - { python: "3.7", env: DJANGO=2.0, TOXENV=py37-django20 }
+      - { python: "3.7", env: DJANGO=2.1, TOXENV=py37-django21 }
+      - { python: "3.7", env: DJANGO=2.2, TOXENV=py37-django22 }
 
       - { python: "3.7", env: TOXENV=quality }
 
