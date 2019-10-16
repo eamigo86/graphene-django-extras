@@ -238,7 +238,7 @@ def convert_field_to_int(field, registry=None, input_flag=None, nested_field=Fal
 def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field=False):
     required = is_required(field) and input_flag == "create"
     if required:
-        return NonNull(Boolean, description=field.help_text)
+        return NonNull(Boolean, description=field.help_text or field.verbose_name)
     return Boolean(description=field.help_text)
 
 
