@@ -493,7 +493,7 @@ You can use this shortcuts too:
 
 
 ## Change Log:
-#### v0.4.7:
+#### v0.4.8:
     1. Upgrade graphene-django dependency to version == 2.6.0.
 
 #### v0.4.6:

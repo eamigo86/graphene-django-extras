@@ -26,7 +26,6 @@ from graphene import (
 from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case, to_const
 from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONField
-from graphene_django.fields import DjangoListField
 from graphene_django.utils import import_single_dispatch
 
 from .base_types import (
@@ -37,7 +36,7 @@ from .base_types import (
     CustomDate,
     Binary,
 )
-from .fields import DjangoFilterListField
+from .fields import DjangoFilterListField, DjangoListField
 from .utils import is_required, get_model_fields, get_related_model
 
 singledispatch = import_single_dispatch()
