@@ -322,7 +322,8 @@ def convert_field_to_list_or_connection(
     def dynamic_type():
         if input_flag and not nested_field:
             return DjangoListField(
-                ID, required=is_required(field) and input_flag == "create"
+                ID, required=is_required(field) and input_flag == "create",
+                description=field.help_text or field.verbose_name,
             )
         else:
             _type = registry.get_type_for_model(model, for_input=input_flag)
@@ -334,11 +335,13 @@ def convert_field_to_list_or_connection(
                 return DjangoFilterListField(
                     _type,
                     required=is_required(field) and input_flag == "create",
+                    description=field.help_text or field.verbose_name,
                     filterset_class=_type._meta.filterset_class,
                 )
             else:
                 return DjangoListField(
                     _type, required=is_required(field) and input_flag == "create"
+                    description=field.help_text or field.verbose_name,
                 )
 
     return Dynamic(dynamic_type)
