@@ -22,6 +22,14 @@ ALL_USERS2 = """query {
   }
 }
 """
+
+ALL_USERS_DIR = """query{
+    allUsers1{
+        username @uppercase
+    }
+}
+"""
+
 ALL_USERS3 = """query {
   allUsers3 {
       id

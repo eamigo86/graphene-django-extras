@@ -2,6 +2,7 @@ import graphene
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
+from graphene_django_extras.directives import all_directives
 from graphene_django_extras.types import (
     DjangoListObjectType,
     DjangoSerializerType,
@@ -93,4 +94,4 @@ class Query(graphene.ObjectType):
     user2, users = UserModelType.QueryFields()
 
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, directives=all_directives)
