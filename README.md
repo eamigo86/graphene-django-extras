@@ -152,7 +152,8 @@ from .models import User
 class UserSerializerMutation(DRFSerializerMutation):
     """
         DjangoSerializerMutation auto implement Create, Delete and Update functions
-        for more customisation use CreateSerializerMutation, UpdateSerializerMutation, DeleteSerializerMutation
+        for more customisation use CreateSerializerMutation, UpdateSerializerMutation, 
+        DeleteSerializerMutation
     """
     permission_classes = []
     
@@ -164,7 +165,8 @@ class UserSerializerMutation(DRFSerializerMutation):
 class UserModelMutation(DjangoModelMutation):
     """
         DjangoModelMutation auto implement Create, Delete and Update functions
-        for more customisation use CreateModelMutation, UpdateModelMutation, DeleteModelMutation
+        for more customisation use CreateModelMutation, UpdateModelMutation, 
+        DeleteModelMutation
     """
     permission_classes = []
     
