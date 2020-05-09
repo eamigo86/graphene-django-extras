@@ -5,6 +5,11 @@ from apps.core.object_mixins import GraphqlPermissionMixin
 
 
 def login_required(f, not_auth_msg=None):
+    """
+    :param f: function
+    :param not_auth_msg: not authorization message
+    :return: f
+    """
     @wraps(f)
     def wrap(*args, **kwargs):
         _, info = args
@@ -15,6 +20,11 @@ def login_required(f, not_auth_msg=None):
 
 
 def permission_required(f, permissions=None):
+    """
+    :param f: function
+    :param permissions: list of permission_classes
+    :return:
+    """
     wrap_permission_mixin = GraphqlPermissionMixin()
     wrap_permission_mixin.permission_classes = permissions or []
     @wraps(f)
@@ -26,6 +36,13 @@ def permission_required(f, permissions=None):
 
 
 def is_super_user_required(f, no_auth_msg=None, not_auth_msg=None):
+    """
+
+    :param f: function
+    :param no_auth_msg: No authentication message
+    :param not_auth_msg: Not authorized message
+    :return: f
+    """
     @wraps(f)
     def wrap(*args, **kwargs):
         _, info = args
@@ -40,6 +57,13 @@ def is_super_user_required(f, no_auth_msg=None, not_auth_msg=None):
 
 
 def is_staff_required(f, no_auth_msg=None, not_auth_msg=None):
+    """
+
+    :param f: function
+    :param no_auth_msg: No authentication message
+    :param not_auth_msg: Not authorized message
+    :return: f
+    """
     @wraps(f)
     def wrap(*args, **kwargs):
         _, info = args

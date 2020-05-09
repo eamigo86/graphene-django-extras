@@ -14,6 +14,7 @@ This package adds some extra functionalities to graphene-django to facilitate th
   1. Allow pagination and filtering on Queries.
   2. Allow defining DjangoRestFramework serializers based on Mutations.
   3. Allow using Directives on Queries and Fragments.
+  4. Allow defining Permissions for mutations and Queries
 
 **NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions).
 
@@ -22,13 +23,13 @@ This package adds some extra functionalities to graphene-django to facilitate th
 For installing graphene-django-extras, just run this command in your shell:
 
 ```
-pip install graphene-django-extras
+pip install git+https://github.com/eadwinCode/graphene-django-extras.git
 ```
 
 ## Documentation:
 
 ### Extra functionalities:
- **Fields:**
+ **Fields: (*Now has permissions*)**
   1.  DjangoObjectField
   2.  DjangoFilterListField
   3.  DjangoFilterPaginateListField
@@ -36,11 +37,25 @@ pip install graphene-django-extras
 
  **Mutations:**
   1.  DjangoSerializerMutation (*Recommended for Mutations definition*)
+  2.  *DRFSerializerMutation (*Recommended for Mutations definition Strictly for Serializers*)
+  3.  *DjangoModelMutation (*Recommended for Mutations definition Strictly for Django Models*)
+  4.  *UpdateSerializerMutation (*Update Mutation definition with Serializer class*)
+  5.  *DeleteSerializerMutation (*Delete Mutation definition with Serializer class*)
+  6.  *CreateSerializerMutation (*Create Mutation definition with Serializer class*)
+  7.  *CreateModelMutation (*Create Mutation definition with Django Model*)
+  8.  *UpdateModelMutation (*Update Mutation definition with Django Model*)
+  9.  *DeleteModelMutation (*Delete Mutation definition with Django Model*)
 
  **Types:**
   1.  DjangoListObjectType  (*Recommended for Types definition*)
   2.  DjangoInputObjectType
   3.  DjangoSerializerType  (*Recommended for quick queries and mutations definitions*)
+
+ **Decorators: For resolver functions**
+  1.  login_required (*Checks for authentication in request context*)
+  2.  permission_required (*Checks for 'access permissions' not object permissions*)
+  3.  is_super_user_required(*Checks if authenticated user is a superuser*) 
+  4.  is_staff_required(*Checks if authenticated user is a staff*) 
 
  **Paginations:**
   1.  LimitOffsetGraphqlPagination
@@ -54,7 +69,7 @@ for DjangoListObjectType classes pagination definitions on settings.py like this
 
 ```python
     GRAPHENE_DJANGO_EXTRAS = {
-        'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination',
+        'DEFAULT_PAGINATION_CLASS': graphene_django_extra,
         'DEFAULT_PAGE_SIZE': 20,
         'MAX_PAGE_SIZE': 50,
         'CACHE_ACTIVE': True,
@@ -126,20 +141,37 @@ class UserInput(DjangoInputObjectType):
 
 ```python
 import graphene
-from graphene_django_extras import DjangoSerializerMutation
+from graphene_django_extras.rest_framework import DjangoModelMutation, DRFSerializerMutation
 
 from .serializers import UserSerializer
 from .types import UserType
 from .input_types import UserInputType
+from .models import User
 
 
-class UserSerializerMutation(DjangoSerializerMutation):
+class UserSerializerMutation(DRFSerializerMutation):
     """
         DjangoSerializerMutation auto implement Create, Delete and Update functions
+        for more customisation use CreateSerializerMutation, UpdateSerializerMutation, DeleteSerializerMutation
     """
+    permission_classes = []
+    
     class Meta:
         description = " DRF serializer based Mutation for Users "
         serializer_class = UserSerializer
+
+
+class UserModelMutation(DjangoModelMutation):
+    """
+        DjangoModelMutation auto implement Create, Delete and Update functions
+        for more customisation use CreateModelMutation, UpdateModelMutation, DeleteModelMutation
+    """
+    permission_classes = []
+    
+    class Meta:
+        description = "Model based Mutation for Users "
+        model = User
+        only_fields = ('username', 'password', 'email' )
 
 
 class UserMutation(graphene.Mutation):
@@ -151,7 +183,7 @@ class UserMutation(graphene.Mutation):
     user = graphene.Field(UserType, required=False)
 
     class Arguments:
-        new_user = graphene.Argument(UserInput)
+        new_user = graphene.Argument(UserInputType)
 
     class Meta:
         description = " Graphene traditional mutation for Users "
@@ -168,14 +200,18 @@ import graphene
 from graphene_django_extras import DjangoObjectField, DjangoListObjectField, DjangoFilterPaginateListField,
 DjangoFilterListField, LimitOffsetGraphqlPagination
 from .types import UserType, UserListType, UserModelType
-from .mutations import UserMutation, UserSerializerMutation
+from .mutations import UserMutation, UserSerializerMutation, UserModelMutation
 
 
 class Queries(graphene.ObjectType):
     # Possible User list queries definitions
-    users = DjangoListObjectField(UserListType, description='All Users query')
-    users1 = DjangoFilterPaginateListField(UserType, pagination=LimitOffsetGraphqlPagination())
-    users2 = DjangoFilterListField(UserType)
+    users = DjangoListObjectField(
+        UserListType, description='All Users query', permission_classes=[IsAuthenticated,]
+    )
+    users1 = DjangoFilterPaginateListField(
+        UserType, pagination=LimitOffsetGraphqlPagination(), permission_classes=[IsAuthenticated,]
+    )
+    users2 = DjangoFilterListField(UserType, permission_classes=[IsAuthenticated,])
     users3 = DjangoListObjectField(UserListType, filterset_class=UserFilter, description='All Users query')
 
     # Defining a query for a single user
@@ -203,6 +239,10 @@ class Mutations(graphene.ObjectType):
     user_create = UserSerializerMutation.CreateField(deprecation_reason='Some one deprecation message')
     user_delete = UserSerializerMutation.DeleteField()
     user_update = UserSerializerMutation.UpdateField()
+    
+    user_model_create = UserModelMutation.CreateField(deprecation_reason='Some one deprecation message')
+    user_model_delete = UserModelMutation.DeleteField()
+    user_model_update = UserModelMutation.UpdateField()
 
     # Exist two ways to define mutations with DjangoSerializerType
     user_create1, user_delete1, user_update1 = UserModelType.MutationFields(
@@ -493,6 +533,12 @@ You can use this shortcuts too:
 
 
 ## Change Log:
+#### v0.4.8-beta.1:
+    1. Added DRFSerializerMutation, another Mutation to properly manager mutation from serializer class
+    2. Added Permission to DRFSerializerMutations and DjangoModelMutations
+    3. Improved on ListField classes for easy customisation and 
+    4. Added permission to all ListField components 
+    
 #### v0.4.8:
     1. Upgrade graphene-django dependency to version == 2.6.0.
 

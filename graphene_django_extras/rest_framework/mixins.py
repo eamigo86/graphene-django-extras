@@ -134,8 +134,11 @@ class DeleteModelMixin(object):
     DeleteMutation Implementation
     """
 
-    def get_object(self, info, pk, **kwargs):
-        return get_Object_or_None(self._get_model(), pk=pk)
+    def get_object(self, info, data, **kwargs):
+        look_up_field = self._get_lookup_field_name()
+        look_up_value = data.get(look_up_field)
+        filter_kwargs = {look_up_field: look_up_value}
+        return get_Object_or_None(self._get_model(), **filter_kwargs)
 
     @classmethod
     def delete(cls, root, info, **kwargs):
@@ -144,7 +147,8 @@ class DeleteModelMixin(object):
 
         pk = kwargs.get(self._get_lookup_field_name())
 
-        old_obj = self.get_object(info, pk=pk)
+        old_obj = self.get_object(info, data=kwargs)
+
         if old_obj:
             self.check_object_permissions(request=info.context, obj=old_obj)
             old_obj.delete()
