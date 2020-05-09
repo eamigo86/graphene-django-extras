@@ -88,10 +88,10 @@ class DjangoObjectType(ObjectType):
         if not registry:
             registry = get_global_registry()
 
-        assert isinstance(registry, Registry), (
-            "The attribute registry in {} needs to be an instance of "
-            'Registry, received "{}".'
-        ).format(cls.__name__, registry)
+        # assert isinstance(registry, Registry), (
+        #     "The attribute registry in {} needs to be an instance of "
+        #     'Registry, received "{}".'
+        # ).format(cls.__name__, registry)
 
         if not DJANGO_FILTER_INSTALLED and (filter_fields or filterset_class):
             raise Exception(
@@ -264,7 +264,8 @@ class DjangoListObjectType(ObjectType):
 
         results_field_name = results_field_name or "results"
 
-        baseType = get_global_registry().get_type_for_model(model)
+        baseType = get_global_registry().get_type_for_model(model) if not registry else \
+            registry.get_type_for_model(model)
 
         if not baseType:
             factory_kwargs = {

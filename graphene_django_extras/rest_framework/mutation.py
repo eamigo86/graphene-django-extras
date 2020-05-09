@@ -1,0 +1,550 @@
+from collections import OrderedDict
+from graphene import ObjectType, Boolean, List, Field, Argument, InputObjectType, InputField, ID
+from graphene.types.mutation import MutationOptions
+from graphene.types.utils import yank_fields_from_attrs
+from graphene.utils.deprecated import warn_deprecation
+from graphene.utils.props import props
+from graphene.utils.str_converters import to_camel_case
+from graphene_django.registry import get_global_registry
+from graphene_django.rest_framework.mutation import fields_for_serializer
+from graphene_django.types import ErrorType, DjangoObjectType, construct_fields
+
+from graphene_django_extras.base_types import factory_type
+from graphene_django_extras.rest_framework.mixins import *
+
+
+class BaseMutationOptions(MutationOptions):
+    lookup_field_description = None  # description for ID field
+    input_field_name = None
+    output_field_name = None
+    output_field_description = None
+    convert_choices_to_enum = True
+    update_field_name = None
+    create_field_name = None
+    arguments_props = None
+
+
+class SerializerMutationOptions(BaseMutationOptions):
+    serializer_class = None
+    serializer_class_as_output = False
+
+
+class BaseMutation(ObjectType):
+    @classmethod
+    def __init_subclass_with_meta__(
+            cls,
+            lookup_field_description=None,  # description for ID field
+            input_field_name=None,
+            convert_choices_to_enum=True,
+            update_field_name=None,
+            create_field_name=None,
+            _meta=None,
+            **options
+    ):
+        name = options.get('name') or '{}Response'.format(cls.__name__)
+        assert _meta, "{} _meta instance is required".format(cls.__name__)
+
+        model = getattr(_meta, "model", None)
+        assert model, "model is missing in _meta - {}".format(cls.__name__)
+
+        arguments_props = cls._get_argument_fields()
+
+        if not update_field_name:
+            update_field_name = to_camel_case("{}_Update_{}".format(cls.__name__, model._meta.model_name.capitalize()))
+        if not create_field_name:
+            create_field_name = to_camel_case("{}_Create_{}".format(cls.__name__, model._meta.model_name.capitalize()))
+
+        _meta.input_field_name = input_field_name
+        _meta.lookup_field_description = lookup_field_description
+        _meta.convert_choices_to_enum = convert_choices_to_enum
+        _meta.arguments_props = arguments_props
+        _meta.update_field_name = update_field_name
+        _meta.create_field_name = create_field_name
+
+        super(BaseMutation, cls).__init_subclass_with_meta__(
+            _meta=_meta, **options, name=name
+        )
+
+    class Meta:
+        abstract = True
+
+    ok = Boolean(description="Boolean field that return mutation result request.")
+    errors = List(ErrorType, description="Errors list for the field")
+
+    @classmethod
+    def get_errors(cls, errors):
+        errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
+        return cls(**errors_dict)
+
+    @classmethod
+    def perform_mutate(cls, obj, info):
+        resp = {cls._meta.output_field_name: obj, "ok": True, "errors": None}
+        return cls(**resp)
+
+    @classmethod
+    def save(cls, serialized_obj, **kwargs):
+        raise NotImplementedError('`save` method needs to be implemented'.format(cls.__name__))
+
+    @classmethod
+    def _get_lookup_field_name(cls):
+        model = cls._get_model()
+        return model._meta.pk.name
+
+    @classmethod
+    def _get_model(cls):
+        model = cls._meta.model
+        return model
+
+    @classmethod
+    def _get_output_type(cls):
+        output_field = getattr(cls, "Output", None)
+        if output_field:
+            delattr(cls, "Output")
+        return output_field
+
+    @classmethod
+    def _bundle_all_arguments(cls, args_type, input_fields):
+        input_field_name = cls._meta.input_field_name
+        if input_field_name:
+            arguments = OrderedDict({input_field_name: Argument(args_type, required=True)})
+            arguments.update(cls._meta.arguments_props)
+            return arguments
+
+        argument = OrderedDict(
+            {
+                i: Argument(type=t.type, description=t.description, name=t.name, required=getattr(t, 'required', None))
+                for i, t in input_fields.items()
+            }
+        )
+        argument.update(cls._meta.arguments_props)
+        return argument
+
+    @classmethod
+    def _get_output_fields(cls, model, output_field_description):
+        output_type = get_global_registry().get_type_for_model(model)
+        if not output_type:
+            factory_kwargs = {
+                "model": model,
+                'fields': (),
+                'exclude': (),
+            }
+            output_type = factory_type("output", DjangoObjectType, **factory_kwargs)
+
+        output = Field(
+            output_type,
+            description=
+            output_field_description or "Result can `{}` or `Null` if any error message(s)".format(
+                model._meta.model_name.capitalize())
+        )
+        return output
+
+    @classmethod
+    def _get_argument_fields(cls):
+        input_class = getattr(cls, "Arguments", None)
+        if not input_class:
+            input_class = getattr(cls, "Input", None)
+            if input_class:
+                warn_deprecation(
+                    (
+                        "Please use {name}.Arguments instead of {name}.Input."
+                        "Input is now only used in ClientMutationID.\nRead more: "
+                        "https://github.com/graphql-python/graphene/blob/2.0/UPGRADE-v2.0.md#mutation-input"
+                    ).format(name=cls.__name__)
+                )
+        arguments_props = {}
+        if input_class:
+            arguments_props = props(input_class)
+        return arguments_props
+
+    @classmethod
+    def base_args_setup(cls):
+        raise NotImplementedError('`base_args_setup` needs to be implemented'.format(cls.__name__))
+
+    @classmethod
+    def _init_create_args(cls):
+        input_fields = cls.base_args_setup()
+
+        argument_type = type(
+            cls._meta.create_field_name,
+            (InputObjectType,),
+            OrderedDict(
+                input_fields
+            ),
+        )
+        return cls._bundle_all_arguments(argument_type, input_fields=input_fields)
+
+    @classmethod
+    def _init_update_args(cls):
+        input_fields = cls.base_args_setup()
+
+        pk_name = cls._get_lookup_field_name()
+        if not input_fields.get(pk_name) and not cls._meta.arguments_props.get(pk_name):
+            input_fields.update({
+                pk_name: Argument(
+                    ID, required=True,
+                    description=cls._meta.lookup_field_description or "Django object unique identification field")
+            })
+
+        argument_type = type(
+            cls._meta.update_field_name,
+            (InputObjectType,),
+            OrderedDict(
+                input_fields
+            ),
+        )
+
+        return cls._bundle_all_arguments(argument_type, input_fields=input_fields)
+
+    @classmethod
+    def _init_delete_args(cls):
+        pk_name = cls._get_lookup_field_name()
+        input_fields = OrderedDict({
+            pk_name: Argument(
+                ID, required=True,
+                description=cls._meta.lookup_field_description or "Django object unique identification field")
+        })
+
+        argument = input_fields
+        return argument
+
+    @classmethod
+    def Field(cls, args, name=None, description=None, deprecation_reason=None, required=False, **kwargs):
+        """ Mount instance of mutation Field. """
+        return Field(
+            cls._meta.output,
+            args=args,
+            name=name,
+            description=description or cls._meta.description,
+            deprecation_reason=deprecation_reason,
+            required=required,
+            **kwargs
+        )
+
+
+class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
+    """
+        Serializer Mutation Type Definition with Permission enabled
+    """
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def __init_subclass_with_meta__(
+            cls,
+            serializer_class=None,
+            output_field_name=None,
+            output_field_description=None,
+            serializer_class_as_output=False,
+            convert_choices_to_enum=True,
+            description='',
+            **options
+    ):
+        if not serializer_class:
+            raise Exception(
+                "serializer_class is required on all DjangoSerializerMutation"
+            )
+
+        model = serializer_class.Meta.model
+
+        description = description or "SerializerMutation for {} model".format(
+            model.__name__
+        )
+
+        output_field_name = output_field_name or model._meta.model_name
+        output_field = cls._get_output_type()
+        django_fields = {output_field_name: None}
+        if not output_field and not serializer_class_as_output:
+            django_fields[output_field_name] = cls._get_output_fields(
+                model, output_field_description
+            )
+        else:
+            django_fields[output_field_name] = output_field if isinstance(output_field, Field) else Field(
+                output_field, description=output_field_description
+            )
+
+        if serializer_class_as_output and not output_field:
+            django_fields[output_field_name] = cls._get_output_from_serializer(
+                serializer_class, convert_choices_to_enum, output_field_description
+            )
+
+        _meta = SerializerMutationOptions(cls)
+        _meta.output = cls
+        _meta.model = model
+        _meta.fields = django_fields
+        _meta.serializer_class = serializer_class
+        _meta.output_field_name = output_field_name
+        _meta.output_field_description = output_field_description
+
+        super(BaseSerializerMutation, cls).__init_subclass_with_meta__(
+            _meta=_meta, **options, description=description, serializer_class_as_output=serializer_class_as_output,
+            convert_choices_to_enum=convert_choices_to_enum)
+
+    @classmethod
+    def save(cls, serialized_obj, **kwargs):
+        if serialized_obj.is_valid():
+            obj = serialized_obj.save()
+            return True, obj
+
+        else:
+            errors = [
+                ErrorType(field=key, messages=value)
+                for key, value in serialized_obj.errors.items()
+            ]
+            return False, errors
+
+    @classmethod
+    def _get_output_from_serializer(cls, serializer_class,
+                                    convert_choices_to_enum, output_field_description):
+        serializer = serializer_class()
+        output_fields = fields_for_serializer(
+            serializer,
+            only_fields=(),
+            exclude_fields=(),
+            is_input=False,
+            convert_choices_to_enum=convert_choices_to_enum,
+        )
+
+        output_type = type(
+            "{}".format(serializer_class.__name__),
+            (ObjectType,),
+            OrderedDict(
+                output_fields
+            ),
+        )
+
+        output = Field(
+            output_type,
+            description=
+            output_field_description or "Result can `{}` or `Null` if any error message(s)".format(
+                serializer_class.__name__)
+        )
+        return output
+
+    @classmethod
+    def base_args_setup(cls):
+        serializer = cls._meta.serializer_class()
+
+        input_fields_from_serializer = fields_for_serializer(
+            serializer,
+            only_fields=(),
+            exclude_fields=(),
+            is_input=True,
+            convert_choices_to_enum=cls._meta.convert_choices_to_enum,
+        )
+        input_fields = yank_fields_from_attrs(input_fields_from_serializer, _as=Field, sort=False)
+        return input_fields
+
+
+class CreateSerializerMutation(CreateSerializerMixin, BaseSerializerMutation):
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def Field(cls, **kwargs):
+        argument = cls._init_create_args()
+        return super().Field(args=argument, resolver=cls.create, **kwargs)
+
+
+class UpdateSerializerMutation(UpdateSerializerMixin, BaseSerializerMutation):
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def Field(cls, **kwargs):
+        argument = super()._init_update_args()
+        return super().Field(args=argument, resolver=cls.update, **kwargs)
+
+
+class DeleteSerializerMutation(DeleteModelMixin, BaseSerializerMutation):
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def Field(cls, **kwargs):
+        argument = cls._init_delete_args()
+        return super().Field(resolver=cls.delete, args=argument, **kwargs)
+
+
+class DRFSerializerMutation(CreateSerializerMixin, UpdateSerializerMixin,
+                            DeleteModelMixin, BaseSerializerMutation):
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def CreateField(cls, **kwargs):
+        argument = cls._init_create_args()
+        return super().Field(args=argument, resolver=cls.create, **kwargs)
+
+    @classmethod
+    def DeleteField(cls, **kwargs):
+        argument = cls._init_delete_args()
+        return super().Field(resolver=cls.delete, args=argument, **kwargs)
+
+    @classmethod
+    def UpdateField(cls, **kwargs):
+        argument = super()._init_update_args()
+        return super().Field(args=argument, resolver=cls.update, **kwargs)
+
+    @classmethod
+    def MutationFields(cls, **kwargs):
+        create_field = cls.CreateField(**kwargs)
+        delete_field = cls.DeleteField(**kwargs)
+        update_field = cls.UpdateField(**kwargs)
+
+        return create_field, delete_field, update_field
+
+
+class ModelMutationOptions(BaseMutationOptions):
+    only_fields = ()
+    exclude_fields = ()
+    model = None
+
+
+class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
+    """
+    Serializer Mutation Type Definition with Permission enabled
+    """
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def __init_subclass_with_meta__(
+            cls,
+            only_fields=(),
+            exclude_fields=(),
+            model=None,
+            output_field_name=None,
+            output_field_description=None,
+            description="",
+            **options
+    ):
+
+        if not model:
+            raise Exception(
+                "model is required on all DjangoModelMutation"
+            )
+
+        description = description or "SerializerMutation for {} model".format(
+            model.__name__
+        )
+        output_field = cls._get_output_type()
+
+        output_field_name = output_field_name or model._meta.model_name
+        django_fields = {
+            output_field_name: output_field if isinstance(output_field, Field) else Field(
+                output_field, description=output_field_description
+            )
+        }
+
+        if not output_field:
+            django_fields[output_field_name] = cls._get_output_fields(model, output_field_description)
+
+        _meta = ModelMutationOptions(cls)
+        _meta.output = cls
+        _meta.model = model
+        _meta.fields = django_fields
+        _meta.output_field_name = output_field_name
+        _meta.only_fields = only_fields
+        _meta.exclude_fields = exclude_fields
+        _meta.output_field_description = output_field_description
+        _meta.output_field_name = output_field_name
+
+        super(BaseModelMutation, cls).__init_subclass_with_meta__(
+            _meta=_meta, **options, description=description
+        )
+
+    @classmethod
+    def base_args_setup(cls):
+        factory_kwargs = {
+            "model": cls._meta.model,
+            "only_fields": cls._meta.only_fields,
+            "exclude_fields": cls._meta.exclude_fields,
+            "convert_choices_to_enum": cls._meta.convert_choices_to_enum,
+            "registry": get_global_registry()
+        }
+        django_fields = yank_fields_from_attrs(
+            construct_fields(**factory_kwargs),
+            _as=Field,
+        )
+        return django_fields
+
+    @classmethod
+    def save(cls, serialized_obj, **kwargs):
+        pass
+
+
+class UpdateModelMutation(UpdateModelMixin, BaseModelMutation):
+    def update_mutate(self, info, data, instance, **kwargs):
+        """Updates a model and returns the updated object"""
+        raise NotImplementedError('`update_mutate` method needs to be implemented'.format(self.__class__.__name__))
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def Field(cls, **kwargs):
+        argument = super()._init_update_args()
+        return super().Field(args=argument, resolver=cls.update, **kwargs)
+
+
+class DeleteModelMutation(DeleteModelMixin, BaseModelMutation):
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def Field(cls, **kwargs):
+        argument = cls._init_delete_args()
+        return super().Field(resolver=cls.delete, args=argument, **kwargs)
+
+
+class CreateModelMutation(CreateModelMixin, BaseModelMutation):
+    def create_mutate(self, info, data, **kwargs):
+        """Creates the model and returns the created object"""
+        raise NotImplementedError('`create_mutate` method needs to be implemented'.format(self.__class__.__name__))
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def Field(cls, **kwargs):
+        argument = cls._init_create_args()
+        return super().Field(args=argument, resolver=cls.create, **kwargs)
+
+
+class DjangoModelMutation(CreateModelMixin, UpdateModelMixin,
+                          DeleteModelMixin, BaseSerializerMutation):
+    class Meta:
+        abstract = True
+
+    def create_mutate(self, info, data, **kwargs) -> object:
+        """Creates the model and returns the created object"""
+        raise NotImplementedError('`create_mutate` method needs to be implemented'.format(self.__class__.__name__))
+
+    def update_mutate(self, info, data, instance, **kwargs) -> object:
+        """Updates a model and returns the updated object"""
+        raise NotImplementedError('`update_mutate` method needs to be implemented'.format(self.__class__.__name__))
+
+    @classmethod
+    def CreateField(cls, **kwargs):
+        argument = cls._init_create_args()
+        return super().Field(args=argument, resolver=cls.create, **kwargs)
+
+    @classmethod
+    def DeleteField(cls, **kwargs):
+        argument = cls._init_delete_args()
+        return super().Field(resolver=cls.delete, args=argument, **kwargs)
+
+    @classmethod
+    def UpdateField(cls, **kwargs):
+        argument = super()._init_update_args()
+        return super().Field(args=argument, resolver=cls.update, **kwargs)
+
+    @classmethod
+    def MutationFields(cls, **kwargs):
+        create_field = cls.CreateField(**kwargs)
+        delete_field = cls.DeleteField(**kwargs)
+        update_field = cls.UpdateField(**kwargs)
+
+        return create_field, delete_field, update_field

@@ -16,17 +16,18 @@ exclude = '''
 '''
 
 [tool.poetry]
-name = "graphene-django-extras"
+name = "graphene-django-extras-alpha"
 version = "0.4.8"
 description = "This library add some extra funcionalities to graphene-django to facilitate the graphql use without Relay, allow paginations and filtering integration and add some extra directives"
 readme = "README.md"
 authors = [
+    "Ezeudoh Eadwin <ezeudoh.tochukwu@gmail.com>",
     "Ernesto Perez Amigo <eamigop86@gmail.com>"
 ]
 license = "MIT"
-homepage="https://github.com/eamigo86/graphene-django-extras"
-repository="https://github.com/eamigo86/graphene-django-extras"
-documentation="https://github.com/eamigo86/graphene-django-extras"
+homepage="https://github.com/eadwin/graphene-django-extras"
+repository="https://github.com/eadwin/graphene-django-extras"
+documentation="https://github.com/eadwin/graphene-django-extras"
 classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries",

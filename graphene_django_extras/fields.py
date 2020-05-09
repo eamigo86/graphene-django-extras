@@ -13,6 +13,7 @@ from graphene_django.utils import (
 )
 
 from graphene_django_extras.filters.filter import get_filterset_class
+from graphene_django_extras.rest_framework import GraphqlPermissionMixin
 from graphene_django_extras.settings import graphql_api_settings
 from .base_types import DjangoListObjectBase
 from .paginations.pagination import BaseDjangoGraphqlPagination
@@ -58,18 +59,27 @@ class DjangoListField(DLF):
         super(DLF, self).__init__(List(NonNull(_type)), *args, **kwargs)
 
 
-class DjangoFilterListField(Field):
+class DjangoBaseListField(GraphqlPermissionMixin, Field):
     def __init__(
-        self,
-        _type,
-        fields=None,
-        extra_filter_meta=None,
-        filterset_class=None,
-        *args,
-        **kwargs,
+            self,
+            _type,
+            permission_classes=[],
+            output_type=None,
+            fields=None,
+            extra_filter_meta=None,
+            filterset_class=None,
+            skip_filters=False,
+            *args,
+            **kwargs
     ):
+        self.filterset_class = {}
+        self.filtering_args = {}
+        assert isinstance(permission_classes, (tuple, list)), (
+            "Permissions can only be a `List` of `Tuple` - ".format(self.__class__.__name__)
+        )
+        self.permission_classes = permission_classes
 
-        if DJANGO_FILTER_INSTALLED:
+        if DJANGO_FILTER_INSTALLED and not skip_filters:
             _fields = _type._meta.filter_fields
             _model = _type._meta.model
 
@@ -86,13 +96,6 @@ class DjangoFilterListField(Field):
             kwargs["args"].update(self.filtering_args)
 
             if "id" not in kwargs["args"].keys():
-                self.filtering_args.update(
-                    {
-                        "id": Argument(
-                            ID, description="Django object unique identification field"
-                        )
-                    }
-                )
                 kwargs["args"].update(
                     {
                         "id": Argument(
@@ -100,18 +103,88 @@ class DjangoFilterListField(Field):
                         )
                     }
                 )
-
         if not kwargs.get("description", None):
             kwargs["description"] = "{} list".format(_type._meta.model.__name__)
+        self.skip_filters = skip_filters
+        super(DjangoBaseListField, self).__init__(output_type or _type, *args, **kwargs)
 
-        super(DjangoFilterListField, self).__init__(List(_type), *args, **kwargs)
+    @classmethod
+    def get_queryset(cls, manager, info, fragments=None, **kwargs):
+        return queryset_factory(manager, info.field_asts, fragments, **kwargs)
+
+    @property
+    def model(self):
+        return self.type._meta.model
+
+    def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
+        raise NotImplementedError('list_resolver must be implemented')
+
+    def list_resolver_permission_check(self, resolver, manager, filterset_class,
+                                       filtering_args, root, info, **kwargs):
+        self.check_permissions(request=info.context)
+        return self.list_resolver(resolver, manager, filterset_class, filtering_args, root, info, **kwargs)
+
+    def get_resolver(self, parent_resolver):
+        return partial(
+            self.list_resolver_permission_check,
+            parent_resolver,
+            self.type._meta.model._default_manager,
+            self.filterset_class,
+            self.filtering_args,
+        )
+
+    @classmethod
+    def _init_pagination_list(cls, pagination):
+        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS()
+
+        if pagination is not None:
+            assert isinstance(pagination, BaseDjangoGraphqlPagination), (
+                'You need to pass a valid DjangoGraphqlPagination in DjangoFilterPaginateListField, received "{}".'
+            ).format(pagination)
+
+            pagination_kwargs = pagination.to_graphql_fields()
+
+            return pagination, pagination_kwargs
+        return None
+
+
+class DjangoBaseFilterListField(DjangoBaseListField):
+    def __init__(self, *args, **kwargs):
+        super(DjangoBaseFilterListField, self).__init__(*args, **kwargs)
+        if "id" not in self.filtering_args.keys():
+            self.filtering_args.update(
+                {
+                    "id": Argument(
+                        ID, description="Django object unique identification field"
+                    )
+                }
+            )
 
     @property
     def model(self):
         return self.type.of_type._meta.node._meta.model
 
-    @staticmethod
-    def list_resolver(manager, filterset_class, filtering_args, root, info, **kwargs):
+    def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
+        raise NotImplementedError('list_resolver must be implemented')
+
+    def get_resolver(self, parent_resolver):
+        current_type = self.type
+        while isinstance(current_type, Structure):
+            current_type = current_type.of_type
+        return partial(
+            self.list_resolver_permission_check,
+            parent_resolver,
+            current_type._meta.model._default_manager,
+            self.filterset_class,
+            self.filtering_args,
+        )
+
+
+class DjangoFilterListField(DjangoBaseFilterListField):
+    def __init__(self, _type, skip_filters=False, *args, **kwargs):
+        super(DjangoFilterListField, self).__init__(_type, output_type=List(_type), *args, **kwargs)
+
+    def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         qs = None
         field = None
 
@@ -138,7 +211,7 @@ class DjangoFilterListField(Field):
                 qs = None
 
         if qs is None:
-            qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
+            qs = queryset_factory(manager, info, fragments=info.fragments, **kwargs)
             qs = filterset_class(
                 data=filter_kwargs, queryset=qs, request=info.context
             ).qs
@@ -149,94 +222,27 @@ class DjangoFilterListField(Field):
 
         return maybe_queryset(qs)
 
-    def get_resolver(self, parent_resolver):
-        current_type = self.type
-        while isinstance(current_type, Structure):
-            current_type = current_type.of_type
-        return partial(
-            self.list_resolver,
-            current_type._meta.model._default_manager,
-            self.filterset_class,
-            self.filtering_args,
-        )
 
-
-class DjangoFilterPaginateListField(Field):
-    def __init__(
-        self,
-        _type,
-        pagination=None,
-        fields=None,
-        extra_filter_meta=None,
-        filterset_class=None,
-        *args,
-        **kwargs,
-    ):
-
-        _fields = _type._meta.filter_fields
-        _model = _type._meta.model
-
-        self.fields = fields or _fields
-        meta = dict(model=_model, fields=self.fields)
-        if extra_filter_meta:
-            meta.update(extra_filter_meta)
-
-        filterset_class = filterset_class or _type._meta.filterset_class
-        self.filterset_class = get_filterset_class(filterset_class, **meta)
-        self.filtering_args = get_filtering_args_from_filterset(
-            self.filterset_class, _type
-        )
-        kwargs.setdefault("args", {})
-        kwargs["args"].update(self.filtering_args)
-
-        if "id" not in kwargs["args"].keys():
-            self.filtering_args.update(
-                {
-                    "id": Argument(
-                        ID, description="Django object unique identification field"
-                    )
-                }
-            )
-            kwargs["args"].update(
-                {
-                    "id": Argument(
-                        ID, description="Django object unique identification field"
-                    )
-                }
-            )
-
-        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS()
-
-        if pagination is not None:
-            assert isinstance(pagination, BaseDjangoGraphqlPagination), (
-                'You need to pass a valid DjangoGraphqlPagination in DjangoFilterPaginateListField, received "{}".'
-            ).format(pagination)
-
-            pagination_kwargs = pagination.to_graphql_fields()
-
+class DjangoFilterPaginateListField(DjangoBaseFilterListField):
+    def __init__(self, _type, pagination=None, *args, **kwargs):
+        pagination_ = self._init_pagination_list(pagination=pagination)
+        if pagination_:
+            pagination, pagination_kwargs = pagination_
             self.pagination = pagination
             kwargs.update(**pagination_kwargs)
 
-        if not kwargs.get("description", None):
-            kwargs["description"] = "{} list".format(_type._meta.model.__name__)
-
         super(DjangoFilterPaginateListField, self).__init__(
-            List(_type), *args, **kwargs
+            _type, output_type=List(_type), *args, **kwargs
         )
 
-    @property
-    def model(self):
-        return self.type.of_type._meta.node._meta.model
+    def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
+        qs = maybe_queryset(resolver(root, info, **kwargs))
 
-    def get_queryset(self, manager, info, **kwargs):
-        return queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-
-    def list_resolver(
-        self, manager, filterset_class, filtering_args, root, info, **kwargs
-    ):
-        filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
-        qs = self.get_queryset(manager, info, **kwargs)
-        qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
+        if qs is None:
+            qs = self.get_queryset(manager, info, fragments=info.fragments, **kwargs)
+        if not self.skip_filters:
+            filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
+            qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
         if root and is_valid_django_model(root._meta.model):
             extra_filters = get_extra_filters(root, manager.model)
@@ -247,72 +253,19 @@ class DjangoFilterPaginateListField(Field):
 
         return maybe_queryset(qs)
 
-    def get_resolver(self, parent_resolver):
-        current_type = self.type
-        while isinstance(current_type, Structure):
-            current_type = current_type.of_type
-        return partial(
-            self.list_resolver,
-            current_type._meta.model._default_manager,
-            self.filterset_class,
-            self.filtering_args,
-        )
 
-
-class DjangoListObjectField(Field):
-    def __init__(
-        self,
-        _type,
-        fields=None,
-        extra_filter_meta=None,
-        filterset_class=None,
-        *args,
-        **kwargs,
-    ):
-
-        if DJANGO_FILTER_INSTALLED:
-            _fields = _type._meta.filter_fields
-            _model = _type._meta.model
-
-            self.fields = fields or _fields
-
-            meta = dict(model=_model, fields=self.fields)
-            if extra_filter_meta:
-                meta.update(extra_filter_meta)
-
-            filterset_class = filterset_class or _type._meta.filterset_class
-            self.filterset_class = get_filterset_class(filterset_class, **meta)
-            self.filtering_args = get_filtering_args_from_filterset(
-                self.filterset_class, _type
-            )
-            kwargs.setdefault("args", {})
-            kwargs["args"].update(self.filtering_args)
-
-            if "id" not in kwargs["args"].keys():
-                id_description = "Django object unique identification field"
-                self.filtering_args.update(
-                    {"id": Argument(ID, description=id_description)}
-                )
-                kwargs["args"].update({"id": Argument(ID, description=id_description)})
-
-        if not kwargs.get("description", None):
-            kwargs["description"] = "{} list".format(_type._meta.model.__name__)
-
+class DjangoListObjectField(DjangoBaseListField):
+    def __init__(self, _type, *args, **kwargs):
         super(DjangoListObjectField, self).__init__(_type, *args, **kwargs)
 
-    @property
-    def model(self):
-        return self.type._meta.model
+    def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
+        qs = maybe_queryset(resolver(root, info, **kwargs))
+        if qs is None:
+            qs = self.get_queryset(manager, info, fragments=info.fragments, **kwargs)
 
-    def list_resolver(
-        self, manager, filterset_class, filtering_args, root, info, **kwargs
-    ):
-
-        qs = queryset_factory(manager, info.field_asts, info.fragments, **kwargs)
-
-        filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
-
-        qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
+        if not self.skip_filters:
+            filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
+            qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
         count = qs.count()
 
         return DjangoListObjectBase(
@@ -321,10 +274,3 @@ class DjangoListObjectField(Field):
             results_field_name=self.type._meta.results_field_name,
         )
 
-    def get_resolver(self, parent_resolver):
-        return partial(
-            self.list_resolver,
-            self.type._meta.model._default_manager,
-            self.filterset_class,
-            self.filtering_args,
-        )
