@@ -72,9 +72,9 @@ class DjangoConnectionPageLimitField(DjangoConnectionField):
 
 
 class DjangoFieldConnectionPageLimitField(DjangoFilterConnectionField, DjangoConnectionPageLimitField):
-    def __init__(self, order_by=None, *args, **kwargs):
+    def __init__(self, _type, order_by=None, *args, **kwargs):
         self.order_by = order_by
-        super(DjangoFieldConnectionPageLimitField, self).__init__(order_by=order_by, *args, **kwargs)
+        super(DjangoFieldConnectionPageLimitField, self).__init__(_type, order_by=order_by, *args, **kwargs)
 
     def resolve_queryset(self, *args, **kwargs):
         qs = super(DjangoFieldConnectionPageLimitField, self).resolve_queryset(*args, **kwargs)
