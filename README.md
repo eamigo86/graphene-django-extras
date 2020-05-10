@@ -69,7 +69,7 @@ for DjangoListObjectType classes pagination definitions on settings.py like this
 
 ```python
     GRAPHENE_DJANGO_EXTRAS = {
-        'DEFAULT_PAGINATION_CLASS': graphene_django_extra,
+        'DEFAULT_PAGINATION_CLASS': 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination',
         'DEFAULT_PAGE_SIZE': 20,
         'MAX_PAGE_SIZE': 50,
         'CACHE_ACTIVE': True,
