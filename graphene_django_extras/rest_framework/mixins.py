@@ -4,7 +4,7 @@ from graphql import GraphQLError
 from graphene_django_extras.utils import get_Object_or_None
 
 __all__ = (
-    'GraphqlPermissionMixin', 'CreateSerializerMixin' ,'UpdateModelMixin',
+    'GraphqlPermissionMixin', 'CreateSerializerMixin', 'UpdateModelMixin',
     'CreateModelMixin', 'DeleteModelMixin', 'UpdateSerializerMixin',
 )
 
@@ -78,7 +78,7 @@ class UpdateSerializerMixin(object):
     """
 
     def get_object(self, info, data, **kwargs):
-        look_up_field = self._get_lookup_field_name()
+        look_up_field = self.get_lookup_field_name()
         look_up_value = data.get(look_up_field)
         filter_kwargs = {look_up_field: look_up_value}
         return get_Object_or_None(self._get_model(), **filter_kwargs)
@@ -135,7 +135,7 @@ class DeleteModelMixin(object):
     """
 
     def get_object(self, info, data, **kwargs):
-        look_up_field = self._get_lookup_field_name()
+        look_up_field = self.get_lookup_field_name()
         look_up_value = data.get(look_up_field)
         filter_kwargs = {look_up_field: look_up_value}
         return get_Object_or_None(self._get_model(), **filter_kwargs)

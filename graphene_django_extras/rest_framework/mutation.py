@@ -7,10 +7,25 @@ from graphene.utils.props import props
 from graphene.utils.str_converters import to_camel_case
 from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.mutation import fields_for_serializer
-from graphene_django.types import ErrorType, DjangoObjectType, construct_fields
+from graphene_django.types import ErrorType, DjangoObjectType
 
 from graphene_django_extras.base_types import factory_type
 from graphene_django_extras.rest_framework.mixins import *
+
+__all__ = (
+    "BaseMutationOptions",
+    "BaseMutation",
+    "BaseSerializerMutation",
+    "CreateSerializerMutation",
+    "UpdateSerializerMutation",
+    "DeleteSerializerMutation",
+    "DRFSerializerMutation",
+    "BaseModelMutation",
+    "UpdateModelMutation",
+    "DeleteModelMutation",
+    "CreateModelMutation",
+    "DjangoModelMutation",
+)
 
 
 class BaseMutationOptions(MutationOptions):
@@ -49,11 +64,6 @@ class BaseMutation(ObjectType):
 
         arguments_props = cls._get_argument_fields()
 
-        if not update_field_name:
-            update_field_name = to_camel_case("{}_Update_{}".format(cls.__name__, model._meta.model_name.capitalize()))
-        if not create_field_name:
-            create_field_name = to_camel_case("{}_Create_{}".format(cls.__name__, model._meta.model_name.capitalize()))
-
         _meta.input_field_name = input_field_name
         _meta.lookup_field_description = lookup_field_description
         _meta.convert_choices_to_enum = convert_choices_to_enum
@@ -72,6 +82,18 @@ class BaseMutation(ObjectType):
     errors = List(ErrorType, description="Errors list for the field")
 
     @classmethod
+    def get_update_field_name(cls):
+        model = cls._get_model()
+        default = to_camel_case("{}_Update_{}".format(cls.__name__, model._meta.model_name.capitalize()))
+        return cls._meta.update_field_name or default
+
+    @classmethod
+    def get_create_field_name(cls):
+        model = cls._get_model()
+        default = to_camel_case("{}_Create_{}".format(cls.__name__, model._meta.model_name.capitalize()))
+        return cls._meta.create_field_name or default
+
+    @classmethod
     def get_errors(cls, errors):
         errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
         return cls(**errors_dict)
@@ -86,7 +108,7 @@ class BaseMutation(ObjectType):
         raise NotImplementedError('`save` method needs to be implemented'.format(cls.__name__))
 
     @classmethod
-    def _get_lookup_field_name(cls):
+    def get_lookup_field_name(cls):
         model = cls._get_model()
         return model._meta.pk.name
 
@@ -165,7 +187,7 @@ class BaseMutation(ObjectType):
         input_fields = cls.base_args_setup()
 
         argument_type = type(
-            cls._meta.create_field_name,
+            cls.get_create_field_name(),
             (InputObjectType,),
             OrderedDict(
                 input_fields
@@ -177,7 +199,7 @@ class BaseMutation(ObjectType):
     def _init_update_args(cls):
         input_fields = cls.base_args_setup()
 
-        pk_name = cls._get_lookup_field_name()
+        pk_name = cls.get_lookup_field_name()
         if not input_fields.get(pk_name) and not cls._meta.arguments_props.get(pk_name):
             input_fields.update({
                 pk_name: Argument(
@@ -186,7 +208,7 @@ class BaseMutation(ObjectType):
             })
 
         argument_type = type(
-            cls._meta.update_field_name,
+            cls.get_update_field_name(),
             (InputObjectType,),
             OrderedDict(
                 input_fields
@@ -197,7 +219,7 @@ class BaseMutation(ObjectType):
 
     @classmethod
     def _init_delete_args(cls):
-        pk_name = cls._get_lookup_field_name()
+        pk_name = cls.get_lookup_field_name()
         input_fields = OrderedDict({
             pk_name: Argument(
                 ID, required=True,
@@ -294,6 +316,10 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
             return False, errors
 
     @classmethod
+    def get_serializer_output_name(cls):
+        return None
+
+    @classmethod
     def _get_output_from_serializer(cls, serializer_class,
                                     convert_choices_to_enum, output_field_description):
         serializer = serializer_class()
@@ -306,7 +332,7 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
         )
 
         output_type = type(
-            "{}".format(serializer_class.__name__),
+            cls.get_serializer_output_name() or "{}".format(serializer_class.__name__),
             (ObjectType,),
             OrderedDict(
                 output_fields
@@ -341,6 +367,10 @@ class CreateSerializerMutation(CreateSerializerMixin, BaseSerializerMutation):
         abstract = True
 
     @classmethod
+    def get_serializer_output_name(cls):
+        return "{}Type".format(cls.__name__)
+
+    @classmethod
     def Field(cls, **kwargs):
         argument = cls._init_create_args()
         return super().Field(args=argument, resolver=cls.create, **kwargs)
@@ -351,6 +381,10 @@ class UpdateSerializerMutation(UpdateSerializerMixin, BaseSerializerMutation):
         abstract = True
 
     @classmethod
+    def get_serializer_output_name(cls):
+        return "{}Type".format(cls.__name__)
+
+    @classmethod
     def Field(cls, **kwargs):
         argument = super()._init_update_args()
         return super().Field(args=argument, resolver=cls.update, **kwargs)
@@ -359,6 +393,10 @@ class UpdateSerializerMutation(UpdateSerializerMixin, BaseSerializerMutation):
 class DeleteSerializerMutation(DeleteModelMixin, BaseSerializerMutation):
     class Meta:
         abstract = True
+
+    @classmethod
+    def get_serializer_output_name(cls):
+        return "{}Type".format(cls.__name__)
 
     @classmethod
     def Field(cls, **kwargs):
@@ -426,7 +464,7 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
                 "model is required on all DjangoModelMutation"
             )
 
-        description = description or "SerializerMutation for {} model".format(
+        description = description or "Model Mutation for {} model".format(
             model.__name__
         )
         output_field = cls._get_output_type()
@@ -457,16 +495,18 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
 
     @classmethod
     def base_args_setup(cls):
+        import graphene_django_extras.converter as converter
         factory_kwargs = {
             "model": cls._meta.model,
             "only_fields": cls._meta.only_fields,
             "exclude_fields": cls._meta.exclude_fields,
-            "convert_choices_to_enum": cls._meta.convert_choices_to_enum,
+            "input_flag": "create",
+            "include_fields": None,
             "registry": get_global_registry()
         }
         django_fields = yank_fields_from_attrs(
-            construct_fields(**factory_kwargs),
-            _as=Field,
+            converter.construct_fields(**factory_kwargs),
+            _as=InputField,
         )
         return django_fields
 

@@ -1,7 +1,14 @@
 from functools import wraps
 from graphql import GraphQLError
 
-from apps.core.object_mixins import GraphqlPermissionMixin
+from .mixins import GraphqlPermissionMixin
+
+__all__ = [
+    "login_required",
+    "permission_required",
+    "is_super_user_required",
+    "is_staff_required",
+]
 
 
 def login_required(f, not_auth_msg=None):
