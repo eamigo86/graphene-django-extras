@@ -53,10 +53,11 @@ class BaseMutation(ObjectType):
             convert_choices_to_enum=True,
             update_field_name=None,
             create_field_name=None,
+            name=None,
             _meta=None,
             **options
     ):
-        name = options.get('name') or '{}Response'.format(cls.__name__)
+        name = name or '{}Response'.format(cls.__name__)
         assert _meta, "{} _meta instance is required".format(cls.__name__)
 
         model = getattr(_meta, "model", None)
