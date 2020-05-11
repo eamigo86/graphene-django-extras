@@ -76,7 +76,6 @@ class UpdateSerializerMixin(object):
     """
         UpdateMutation Implementation
     """
-
     def get_object(self, info, data, **kwargs):
         look_up_field = self.get_lookup_field_name()
         look_up_value = data.get(look_up_field)
@@ -177,6 +176,9 @@ class CreateModelMixin(CreateSerializerMixin):
     def perform_create(self, root, info, data, **kwargs):
         try:
             obj = self.create_mutate(info, data, **kwargs)
+            assert obj is not None, (
+                '`create_mutate()` did not return an object instance.'
+            )
             return self.perform_mutate(obj, info)
         except Exception as e:
             messages = [str(e)]
@@ -196,7 +198,7 @@ class UpdateModelMixin(UpdateSerializerMixin):
         """
         try:
             self.update_mutate(info, data, instance,  **kwargs)
-            return self.perform_mutate(obj=instance, info=info)
+            return self.perform_mutate(obj=instance, info=info, data=data, **kwargs)
         except Exception as e:
             messages = [str(e)]
             return self.get_errors([ErrorType(

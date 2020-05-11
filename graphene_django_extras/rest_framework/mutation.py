@@ -139,6 +139,7 @@ class BaseMutation(ObjectType):
                 for i, t in input_fields.items()
             }
         )
+
         argument.update(cls._meta.arguments_props)
         return argument
 
@@ -497,19 +498,27 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
     @classmethod
     def base_args_setup(cls):
         import graphene_django_extras.converter as converter
-        factory_kwargs = {
-            "model": cls._meta.model,
-            "only_fields": cls._meta.only_fields,
-            "exclude_fields": cls._meta.exclude_fields,
-            "input_flag": "create",
-            "include_fields": None,
-            "registry": get_global_registry()
-        }
-        django_fields = yank_fields_from_attrs(
-            converter.construct_fields(**factory_kwargs),
-            _as=InputField,
-        )
-        return django_fields
+        if cls._meta.only_fields or cls._meta.exclude_fields:
+            factory_kwargs = {
+                "model": cls._meta.model,
+                "only_fields": cls._meta.only_fields,
+                "exclude_fields": cls._meta.exclude_fields,
+                "input_flag": "create",
+                "include_fields": None,
+                "registry": get_global_registry()
+            }
+            django_fields = yank_fields_from_attrs(
+                converter.construct_fields(**factory_kwargs),
+                _as=InputField,
+            )
+            return django_fields
+
+        if cls._meta.input_field_name:
+            raise Exception(
+                '{} type can not be empty use `only_fields` or '
+                '`exclude_fields` to defined its fields. {}'.format(cls._meta.input_field_name, cls.__name__)
+            )
+        return OrderedDict()
 
     @classmethod
     def save(cls, serialized_obj, **kwargs):
