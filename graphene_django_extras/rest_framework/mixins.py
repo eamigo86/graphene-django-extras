@@ -76,6 +76,7 @@ class UpdateSerializerMixin(object):
     """
         UpdateMutation Implementation
     """
+
     def get_object(self, info, data, **kwargs):
         look_up_field = self.get_lookup_field_name()
         look_up_value = data.get(look_up_field)
@@ -132,6 +133,10 @@ class DeleteModelMixin(object):
     """
     DeleteMutation Implementation
     """
+    
+    def perform_delete(self, info, obj, **kwargs):
+        obj.delete()
+    
 
     def get_object(self, info, data, **kwargs):
         look_up_field = self.get_lookup_field_name()
@@ -150,8 +155,9 @@ class DeleteModelMixin(object):
 
         if old_obj:
             self.check_object_permissions(request=info.context, obj=old_obj)
-            old_obj.delete()
-            old_obj.id = pk
+            self.perform_delete(info=info, obj=old_obj, **kwargs)
+            if not old_obj.id:
+                old_obj.id = pk
             return self.perform_mutate(old_obj, info)
         else:
             return self.get_errors(

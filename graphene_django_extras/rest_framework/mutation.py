@@ -96,13 +96,27 @@ class BaseMutation(ObjectType):
 
     @classmethod
     def get_errors(cls, errors):
+        extra_types = cls.get_extra_types(obj=None, info=None)
         errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
-        return cls(**errors_dict)
+        extra_types.update(errors_dict)
+        return cls(**extra_types)
+
+    @classmethod
+    def get_extra_types(cls, obj, info):
+        """
+        define values for any extra types provided on your mutation class
+        :param obj: Object
+        :param info: graphene info instance
+        :return: `Dict()`
+        """
+        return dict()
 
     @classmethod
     def perform_mutate(cls, obj, info):
+        extra_types = cls.get_extra_types(obj, info)
         resp = {cls._meta.output_field_name: obj, "ok": True, "errors": None}
-        return cls(**resp)
+        extra_types.update(resp)
+        return cls(**extra_types)
 
     @classmethod
     def save(cls, serialized_obj, **kwargs):
