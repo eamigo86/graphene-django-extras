@@ -1,6 +1,6 @@
 from graphene_django.types import ErrorType
 from graphql import GraphQLError
-
+from rest_framework.exceptions import ValidationError
 from graphene_django_extras.utils import get_Object_or_None
 
 __all__ = (
@@ -187,6 +187,13 @@ class CreateModelMixin(CreateSerializerMixin):
             )
             return self.perform_mutate(obj, info)
         except Exception as e:
+            if isinstance(e, ValidationError):
+                errors = [
+                    ErrorType(field=key, messages=value)
+                    for key, value in e.detail.serializer.errors.items()
+                ]
+                return self.get_errors(errors)
+            
             messages = [str(e)]
             return self.get_errors([ErrorType(
                 messages=messages,
@@ -206,6 +213,13 @@ class UpdateModelMixin(UpdateSerializerMixin):
             self.update_mutate(info, data, instance,  **kwargs)
             return self.perform_mutate(obj=instance, info=info, data=data, **kwargs)
         except Exception as e:
+            if isinstance(e, ValidationError):
+                errors = [
+                    ErrorType(field=key, messages=value)
+                    for key, value in e.detail.serializer.errors.items()
+                ]
+                return self.get_errors(errors)
+            
             messages = [str(e)]
             return self.get_errors([ErrorType(
                 messages=messages,
