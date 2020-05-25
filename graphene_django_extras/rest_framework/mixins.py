@@ -162,7 +162,7 @@ class DeleteModelMixin(object):
         self = cls()
         self.check_permissions(request=info.context)
 
-        pk = kwargs.get(self._get_lookup_field_name())
+        pk = kwargs.get(self.get_lookup_field_name())
 
         old_obj = self.get_object(info, data=kwargs)
 
