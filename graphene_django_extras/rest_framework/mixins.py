@@ -52,10 +52,8 @@ class CreateSerializerMixin(object):
 
     def perform_create(self, root, info, data, **kwargs):
         serializer = self._meta.serializer_class(data=data)
-        ok, obj = self.save(serialized_obj=serializer, root=root, info=info)
-        if not ok:
-            return self.get_errors(obj)
-        return self.perform_mutate(obj, info)
+        obj = self.save(serialized_obj=serializer, root=root, info=info)
+        return obj
 
     @classmethod
     def create(cls, root, info, **kwargs):
@@ -69,7 +67,16 @@ class CreateSerializerMixin(object):
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update({name: value for name, value in info.context.FILES.items()})
-        return self.perform_create(root, info, data, **kwargs)
+        try:
+            obj = self.perform_create(root, info, data, **kwargs)
+            assert obj is not None, (
+                '`perform_create()` did not return an object instance.'
+            )
+            return self.perform_mutate(obj, info)
+        except Exception as e:
+            if isinstance(e, ValidationError):
+                errors = self.error_builder(e.detail.serializer)
+                return self.get_errors(errors)
 
 
 class UpdateSerializerMixin(object):
@@ -89,10 +96,8 @@ class UpdateSerializerMixin(object):
             data=data,
             partial=True,
         )
-        ok, obj = self.save(serializer, root=root, info=info)
-        if not ok:
-            return self.get_errors(obj)
-        return self.perform_mutate(obj, info)
+        obj = self.save(serializer, root=root, info=info)
+        return obj
 
     @classmethod
     def update(cls, root, info, **kwargs):
@@ -112,7 +117,16 @@ class UpdateSerializerMixin(object):
         existing_obj = self.get_object(info, data, **kwargs)
         if existing_obj:
             self.check_object_permissions(request=info.context, obj=existing_obj)
-            return self.perform_update(root=root, info=info, data=data, instance=existing_obj, **kwargs)
+            try:
+                obj = self.perform_update(root=root, info=info, data=data, instance=existing_obj, **kwargs)
+                assert obj is not None, (
+                    '`perform_update()` did not return an object instance.'
+                )
+                return self.perform_mutate(obj, info)
+            except Exception as e:
+                if isinstance(e, ValidationError):
+                    errors = self.error_builder(e.detail.serializer)
+                    return self.get_errors(errors)
         else:
             pk = data.get(cls._get_lookup_field_name())
             return cls.get_errors(
@@ -136,7 +150,6 @@ class DeleteModelMixin(object):
     
     def perform_delete(self, info, obj, **kwargs):
         obj.delete()
-    
 
     def get_object(self, info, data, **kwargs):
         look_up_field = self.get_lookup_field_name()
@@ -188,10 +201,7 @@ class CreateModelMixin(CreateSerializerMixin):
             return self.perform_mutate(obj, info)
         except Exception as e:
             if isinstance(e, ValidationError):
-                errors = [
-                    ErrorType(field=key, messages=value)
-                    for key, value in e.detail.serializer.errors.items()
-                ]
+                errors = self.error_builder(e.detail.serializer)
                 return self.get_errors(errors)
             
             messages = [str(e)]
@@ -214,10 +224,7 @@ class UpdateModelMixin(UpdateSerializerMixin):
             return self.perform_mutate(obj=instance, info=info, data=data, **kwargs)
         except Exception as e:
             if isinstance(e, ValidationError):
-                errors = [
-                    ErrorType(field=key, messages=value)
-                    for key, value in e.detail.serializer.errors.items()
-                ]
+                errors = self.error_builder(e.detail.serializer)
                 return self.get_errors(errors)
             
             messages = [str(e)]

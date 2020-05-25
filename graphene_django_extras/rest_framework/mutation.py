@@ -95,6 +95,14 @@ class BaseMutation(ObjectType):
         return cls._meta.create_field_name or default
 
     @classmethod
+    def error_builder(cls, serialized_obj):
+        errors = [
+            ErrorType(field=key, messages=value)
+            for key, value in serialized_obj.errors.items()
+        ]
+        return errors
+
+    @classmethod
     def get_errors(cls, errors):
         extra_types = cls.get_extra_types(obj=None, info=None)
         errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
@@ -320,16 +328,9 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
 
     @classmethod
     def save(cls, serialized_obj, **kwargs):
-        if serialized_obj.is_valid():
-            obj = serialized_obj.save()
-            return True, obj
-
-        else:
-            errors = [
-                ErrorType(field=key, messages=value)
-                for key, value in serialized_obj.errors.items()
-            ]
-            return False, errors
+        serialized_obj.is_valid(raise_exception=True)
+        obj = serialized_obj.save()
+        return obj
 
     @classmethod
     def get_serializer_output_name(cls):
