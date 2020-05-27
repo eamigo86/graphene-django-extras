@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import operator
 from functools import partial
-
+from django.db.models.manager import Manager
 from graphene import Field, List, ID, Argument
 from graphene.types.structures import Structure, NonNull
 from graphene_django.fields import DjangoListField as DLF
@@ -252,13 +252,21 @@ class DjangoListObjectField(DjangoBaseListField):
 
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         qs = maybe_queryset(resolver(root, info, **kwargs))
+        count = 0
+
         if qs is None:
             qs = self.get_queryset(manager, info, fragments=info.fragments, **kwargs)
 
-        if not self.skip_filters:
+        is_query_set = isinstance(qs, Manager)
+
+        if not self.skip_filters and is_query_set:
             filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
-        count = qs.count()
+
+        if is_query_set:
+            count = qs.count()
+        elif isinstance(qs, (list, tuple)):
+            count = len(qs)
 
         return DjangoListObjectBase(
             count=count,
