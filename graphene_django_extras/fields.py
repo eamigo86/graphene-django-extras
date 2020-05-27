@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import operator
 from functools import partial
-from django.db.models.manager import Manager
+from django.db.models import QuerySet
 from graphene import Field, List, ID, Argument
 from graphene.types.structures import Structure, NonNull
 from graphene_django.fields import DjangoListField as DLF
@@ -257,7 +257,7 @@ class DjangoListObjectField(DjangoBaseListField):
         if qs is None:
             qs = self.get_queryset(manager, info, fragments=info.fragments, **kwargs)
 
-        is_query_set = isinstance(qs, Manager)
+        is_query_set = isinstance(qs, QuerySet)
 
         if not self.skip_filters and is_query_set:
             filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
