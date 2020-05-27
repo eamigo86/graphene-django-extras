@@ -63,13 +63,12 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
     def __init__(
             self,
             _type,
-            permission_classes=[],
+            permission_classes=list(),
             output_type=None,
             fields=None,
             extra_filter_meta=None,
             filterset_class=None,
             skip_filters=False,
-            auto_add_id=False,
             *args,
             **kwargs
     ):
@@ -96,7 +95,7 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
             kwargs.setdefault("args", {})
             kwargs["args"].update(self.filtering_args)
 
-            if auto_add_id and "id" not in kwargs["args"].keys():
+            if "id" not in kwargs["args"].keys():
                 kwargs["args"].update(
                     {
                         "id": Argument(
@@ -151,8 +150,6 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
 
 class DjangoBaseFilterListField(DjangoBaseListField):
     def __init__(self, *args, **kwargs):
-        if 'auto_add_id' not in kwargs:
-            kwargs['auto_add_id'] = True
         super(DjangoBaseFilterListField, self).__init__(*args, **kwargs)
 
     @property
