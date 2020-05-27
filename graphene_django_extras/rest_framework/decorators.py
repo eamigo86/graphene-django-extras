@@ -19,7 +19,7 @@ def login_required(f, not_auth_msg=None):
     """
     @wraps(f)
     def wrap(*args, **kwargs):
-        _, info = args
+        root, info = args
         if info.context.user.is_authenticated:
             return f(*args, **kwargs)
         raise GraphQLError(not_auth_msg or 'Authentication is required')
@@ -36,9 +36,9 @@ def permission_required(f, permissions=None):
     wrap_permission_mixin.permission_classes = permissions or []
     @wraps(f)
     def wrap(*args, **kwargs):
-        _, info = args
+        root, info = args
         wrap_permission_mixin.check_permissions(info.context)
-        return f(*args, **kwargs)
+        return f(wrap_permission_mixin, root=root, info=info, **kwargs)
     return wrap
 
 
@@ -52,7 +52,7 @@ def is_super_user_required(f, no_auth_msg=None, not_auth_msg=None):
     """
     @wraps(f)
     def wrap(*args, **kwargs):
-        _, info = args
+        root, info = args
         user = info.context.user
         if not user.is_authenticated:
             raise GraphQLError(no_auth_msg or 'Authentication is required')
@@ -73,7 +73,7 @@ def is_staff_required(f, no_auth_msg=None, not_auth_msg=None):
     """
     @wraps(f)
     def wrap(*args, **kwargs):
-        _, info = args
+        root, info = args
         user = info.context.user
         if not user.is_authenticated:
             raise GraphQLError(no_auth_msg or'Authentication is required')
