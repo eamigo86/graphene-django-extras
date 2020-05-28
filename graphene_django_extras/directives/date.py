@@ -235,7 +235,7 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "format": GraphQLArgument(
-                type=GraphQLString, description="A format given by dateutil module"
+                type_=GraphQLString, description="A format given by dateutil module"
             )
         }
 

@@ -36,7 +36,7 @@ class DefaultGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "to": GraphQLArgument(
-                type=GraphQLNonNull(GraphQLString), description="Value to default to"
+                type_=GraphQLNonNull(GraphQLString), description="Value to default to"
             )
         }
 
@@ -56,7 +56,7 @@ class Base64GraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "op": GraphQLArgument(
-                type=GraphQLString,
+                type_=GraphQLString,
                 description='Action to perform: "encode" or "decode"',
             )
         }
@@ -88,7 +88,7 @@ class NumberGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "as": GraphQLArgument(
-                type=GraphQLNonNull(GraphQLString), description="Value to default to"
+                type_=GraphQLNonNull(GraphQLString), description="Value to default to"
             )
         }
 
@@ -103,7 +103,7 @@ class CurrencyGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "symbol": GraphQLArgument(
-                type=GraphQLString, description="Currency symbol (default: $)"
+                type_=GraphQLString, description="Currency symbol (default: $)"
             )
         }
 
@@ -206,7 +206,7 @@ class StripGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "chars": GraphQLArgument(
-                type=GraphQLString,
+                type_=GraphQLString,
                 description="Value to specify the set of characters to be removed",
             )
         }
@@ -246,11 +246,11 @@ class CenterGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "width": GraphQLArgument(
-                type=GraphQLNonNull(GraphQLInt),
+                type_=GraphQLNonNull(GraphQLInt),
                 description="Value to returned str lenght",
             ),
             "fillchar": GraphQLArgument(
-                type=GraphQLString, description="Value to fill the returned str"
+                type_=GraphQLString, description="Value to fill the returned str"
             ),
         }
 
@@ -284,15 +284,15 @@ class ReplaceGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "old": GraphQLArgument(
-                type=GraphQLNonNull(GraphQLString),
+                type_=GraphQLNonNull(GraphQLString),
                 description="Value of old character to replace",
             ),
             "new": GraphQLArgument(
-                type=GraphQLNonNull(GraphQLString),
+                type_=GraphQLNonNull(GraphQLString),
                 description="Value of new character to replace",
             ),
             "count": GraphQLArgument(
-                type=GraphQLInt, description="Value to returned str lenght"
+                type_=GraphQLInt, description="Value to returned str lenght"
             ),
         }
 
