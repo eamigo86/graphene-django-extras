@@ -220,8 +220,11 @@ class UpdateModelMixin(UpdateSerializerMixin):
         Updates a model and returns the updated object
         """
         try:
-            self.update_mutate(info, data, instance,  **kwargs)
-            return self.perform_mutate(obj=instance, info=info, data=data, **kwargs)
+            update_obj = self.update_mutate(info, data, instance,  **kwargs)
+            assert update_obj is not None, (
+                '`update_mutate()` did not return an object instance.'
+            )
+            return self.perform_mutate(obj=update_obj, info=info, data=data, **kwargs)
         except Exception as e:
             if isinstance(e, ValidationError):
                 errors = self.error_builder(e.detail.serializer)
@@ -231,5 +234,7 @@ class UpdateModelMixin(UpdateSerializerMixin):
             return self.get_errors([ErrorType(
                 messages=messages,
             )])
+
+
 
 
