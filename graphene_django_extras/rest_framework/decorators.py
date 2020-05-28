@@ -17,9 +17,9 @@ __all__ = [
 ]
 
 
-def login_required_msg(not_auth_msg):
+def login_required_msg(no_auth_msg):
     """
-    :param not_auth_msg: not authorization message
+    :param no_auth_msg: No Authentication message
     """
     def decorator(f):
         @wraps(f)
@@ -27,7 +27,7 @@ def login_required_msg(not_auth_msg):
             root, info = args
             if info.context.user.is_authenticated:
                 return f(*args, **kwargs)
-            raise GraphQLError(not_auth_msg)
+            raise GraphQLError(no_auth_msg)
 
         return wrap
 
@@ -60,8 +60,8 @@ def permission_required(permission_classes):
 
 def is_super_user_required_msg(no_auth_msg, not_auth_msg=None):
     """
-    :param no_auth_msg: No authentication message
-    :param not_auth_msg: Not authorized message
+    :param no_auth_msg: No Authentication message
+    :param not_auth_msg: Not Authorized message
     """
 
     def decorator(f):
@@ -82,8 +82,8 @@ def is_super_user_required_msg(no_auth_msg, not_auth_msg=None):
 
 def is_staff_required_msg(no_auth_msg, not_auth_msg=None):
     """
-    :param no_auth_msg: No authentication message
-    :param not_auth_msg: Not authorized message
+    :param no_auth_msg: No Authentication message
+    :param not_auth_msg: Not Authorized message
     """
 
     def decorator(f):
