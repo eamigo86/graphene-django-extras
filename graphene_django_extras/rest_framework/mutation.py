@@ -5,10 +5,10 @@ from graphene.types.utils import yank_fields_from_attrs
 from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
 from graphene.utils.str_converters import to_camel_case
+from .serializer_converter import SerializerEnumConverter
 from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.mutation import fields_for_serializer
-from graphene_django.types import ErrorType, DjangoObjectType
-
+from graphene_django.types import ErrorType, DjangoObjectType, construct_fields
 from graphene_django_extras.base_types import factory_type
 from graphene_django_extras.rest_framework.mixins import *
 
@@ -26,6 +26,23 @@ __all__ = (
     "CreateModelMutation",
     "DjangoModelMutation",
 )
+SerializerEnumConverter()
+# serializers_enum_types_cache = {}
+#
+#
+# @get_graphene_type_from_serializer_field.register(serializers.ChoiceField)
+# def convert_serializer_field_to_enum(field):
+#     # fix for enum types for the same serializer field
+#     # enums require a name
+#     serializer = field.parent
+#     name = field.field_name or field.source or "Choices"
+#     cache_name = "{}_{}".format(serializer.__class__.__name__, name)
+#     cached_type = serializers_enum_types_cache.get(cache_name, None)
+#     if cached_type:
+#         return cached_type
+#     ret_type = convert_choices_to_named_enum_with_descriptions(name, field.choices)
+#     serializers_enum_types_cache[cache_name] = ret_type
+#     return ret_type
 
 
 class BaseMutationOptions(MutationOptions):
@@ -283,7 +300,7 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
             output_field_description=None,
             serializer_class_as_output=False,
             convert_choices_to_enum=True,
-            description='',
+            description=None,
             **options
     ):
         if not serializer_class:
@@ -473,6 +490,7 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
             output_field_name=None,
             output_field_description=None,
             description="",
+            convert_choices_to_enum=True,
             **options
     ):
 
@@ -505,6 +523,7 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
         _meta.exclude_fields = exclude_fields
         _meta.output_field_description = output_field_description
         _meta.output_field_name = output_field_name
+        _meta.convert_choices_to_enum = convert_choices_to_enum
 
         super(BaseModelMutation, cls).__init_subclass_with_meta__(
             _meta=_meta, **options, description=description
@@ -512,18 +531,21 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
 
     @classmethod
     def base_args_setup(cls):
-        import graphene_django_extras.converter as converter
         if cls._meta.only_fields or cls._meta.exclude_fields:
-            factory_kwargs = {
-                "model": cls._meta.model,
-                "only_fields": cls._meta.only_fields,
-                "exclude_fields": cls._meta.exclude_fields,
-                "input_flag": "create",
-                "include_fields": None,
-                "registry": get_global_registry()
-            }
+            factory_kwargs = [
+                # model
+                cls._meta.model,
+                # register
+                get_global_registry(),
+                # fields
+                cls._meta.only_fields,
+                # exclude
+                cls._meta.exclude_fields,
+                # convert_choices_to_enum
+                cls._meta.convert_choices_to_enum,
+            ]
             django_fields = yank_fields_from_attrs(
-                converter.construct_fields(**factory_kwargs),
+                construct_fields(*factory_kwargs),
                 _as=InputField,
             )
             return django_fields
