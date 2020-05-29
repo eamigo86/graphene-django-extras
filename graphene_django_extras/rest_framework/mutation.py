@@ -301,8 +301,8 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
             output_field_name=None,
             output_field_description=None,
             serializer_class_as_output=False,
-            only_fields = (),
-            exclude_fields = (),
+            only_fields=(),
+            exclude_fields=(),
             convert_choices_to_enum=True,
             description=None,
             **options
