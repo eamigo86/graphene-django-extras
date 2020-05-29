@@ -46,6 +46,8 @@ SerializerEnumConverter()
 
 
 class BaseMutationOptions(MutationOptions):
+    only_fields = ()
+    exclude_fields = ()
     lookup_field_description = None  # description for ID field
     input_field_name = None
     output_field_name = None
@@ -299,6 +301,8 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
             output_field_name=None,
             output_field_description=None,
             serializer_class_as_output=False,
+            only_fields = (),
+            exclude_fields = (),
             convert_choices_to_enum=True,
             description=None,
             **options
@@ -328,13 +332,16 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
 
         if serializer_class_as_output and not output_field:
             django_fields[output_field_name] = cls._get_output_from_serializer(
-                serializer_class, convert_choices_to_enum, output_field_description
+                serializer_class, only_fields, exclude_fields,
+                convert_choices_to_enum, output_field_description
             )
 
         _meta = SerializerMutationOptions(cls)
         _meta.output = cls
         _meta.model = model
         _meta.fields = django_fields
+        _meta.only_fields = only_fields
+        _meta.exclude_fields = exclude_fields
         _meta.serializer_class = serializer_class
         _meta.output_field_name = output_field_name
         _meta.output_field_description = output_field_description
@@ -354,13 +361,15 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
         return None
 
     @classmethod
-    def _get_output_from_serializer(cls, serializer_class,
-                                    convert_choices_to_enum, output_field_description):
+    def _get_output_from_serializer(
+            cls, serializer_class, only_fields, exclude_fields,
+            convert_choices_to_enum, output_field_description
+    ):
         serializer = serializer_class()
         output_fields = fields_for_serializer(
             serializer,
-            only_fields=(),
-            exclude_fields=(),
+            only_fields=only_fields,
+            exclude_fields=exclude_fields,
             is_input=False,
             convert_choices_to_enum=convert_choices_to_enum,
         )
@@ -387,12 +396,12 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
 
         input_fields_from_serializer = fields_for_serializer(
             serializer,
-            only_fields=(),
-            exclude_fields=(),
+            only_fields=cls._meta.only_fields,
+            exclude_fields=cls._meta.exclude_fields,
             is_input=True,
             convert_choices_to_enum=cls._meta.convert_choices_to_enum,
         )
-        input_fields = yank_fields_from_attrs(input_fields_from_serializer, _as=Field, sort=False)
+        input_fields = yank_fields_from_attrs(input_fields_from_serializer, _as=InputField, sort=False)
         return input_fields
 
 
@@ -468,8 +477,6 @@ class DRFSerializerMutation(CreateSerializerMixin, UpdateSerializerMixin,
 
 
 class ModelMutationOptions(BaseMutationOptions):
-    only_fields = ()
-    exclude_fields = ()
     model = None
 
 
