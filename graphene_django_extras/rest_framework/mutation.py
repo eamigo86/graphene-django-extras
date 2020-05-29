@@ -27,22 +27,6 @@ __all__ = (
     "DjangoModelMutation",
 )
 SerializerEnumConverter()
-# serializers_enum_types_cache = {}
-#
-#
-# @get_graphene_type_from_serializer_field.register(serializers.ChoiceField)
-# def convert_serializer_field_to_enum(field):
-#     # fix for enum types for the same serializer field
-#     # enums require a name
-#     serializer = field.parent
-#     name = field.field_name or field.source or "Choices"
-#     cache_name = "{}_{}".format(serializer.__class__.__name__, name)
-#     cached_type = serializers_enum_types_cache.get(cache_name, None)
-#     if cached_type:
-#         return cached_type
-#     ret_type = convert_choices_to_named_enum_with_descriptions(name, field.choices)
-#     serializers_enum_types_cache[cache_name] = ret_type
-#     return ret_type
 
 
 class BaseMutationOptions(MutationOptions):

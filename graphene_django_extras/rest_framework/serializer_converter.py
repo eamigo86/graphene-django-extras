@@ -32,11 +32,11 @@ class SerializerEnumConverter:
     def get_cache_name_enum_name(field):
         name = field.field_name or field.source or "Choices"
         serializer = field.parent
+        cache_name = "{}_{}".format(serializer.__class__.__name__, name)
         if isinstance(serializer, serializers.ModelSerializer):
             _model_fields = dict(get_model_fields(serializer.Meta.model))
             _model_field = _model_fields.get(name)
             enum_name = f'{serializer.Meta.model.__name__}{name.capitalize()}'
-            return enum_name, _model_field
-        cache_name = "{}_{}".format(serializer.__class__.__name__, name)
+            return enum_name, _model_field or cache_name
         enum_name = f'{serializer.__class__.__name__}{name}'
         return enum_name, cache_name
