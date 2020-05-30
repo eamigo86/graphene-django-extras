@@ -12,8 +12,9 @@ __all__ = (
 class ObjectBaseMixin(object):
     def get_object(self, info, data, **kwargs):
         look_up_field = self.get_lookup_field_name()
-        look_up_value = data.get(self.lookup_url_kwarg or look_up_field)
-        filter_kwargs = {look_up_field: look_up_value}
+        lookup_url_kwarg = self.lookup_url_kwarg or look_up_field
+        lookup_url_kwarg_value = data.get(lookup_url_kwarg) or kwargs.get(lookup_url_kwarg)
+        filter_kwargs = {look_up_field: lookup_url_kwarg_value}
         return get_Object_or_None(self._get_model(), **filter_kwargs)
 
 
