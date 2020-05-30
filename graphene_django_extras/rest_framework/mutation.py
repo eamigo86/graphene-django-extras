@@ -32,7 +32,6 @@ SerializerEnumConverter()
 class BaseMutationOptions(MutationOptions):
     only_fields = ()
     exclude_fields = ()
-    lookup_field_description = None  # description for ID field
     input_field_name = None
     output_field_name = None
     output_field_description = None
@@ -48,10 +47,12 @@ class SerializerMutationOptions(BaseMutationOptions):
 
 
 class BaseMutation(ObjectType):
+    lookup_field_description = None  # description for ID field
+    lookup_field = None
+
     @classmethod
     def __init_subclass_with_meta__(
-            cls,
-            lookup_field_description=None,  # description for ID field
+            cls, # description for ID field
             input_field_name=None,
             convert_choices_to_enum=True,
             update_field_name=None,
@@ -69,7 +70,6 @@ class BaseMutation(ObjectType):
         arguments_props = cls._get_argument_fields()
 
         _meta.input_field_name = input_field_name
-        _meta.lookup_field_description = lookup_field_description
         _meta.convert_choices_to_enum = convert_choices_to_enum
         _meta.arguments_props = arguments_props
         _meta.update_field_name = update_field_name
@@ -136,7 +136,7 @@ class BaseMutation(ObjectType):
     @classmethod
     def get_lookup_field_name(cls):
         model = cls._get_model()
-        return model._meta.pk.name
+        return cls.lookup_field or model._meta.pk.name
 
     @classmethod
     def _get_model(cls):
@@ -231,7 +231,7 @@ class BaseMutation(ObjectType):
             input_fields.update({
                 pk_name: Argument(
                     ID, required=True,
-                    description=cls._meta.lookup_field_description or "Django object unique identification field")
+                    description=cls.lookup_field_description or "Django object unique identification field")
             })
 
         argument_type = type(
@@ -250,7 +250,7 @@ class BaseMutation(ObjectType):
         input_fields = OrderedDict({
             pk_name: Argument(
                 ID, required=True,
-                description=cls._meta.lookup_field_description or "Django object unique identification field")
+                description=cls.lookup_field_description or "Django object unique identification field")
         })
 
         argument = input_fields
