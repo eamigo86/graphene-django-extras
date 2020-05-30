@@ -227,7 +227,7 @@ class BaseMutation(ObjectType):
     def _init_update_args(cls):
         input_fields = cls.base_args_setup()
 
-        pk_name = cls.get_lookup_field_name()
+        pk_name = cls.lookup_url_kwarg or cls.get_lookup_field_name()
         if not input_fields.get(pk_name) and not cls._meta.arguments_props.get(pk_name):
             input_fields.update({
                 pk_name: Argument(
@@ -247,7 +247,7 @@ class BaseMutation(ObjectType):
 
     @classmethod
     def _init_delete_args(cls):
-        pk_name = cls.get_lookup_field_name()
+        pk_name = cls.lookup_url_kwarg or cls.get_lookup_field_name()
         input_fields = OrderedDict({
             pk_name: Argument(
                 ID, required=True,
