@@ -9,6 +9,14 @@ __all__ = (
 )
 
 
+class ObjectBaseMixin(object):
+    def get_object(self, info, data, **kwargs):
+        look_up_field = self.get_lookup_field_name()
+        look_up_value = data.get(self.lookup_url_kwarg or look_up_field)
+        filter_kwargs = {look_up_field: look_up_value}
+        return get_Object_or_None(self._get_model(), **filter_kwargs)
+
+
 class GraphqlPermissionMixin(object):
     """
     DRF based permissions implementation
@@ -84,16 +92,10 @@ class CreateSerializerMixin(object):
             )])
 
 
-class UpdateSerializerMixin(object):
+class UpdateSerializerMixin(ObjectBaseMixin):
     """
         UpdateMutation Implementation
     """
-
-    def get_object(self, info, data, **kwargs):
-        look_up_field = self.get_lookup_field_name()
-        look_up_value = data.get(look_up_field)
-        filter_kwargs = {look_up_field: look_up_value}
-        return get_Object_or_None(self._get_model(), **filter_kwargs)
 
     def perform_update(self, root, info, data, instance, **kwargs):
         serializer = self._meta.serializer_class(
@@ -152,19 +154,13 @@ class UpdateSerializerMixin(object):
             )
 
 
-class DeleteModelMixin(object):
+class DeleteModelMixin(ObjectBaseMixin):
     """
     DeleteMutation Implementation
     """
     
     def perform_delete(self, info, obj, **kwargs):
         obj.delete()
-
-    def get_object(self, info, data, **kwargs):
-        look_up_field = self.get_lookup_field_name()
-        look_up_value = data.get(look_up_field)
-        filter_kwargs = {look_up_field: look_up_value}
-        return get_Object_or_None(self._get_model(), **filter_kwargs)
 
     @classmethod
     def delete(cls, root, info, **kwargs):

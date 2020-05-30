@@ -49,6 +49,7 @@ class SerializerMutationOptions(BaseMutationOptions):
 class BaseMutation(ObjectType):
     lookup_field_description = None  # description for ID field
     lookup_field = None
+    lookup_url_kwarg = None
 
     @classmethod
     def __init_subclass_with_meta__(
