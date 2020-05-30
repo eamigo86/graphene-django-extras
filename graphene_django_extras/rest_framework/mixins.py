@@ -78,6 +78,11 @@ class CreateSerializerMixin(object):
                 errors = self.error_builder(e.detail.serializer)
                 return self.get_errors(errors)
 
+            messages = [str(e)]
+            return self.get_errors([ErrorType(
+                messages=messages,
+            )])
+
 
 class UpdateSerializerMixin(object):
     """
@@ -127,6 +132,10 @@ class UpdateSerializerMixin(object):
                 if isinstance(e, ValidationError):
                     errors = self.error_builder(e.detail.serializer)
                     return self.get_errors(errors)
+                messages = [str(e)]
+                return self.get_errors([ErrorType(
+                    messages=messages,
+                )])
         else:
             pk = data.get(cls._get_lookup_field_name())
             return cls.get_errors(
@@ -193,21 +202,11 @@ class CreateModelMixin(CreateSerializerMixin):
         raise NotImplementedError('`create_mutate` method needs to be implemented'.format(self.__class__.__name__))
 
     def perform_create(self, root, info, data, **kwargs):
-        try:
-            obj = self.create_mutate(info, data, **kwargs)
-            assert obj is not None, (
-                '`create_mutate()` did not return an object instance.'
-            )
-            return self.perform_mutate(obj, info)
-        except Exception as e:
-            if isinstance(e, ValidationError):
-                errors = self.error_builder(e.detail.serializer)
-                return self.get_errors(errors)
-            
-            messages = [str(e)]
-            return self.get_errors([ErrorType(
-                messages=messages,
-            )])
+        obj = self.create_mutate(info, data, **kwargs)
+        assert obj is not None, (
+            '`create_mutate()` did not return an object instance.'
+        )
+        return obj
 
 
 class UpdateModelMixin(UpdateSerializerMixin):
@@ -219,22 +218,9 @@ class UpdateModelMixin(UpdateSerializerMixin):
         """
         Updates a model and returns the updated object
         """
-        try:
-            update_obj = self.update_mutate(info, data, instance,  **kwargs)
-            assert update_obj is not None, (
-                '`update_mutate()` did not return an object instance.'
-            )
-            return self.perform_mutate(obj=update_obj, info=info, data=data, **kwargs)
-        except Exception as e:
-            if isinstance(e, ValidationError):
-                errors = self.error_builder(e.detail.serializer)
-                return self.get_errors(errors)
-            
-            messages = [str(e)]
-            return self.get_errors([ErrorType(
-                messages=messages,
-            )])
-
-
-
+        update_obj = self.update_mutate(info, data, instance, **kwargs)
+        assert update_obj is not None, (
+            '`update_mutate()` did not return an object instance.'
+        )
+        return update_obj
 
