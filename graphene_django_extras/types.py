@@ -9,7 +9,6 @@ from graphene.types.inputobjecttype import InputObjectType, InputObjectTypeConta
 from graphene.types.utils import yank_fields_from_attrs
 from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
-from graphene_django.fields import DjangoListField
 from graphene_django.types import ErrorType
 from graphene_django.utils import (
     is_valid_django_model,
@@ -19,7 +18,7 @@ from graphene_django.utils import (
 
 from .base_types import DjangoListObjectBase, factory_type
 from .converter import construct_fields
-from .fields import DjangoObjectField, DjangoListObjectField
+from .fields import DjangoObjectField, DjangoListObjectField, DjangoListField
 from .paginations.pagination import BaseDjangoGraphqlPagination
 from .registry import get_global_registry, Registry
 from .settings import graphql_api_settings
