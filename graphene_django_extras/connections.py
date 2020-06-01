@@ -1,7 +1,7 @@
 from collections import Iterable
 from functools import partial
 from django.db.models import QuerySet
-from graphene import NonNull
+from graphene import NonNull, Int, String, Argument
 from graphene.relay.connection import IterableConnectionField, PageInfo
 from graphene.utils.thenables import maybe_thenable
 from graphene_django import DjangoConnectionField
@@ -11,6 +11,9 @@ from graphene_django_extras.settings import graphql_api_settings
 
 
 class ConnectionField(IterableConnectionField):
+    def __init__(self, type, *args, **kwargs):
+        super(ConnectionField, self).__init__(type, *args, **kwargs)
+        self.args["first"] = Int(default_value=graphql_api_settings.DEFAULT_PAGE_SIZE)
 
     @classmethod
     def resolve_connection(cls, connection_type, args, resolved):
@@ -43,12 +46,6 @@ class ConnectionField(IterableConnectionField):
     def connection_resolver(cls, resolver, connection_type, root, info, **args):
         resolved = resolver(root, info, **args)
 
-        first = args.get('first')
-        last = args.get('last')
-
-        if not first and not last:
-            args['first'] = graphql_api_settings.DEFAULT_PAGE_SIZE
-
         if isinstance(connection_type, NonNull):
             connection_type = connection_type.of_type
 
@@ -60,25 +57,15 @@ class ConnectionField(IterableConnectionField):
 
 
 class DjangoConnectionPageLimitField(DjangoConnectionField):
-
-    @classmethod
-    def connection_resolver(cls, *args, **kwargs):
-        first = kwargs.get('first')
-        last = kwargs.get('last')
-
-        if not first and not last:
-            kwargs['first'] = graphql_api_settings.DEFAULT_PAGE_SIZE
-        return DjangoConnectionField.connection_resolver(*args, **kwargs)
-
-
-class DjangoFieldConnectionPageLimitField(DjangoFilterConnectionField, DjangoConnectionPageLimitField):
-    def __init__(self, _type, order_by=None, *args, **kwargs):
+    def __init__(self, type, order_by=None, *args, **kwargs):
+        kwargs.setdefault('ordering', String(default_value=order_by) if order_by else String())
+        super(DjangoConnectionPageLimitField, self).__init__(type, *args, **kwargs)
+        self.args["first"] = Argument(Int, default_value=graphql_api_settings.DEFAULT_PAGE_SIZE)
         self.order_by = order_by
-        super(DjangoFieldConnectionPageLimitField, self).__init__(_type, order_by=order_by, *args, **kwargs)
 
-    def resolve_queryset(self, *args, **kwargs):
-        qs = super(DjangoFieldConnectionPageLimitField, self).resolve_queryset(*args, **kwargs)
-        order = self.order_by
+    def resolve_queryset(self, connection, queryset, info, args):
+        qs = super(DjangoConnectionPageLimitField, self).resolve_queryset(connection, queryset, info, args)
+        order = args.get('ordering') or self.order_by
         if order:
             if "," in order:
                 order = order.strip(",").replace(" ", "").split(",")
@@ -87,3 +74,7 @@ class DjangoFieldConnectionPageLimitField(DjangoFilterConnectionField, DjangoCon
             else:
                 qs = qs.order_by(order)
         return qs
+
+
+class DjangoFilterConnectionPageLimitField(DjangoFilterConnectionField, DjangoConnectionPageLimitField):
+    pass
