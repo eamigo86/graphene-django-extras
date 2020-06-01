@@ -1,6 +1,6 @@
 import graphene
 from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from graphene_django_extras.types import (
     DjangoListObjectType,

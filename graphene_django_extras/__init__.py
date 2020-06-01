@@ -18,28 +18,32 @@ from .types import (
     DjangoSerializerType,
 )
 
-VERSION = (0, 4, 5, "final", "")
+VERSION = (0, 4, 9, "final", "")
 
 __version__ = get_version(VERSION)
 
 __all__ = (
     "__version__",
+
     # FIELDS
     "DjangoObjectField",
     "DjangoFilterListField",
     "DjangoFilterPaginateListField",
     "DjangoListObjectField",
+
     # MUTATIONS
     "DjangoSerializerMutation",
-    # PAGINATIONS
+    # PAGINATION
     "LimitOffsetGraphqlPagination",
     "PageGraphqlPagination",
     # 'CursorGraphqlPagination',  # Not implemented yet
+
     # TYPES
     "DjangoObjectType",
     "DjangoListObjectType",
     "DjangoInputObjectType",
     "DjangoSerializerType",
+
     # DIRECTIVES
     "all_directives",
     "ExtraGraphQLDirectiveMiddleware",
