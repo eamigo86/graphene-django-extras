@@ -36,8 +36,8 @@ class BaseMutationOptions(MutationOptions):
     output_field_name = None
     output_field_description = None
     convert_choices_to_enum = True
-    update_field_name = None
-    create_field_name = None
+    update_input_type_name = None
+    create_input_type_name = None
     arguments_props = None
 
 
@@ -56,8 +56,8 @@ class BaseMutation(ObjectType):
             cls, # description for ID field
             input_field_name=None,
             convert_choices_to_enum=True,
-            update_field_name=None,
-            create_field_name=None,
+            update_input_type_name=None,
+            create_input_type_name=None,
             name=None,
             _meta=None,
             **options
@@ -73,8 +73,8 @@ class BaseMutation(ObjectType):
         _meta.input_field_name = input_field_name
         _meta.convert_choices_to_enum = convert_choices_to_enum
         _meta.arguments_props = arguments_props
-        _meta.update_field_name = update_field_name
-        _meta.create_field_name = create_field_name
+        _meta.update_input_type_name = update_input_type_name
+        _meta.create_input_type_name = create_input_type_name
 
         super(BaseMutation, cls).__init_subclass_with_meta__(
             _meta=_meta, **options, name=name
@@ -87,16 +87,16 @@ class BaseMutation(ObjectType):
     errors = List(ErrorType, description="Errors list for the field")
 
     @classmethod
-    def get_update_field_name(cls):
+    def get_update_input_type_name(cls):
         model = cls._get_model()
         default = to_camel_case("{}_Update_{}".format(cls.__name__, model._meta.model_name.capitalize()))
-        return cls._meta.update_field_name or default
+        return cls._meta.update_input_type_name or default
 
     @classmethod
-    def get_create_field_name(cls):
+    def get_create_input_type_name(cls):
         model = cls._get_model()
         default = to_camel_case("{}_Create_{}".format(cls.__name__, model._meta.model_name.capitalize()))
-        return cls._meta.create_field_name or default
+        return cls._meta.create_input_type_name or default
 
     @classmethod
     def error_builder(cls, serialized_obj):
@@ -215,7 +215,7 @@ class BaseMutation(ObjectType):
         input_fields = cls.base_args_setup()
 
         argument_type = type(
-            cls.get_create_field_name(),
+            cls.get_create_input_type_name(),
             (InputObjectType,),
             OrderedDict(
                 input_fields
@@ -236,7 +236,7 @@ class BaseMutation(ObjectType):
             })
 
         argument_type = type(
-            cls.get_update_field_name(),
+            cls.get_update_input_type_name(),
             (InputObjectType,),
             OrderedDict(
                 input_fields
