@@ -17,7 +17,7 @@ from graphene_django_extras.rest_framework import GraphqlPermissionMixin
 from graphene_django_extras.settings import graphql_api_settings
 from .base_types import DjangoListObjectBase
 from .paginations.pagination import BaseDjangoGraphqlPagination
-from .utils import get_extra_filters, queryset_factory, get_related_fields, find_field
+from .utils import get_extra_filters, queryset_factory, get_related_fields, find_field, _get_queryset, queryset_refactor
 
 
 # *********************************************** #
@@ -63,7 +63,7 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
     def __init__(
             self,
             _type,
-            permission_classes=list(),
+            permission_classes=(),
             output_type=None,
             fields=None,
             extra_filter_meta=None,
@@ -74,9 +74,11 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
     ):
         self.filterset_class = {}
         self.filtering_args = {}
+
         assert isinstance(permission_classes, (tuple, list)), (
             "Permissions can only be a `List` of `Tuple` - ".format(self.__class__.__name__)
         )
+
         self.permission_classes = permission_classes
 
         if DJANGO_FILTER_INSTALLED and not skip_filters:
@@ -109,8 +111,12 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
         super(DjangoBaseListField, self).__init__(output_type or _type, *args, **kwargs)
 
     @classmethod
-    def get_queryset(cls, manager, info, fragments=None, **kwargs):
-        return queryset_factory(manager, info.field_asts, fragments, **kwargs)
+    def refactor_query(cls, manager, info, fragments=None, **kwargs):
+        return queryset_refactor(manager, info.field_asts, fragments, **kwargs)
+
+    @classmethod
+    def get_queryset(cls, manager):
+        return _get_queryset(manager)
 
     @property
     def model(self):
@@ -203,15 +209,14 @@ class DjangoFilterListField(DjangoBaseFilterListField):
                 qs = None
 
         if qs is None:
-            qs = queryset_factory(manager, info, fragments=info.fragments, **kwargs)
+            qs = self.get_queryset(manager)
             qs = filterset_class(
                 data=filter_kwargs, queryset=qs, request=info.context
             ).qs
-
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
                 qs = qs.filter(**extra_filters)
-
+            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         return maybe_queryset(qs)
 
 
@@ -228,10 +233,8 @@ class DjangoFilterPaginateListField(DjangoBaseFilterListField):
         )
 
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
-        qs = maybe_queryset(resolver(root, info, **kwargs))
+        qs = self.get_queryset(manager)
 
-        if qs is None:
-            qs = self.get_queryset(manager, info, fragments=info.fragments, **kwargs)
         if not self.skip_filters:
             filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
@@ -242,7 +245,7 @@ class DjangoFilterPaginateListField(DjangoBaseFilterListField):
 
         if getattr(self, "pagination", None):
             qs = self.pagination.paginate_queryset(qs, **kwargs)
-
+        qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         return maybe_queryset(qs)
 
 
@@ -255,7 +258,7 @@ class DjangoListObjectField(DjangoBaseListField):
         count = 0
 
         if qs is None:
-            qs = self.get_queryset(manager, info, fragments=info.fragments, **kwargs)
+            qs = self.get_queryset(manager)
 
         is_query_set = isinstance(qs, QuerySet)
 
@@ -265,6 +268,7 @@ class DjangoListObjectField(DjangoBaseListField):
 
         if is_query_set:
             count = qs.count()
+            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         elif isinstance(qs, (list, tuple)):
             count = len(qs)
 

@@ -348,8 +348,7 @@ def recursive_params(
     return select_related, prefetch_related
 
 
-def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
-
+def queryset_refactor(manager, fields_asts=None, fragments=None, **kwargs):
     select_related = []
     prefetch_related = []
     available_related_fields = get_related_fields(manager.model)
@@ -374,14 +373,19 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
         )
 
     if select_related and prefetch_related:
-        return _get_queryset(
-            manager.select_related(*select_related).prefetch_related(*prefetch_related)
-        )
+        return manager.select_related(*select_related).prefetch_related(*prefetch_related)
+
     elif not select_related and prefetch_related:
-        return _get_queryset(manager.prefetch_related(*prefetch_related))
+        return manager.prefetch_related(*prefetch_related)
     elif select_related and not prefetch_related:
-        return _get_queryset(manager.select_related(*select_related))
-    return _get_queryset(manager)
+        return manager.select_related(*select_related)
+    return manager
+
+
+def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
+    return _get_queryset(
+        queryset_refactor(manager, fields_asts=fields_asts, fragments=fragments, **kwargs)
+    )
 
 
 def parse_validation_exc(validation_exc):

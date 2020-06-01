@@ -1,6 +1,6 @@
 from collections import Iterable
 from functools import partial
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Manager
 from graphene import NonNull, Int, String, Argument
 from graphene.relay.connection import IterableConnectionField, PageInfo
 from graphene.utils.thenables import maybe_thenable
@@ -8,6 +8,7 @@ from graphene_django import DjangoConnectionField
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql_relay.connection.arrayconnection import connection_from_list_slice
 from graphene_django_extras.settings import graphql_api_settings
+from graphene_django_extras.utils import queryset_refactor, _get_queryset
 
 
 class ConnectionField(IterableConnectionField):
@@ -57,24 +58,43 @@ class ConnectionField(IterableConnectionField):
 
 
 class DjangoConnectionPageLimitField(DjangoConnectionField):
-    def __init__(self, type, order_by=None, *args, **kwargs):
+    def __init__(self,
+                 type,
+                 order_by=None,
+                 *args,
+                 **kwargs):
         kwargs.setdefault('ordering', String(default_value=order_by) if order_by else String())
         super(DjangoConnectionPageLimitField, self).__init__(type, *args, **kwargs)
         self.args["first"] = Argument(Int, default_value=graphql_api_settings.DEFAULT_PAGE_SIZE)
-        self.order_by = order_by
 
-    def resolve_queryset(self, connection, queryset, info, args):
-        qs = super(DjangoConnectionPageLimitField, self).resolve_queryset(connection, queryset, info, args)
-        order = args.get('ordering') or self.order_by
-        if order:
+    def resolve_queryset(self, connection, queryset, info, args, **kwargs):
+        order = args.get('ordering')
+        qs = super(DjangoConnectionPageLimitField, self).resolve_queryset(connection, queryset, info, args, **kwargs)
+
+        if isinstance(qs, Manager):
+            qs = self.get_queryset(queryset)
+
+        is_queryset = isinstance(qs, QuerySet)
+
+        if is_queryset:
+            qs = queryset_refactor(qs, info.field_asts, fragments=info.fragments, **kwargs)
+
+        if order and is_queryset:
             if "," in order:
                 order = order.strip(",").replace(" ", "").split(",")
                 if order.__len__() > 0:
                     qs = qs.order_by(*order)
             else:
                 qs = qs.order_by(order)
+
         return qs
 
+    @classmethod
+    def get_queryset(cls, manager):
+        return _get_queryset(manager)
 
-class DjangoFilterConnectionPageLimitField(DjangoFilterConnectionField, DjangoConnectionPageLimitField):
-    pass
+
+class DjangoFilterConnectionPageLimitField(DjangoConnectionPageLimitField, DjangoFilterConnectionField):
+    def __init__(self, type, order_by=None, *args, **kwargs):
+        kwargs.setdefault('first', Int(default_value=graphql_api_settings.DEFAULT_PAGE_SIZE))
+        super(DjangoFilterConnectionPageLimitField, self).__init__(type, *args, **kwargs)
