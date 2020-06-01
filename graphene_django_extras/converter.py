@@ -340,8 +340,9 @@ def convert_field_to_list_or_connection(
                 )
             else:
                 return DjangoListField(
-                    _type, required=is_required(field) and input_flag == "create",
-                    description=field.help_text or field.verbose_name
+                    _type,
+                    required=is_required(field) and input_flag == "create",
+                    description=field.help_text or field.verbose_name,
                 )
 
     return Dynamic(dynamic_type)
