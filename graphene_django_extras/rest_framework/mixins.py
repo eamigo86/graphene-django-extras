@@ -2,10 +2,13 @@ from graphene_django.types import ErrorType
 from graphql import GraphQLError
 from rest_framework.exceptions import ValidationError
 from graphene_django_extras.utils import get_Object_or_None
+from graphene_django_extras.utils import _get_queryset
+from graphql_relay import from_global_id
 
 __all__ = (
     'GraphqlPermissionMixin', 'CreateSerializerMixin', 'UpdateModelMixin',
-    'CreateModelMixin', 'DeleteModelMixin', 'UpdateSerializerMixin',
+    'CreateModelMixin', 'DeleteModelMixin', 'UpdateSerializerMixin', 'GetObjectQueryMixin',
+    'NodeGetObjectQueryMixin'
 )
 
 
@@ -220,4 +223,94 @@ class UpdateModelMixin(UpdateSerializerMixin):
             '`update_mutate()` did not return an object instance.'
         )
         return update_obj
+
+
+class GetObjectQueryMixin:
+    select_related = []
+    prefetch_related = []
+    filter_kwargs = dict()
+
+    def get_filter_kwargs(self):
+        if self.filter_kwargs:
+            assert isinstance(self.select_related, dict), (
+                '`filter_kwargs` must be a dict'
+            )
+        return self.filter_kwargs
+
+    def build_query(self, filter_kwargs):
+        klass = self._get_model()
+        queryset = _get_queryset(klass)
+
+        if self.select_related:
+            assert isinstance(self.select_related, (list, tuple)), (
+                '`select_related` must be a list or tuple'
+            )
+
+        if self.prefetch_related:
+            assert isinstance(self.prefetch_related, (list, tuple)), (
+                '`prefetch_related` must be a list or tuple'
+            )
+
+        queryset = obj_query = queryset.filter(**filter_kwargs)
+
+        if self.select_related and self.prefetch_related:
+            obj_query = queryset.select_related(*self.select_related).prefetch_related(*self.prefetch_related)
+
+        elif not self.select_related and self.prefetch_related:
+            obj_query = queryset.prefetch_related(*self.prefetch_related)
+
+        elif self.select_related and not self.prefetch_related:
+            obj_query = queryset.select_related(*self.select_related)
+
+        return obj_query
+
+    def get_object(self, info, data, **kwargs):
+        """
+        Gets object for a model type
+        :param info: graphene info object
+        :param data: data input
+        :param kwargs: other inputs
+        :return: object of model from `self.get_model()`
+        """
+        look_up_field = self.get_lookup_field_name()
+
+        lookup_url_kwarg = self.lookup_url_kwarg or look_up_field
+        lookup_url_kwarg_value = data.get(lookup_url_kwarg) or kwargs.get(lookup_url_kwarg)
+
+        filter_kwargs = self.get_filter_kwargs()
+        filter_kwargs.update({look_up_field: lookup_url_kwarg_value})
+
+        obj_query = self.build_query(filter_kwargs)
+
+        return obj_query.first()
+
+
+class NodeGetObjectQueryMixin(GetObjectQueryMixin):
+
+    @classmethod
+    def get_model_id(cls, node_id):
+        _type, _id = from_global_id(node_id)
+        return _id
+
+    def get_object(self, info, data, **kwargs):
+        """
+        Gets object for a node model type
+        :param info: graphene info object
+        :param data: data input
+        :param kwargs: other inputs
+        :return: object of model from `self.get_model()`
+        """
+        look_up_field = self.get_lookup_field_name()
+
+        lookup_url_kwarg = self.lookup_url_kwarg or look_up_field
+        lookup_url_kwarg_value = data.get(lookup_url_kwarg) or kwargs.get(lookup_url_kwarg)
+        look_up_value = self.get_model_id(lookup_url_kwarg_value)
+
+        filter_kwargs = self.get_filter_kwargs()
+        filter_kwargs.update({look_up_field: look_up_value})
+
+        obj_query = self.build_query(filter_kwargs)
+
+        return obj_query.first()
+
 
