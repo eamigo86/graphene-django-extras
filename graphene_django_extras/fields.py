@@ -141,7 +141,7 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
 
     @classmethod
     def _init_pagination_list(cls, pagination):
-        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS()
+        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS
 
         if pagination is not None:
             assert isinstance(pagination, BaseDjangoGraphqlPagination), (
