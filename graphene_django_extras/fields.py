@@ -141,17 +141,19 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
 
     @classmethod
     def _init_pagination_list(cls, pagination):
-        pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS()\
-            if graphql_api_settings.DEFAULT_PAGINATION_CLASS else None
+        pagination_ = pagination
+        if pagination_ is None:
+            pagination_ = graphql_api_settings.DEFAULT_PAGINATION_CLASS() \
+                if graphql_api_settings.DEFAULT_PAGINATION_CLASS else pagination_
 
-        if pagination is not None:
+        if pagination_ is not None:
             assert isinstance(pagination, BaseDjangoGraphqlPagination), (
                 'You need to pass a valid DjangoGraphqlPagination in DjangoFilterPaginateListField, received "{}".'
-            ).format(pagination)
+            ).format(pagination_)
 
-            pagination_kwargs = pagination.to_graphql_fields()
+            pagination_kwargs = pagination_.to_graphql_fields()
 
-            return pagination, pagination_kwargs
+            return pagination_, pagination_kwargs
         return None
 
 
