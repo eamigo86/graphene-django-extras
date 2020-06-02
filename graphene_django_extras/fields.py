@@ -219,6 +219,7 @@ class DjangoFilterListField(DjangoBaseFilterListField):
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
                 qs = qs.filter(**extra_filters)
+            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         return maybe_queryset(qs)
 
 
