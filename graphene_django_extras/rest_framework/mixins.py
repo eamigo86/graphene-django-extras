@@ -232,7 +232,7 @@ class GetObjectQueryMixin:
 
     def get_filter_kwargs(self):
         if self.filter_kwargs:
-            assert isinstance(self.select_related, dict), (
+            assert isinstance(self.filter_kwargs, dict), (
                 '`filter_kwargs` must be a dict'
             )
         return self.filter_kwargs
