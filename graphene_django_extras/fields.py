@@ -144,7 +144,7 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
         pagination_ = pagination
         if pagination_ is None:
             pagination_ = graphql_api_settings.DEFAULT_PAGINATION_CLASS() \
-                if graphql_api_settings.DEFAULT_PAGINATION_CLASS else pagination_
+                if graphql_api_settings.DEFAULT_PAGINATION_CLASS else None
 
         if pagination_ is not None:
             assert isinstance(pagination, BaseDjangoGraphqlPagination), (
@@ -219,12 +219,12 @@ class DjangoFilterListField(DjangoBaseFilterListField):
             if root and is_valid_django_model(root._meta.model):
                 extra_filters = get_extra_filters(root, manager.model)
                 qs = qs.filter(**extra_filters)
-            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         return maybe_queryset(qs)
 
 
 class DjangoFilterPaginateListField(DjangoBaseFilterListField):
     def __init__(self, _type, pagination=None, *args, **kwargs):
+
         pagination_ = self._init_pagination_list(pagination=pagination)
         if pagination_:
             pagination, pagination_kwargs = pagination_
@@ -236,19 +236,28 @@ class DjangoFilterPaginateListField(DjangoBaseFilterListField):
         )
 
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
-        qs = self.get_queryset(manager)
+        qs_resolved_by_field = False
+        qs = maybe_queryset(resolver(root, info, **kwargs))
 
-        if not self.skip_filters:
+        if qs is None:
+            qs = self.get_queryset(manager)
+            qs_resolved_by_field = True
+
+        is_query_set = isinstance(qs, QuerySet)
+
+        if not self.skip_filters and is_query_set:
             filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
 
-        if root and is_valid_django_model(root._meta.model):
+        if qs_resolved_by_field and root and is_valid_django_model(root._meta.model):
             extra_filters = get_extra_filters(root, manager.model)
             qs = qs.filter(**extra_filters)
 
-        if getattr(self, "pagination", None):
+        if is_query_set and getattr(self, "pagination", None):
             qs = self.pagination.paginate_queryset(qs, **kwargs)
-        qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
+
+        if qs_resolved_by_field:
+            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         return maybe_queryset(qs)
 
 
@@ -257,11 +266,12 @@ class DjangoListObjectField(DjangoBaseListField):
         super(DjangoListObjectField, self).__init__(_type, *args, **kwargs)
 
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
+        qs_resolved_by_field, count = False, 0
         qs = maybe_queryset(resolver(root, info, **kwargs))
-        count = 0
 
         if qs is None:
             qs = self.get_queryset(manager)
+            qs_resolved_by_field = True
 
         is_query_set = isinstance(qs, QuerySet)
 
@@ -271,10 +281,12 @@ class DjangoListObjectField(DjangoBaseListField):
 
         if is_query_set:
             count = qs.count()
-            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
         elif isinstance(qs, (list, tuple)):
             count = len(qs)
 
+        if qs_resolved_by_field:
+            qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
+    
         return DjangoListObjectBase(
             count=count,
             results=maybe_queryset(qs),
