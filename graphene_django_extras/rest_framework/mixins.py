@@ -1,6 +1,7 @@
+from django.core.exceptions import ValidationError as Django_ValidationError
 from graphene_django.types import ErrorType
 from graphql import GraphQLError
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError as Serializer_ValidationError
 from graphene_django_extras.utils import get_Object_or_None, merge_related_queries
 from graphene_django_extras.utils import _get_queryset
 from graphql_relay import from_global_id
@@ -13,6 +14,44 @@ __all__ = (
 
 
 class ObjectBaseMixin(object):
+    @classmethod
+    def error_builder(cls, serialized_obj):
+        errors = [
+            ErrorType(field=key, messages=value)
+            for key, value in serialized_obj.errors.items()
+        ]
+        return errors
+
+    @classmethod
+    def django_error_builder(cls, error_list):
+        errors = [
+            ErrorType(messages=item.messages)
+            for item in error_list
+        ]
+        return errors
+
+    @classmethod
+    def construct_error(cls, message, field=None,):
+        return list(ErrorType(field=field, messages=list(message)))
+
+    def _handle_errors(self, e):
+        if isinstance(e, Serializer_ValidationError):
+            errors = self.error_builder(e.detail.serializer)
+            return self.get_errors(errors)
+        if isinstance(e, Django_ValidationError):
+            errors = self.django_error_builder(e.error_list)
+            return self.get_errors(errors)
+
+        messages = e.__str__()
+        return self.get_errors(
+            [
+                ErrorType(
+                    field="id",
+                    messages=[messages],
+                )
+            ]
+        )
+
     def get_object(self, info, data, **kwargs):
         look_up_field = self.get_lookup_field_name()
         lookup_url_kwarg = self.lookup_url_kwarg or look_up_field
@@ -57,7 +96,7 @@ class GraphqlPermissionMixin(object):
                 self.permission_denied(permission)
 
 
-class CreateSerializerMixin(object):
+class CreateSerializerMixin(ObjectBaseMixin):
     """
     CreateMutation Implementation
     """
@@ -86,14 +125,7 @@ class CreateSerializerMixin(object):
             )
             return self.perform_mutate(obj, info)
         except Exception as e:
-            if isinstance(e, ValidationError):
-                errors = self.error_builder(e.detail.serializer)
-                return self.get_errors(errors)
-
-            messages = [str(e)]
-            return self.get_errors([ErrorType(
-                messages=messages,
-            )])
+            return self._handle_errors(e)
 
 
 class UpdateSerializerMixin(ObjectBaseMixin):
@@ -125,37 +157,24 @@ class UpdateSerializerMixin(ObjectBaseMixin):
         if "multipart/form-data" in request_type:
             data.update({name: value for name, value in info.context.FILES.items()})
 
-        existing_obj = self.get_object(info, data, **kwargs)
-        if existing_obj:
-            self.check_object_permissions(request=info.context, obj=existing_obj)
-            try:
+        try:
+            existing_obj = self.get_object(info, data, **kwargs)
+            if existing_obj:
+                self.check_object_permissions(request=info.context, obj=existing_obj)
                 obj = self.perform_update(root=root, info=info, data=data, instance=existing_obj, **kwargs)
                 assert obj is not None, (
                     '`perform_update()` did not return an object instance.'
                 )
                 return self.perform_mutate(obj, info)
-            except Exception as e:
-                if isinstance(e, ValidationError):
-                    errors = self.error_builder(e.detail.serializer)
-                    return self.get_errors(errors)
-                messages = [str(e)]
-                return self.get_errors([ErrorType(
-                    messages=messages,
-                )])
-        else:
-            pk = data.get(cls._get_lookup_field_name())
-            return cls.get_errors(
-                [
-                    ErrorType(
-                        field="id",
-                        messages=[
-                            "A {} obj with id: {} do not exist".format(
-                                self._get_model().__name__, pk
-                            )
-                        ],
-                    )
-                ]
-            )
+
+            else:
+                pk = data.get(cls._get_lookup_field_name())
+                errors = cls.construct_error(
+                    field="id", message="A {} obj with id: {} do not exist".format(self._get_model().__name__, pk)
+                )
+                return cls.get_errors(errors)
+        except Exception as e:
+            return self._handle_errors(e)
 
 
 class DeleteModelMixin(ObjectBaseMixin):
@@ -172,28 +191,22 @@ class DeleteModelMixin(ObjectBaseMixin):
         self.check_permissions(request=info.context)
 
         pk = kwargs.get(self.get_lookup_field_name())
+        try:
+            old_obj = self.get_object(info, data=kwargs)
 
-        old_obj = self.get_object(info, data=kwargs)
-
-        if old_obj:
-            self.check_object_permissions(request=info.context, obj=old_obj)
-            self.perform_delete(info=info, obj=old_obj, **kwargs)
-            if not old_obj.id:
-                old_obj.id = pk
-            return self.perform_mutate(old_obj, info)
-        else:
-            return self.get_errors(
-                [
-                    ErrorType(
-                        field="id",
-                        messages=[
-                            "A {} obj with id {} do not exist".format(
-                                self._get_model().__name__, pk
-                            )
-                        ],
-                    )
-                ]
-            )
+            if old_obj:
+                self.check_object_permissions(request=info.context, obj=old_obj)
+                self.perform_delete(info=info, obj=old_obj, **kwargs)
+                if not old_obj.id:
+                    old_obj.id = pk
+                return self.perform_mutate(old_obj, info)
+            else:
+                errors = cls.construct_error(
+                    field="id", message="A {} obj with id: {} do not exist".format(self._get_model().__name__, pk)
+                )
+                return cls.get_errors(errors)
+        except Exception as e:
+            return self._handle_errors(e)
 
 
 class CreateModelMixin(CreateSerializerMixin):
@@ -241,12 +254,12 @@ class GetObjectQueryMixin:
         klass = self._get_model()
         queryset = _get_queryset(klass)
 
-        if self.select_related:
+        if self.select_related is not None:
             assert isinstance(self.select_related, (list, tuple)), (
                 '`select_related` must be a list or tuple'
             )
 
-        if self.prefetch_related:
+        if self.prefetch_related is not None:
             assert isinstance(self.prefetch_related, (list, tuple)), (
                 '`prefetch_related` must be a list or tuple'
             )

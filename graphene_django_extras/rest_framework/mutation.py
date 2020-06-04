@@ -99,14 +99,6 @@ class BaseMutation(ObjectType):
         return cls._meta.create_input_type_name or default
 
     @classmethod
-    def error_builder(cls, serialized_obj):
-        errors = [
-            ErrorType(field=key, messages=value)
-            for key, value in serialized_obj.errors.items()
-        ]
-        return errors
-
-    @classmethod
     def get_errors(cls, errors):
         extra_types = cls.get_extra_types(obj=None, info=None)
         errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
