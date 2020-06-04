@@ -130,8 +130,7 @@ class DjangoObjectType(ObjectType):
             return True
         if not is_valid_django_model(type(root)):
             raise Exception(('Received incompatible instance "{}".').format(root))
-        model = root._meta.model
-        return model == cls._meta.model
+        return isinstance(root, cls._meta.model)
 
     @classmethod
     def get_node(cls, info, id):
