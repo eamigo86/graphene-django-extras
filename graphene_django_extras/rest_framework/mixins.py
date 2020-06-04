@@ -290,7 +290,7 @@ class GetObjectQueryMixin:
         filter_kwargs.update({look_up_field: lookup_url_kwarg_value})
 
         obj_query = self.build_query(filter_kwargs)
-        if obj_query.exist():
+        if obj_query.exists():
             return obj_query.first()
         return None
 
