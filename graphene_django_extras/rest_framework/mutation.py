@@ -377,7 +377,7 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
 
     @classmethod
     def get_serializer(cls):
-        return cls._meta.serializer_class()
+        return cls._meta.serializer_class
 
     @classmethod
     def base_args_setup(cls):
