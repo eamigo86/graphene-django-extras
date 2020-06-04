@@ -1,7 +1,7 @@
 from graphene_django.types import ErrorType
 from graphql import GraphQLError
 from rest_framework.exceptions import ValidationError
-from graphene_django_extras.utils import get_Object_or_None
+from graphene_django_extras.utils import get_Object_or_None, merge_related_queries
 from graphene_django_extras.utils import _get_queryset
 from graphql_relay import from_global_id
 
@@ -251,16 +251,12 @@ class GetObjectQueryMixin:
                 '`prefetch_related` must be a list or tuple'
             )
 
-        queryset = obj_query = queryset.filter(**filter_kwargs)
+        queryset = queryset.filter(**filter_kwargs)
 
-        if self.select_related and self.prefetch_related:
-            obj_query = queryset.select_related(*self.select_related).prefetch_related(*self.prefetch_related)
-
-        elif not self.select_related and self.prefetch_related:
-            obj_query = queryset.prefetch_related(*self.prefetch_related)
-
-        elif self.select_related and not self.prefetch_related:
-            obj_query = queryset.select_related(*self.select_related)
+        obj_query = merge_related_queries(
+            queryset, select_related=self.select_related,
+            prefetch_related=self.prefetch_related
+        )
 
         return obj_query
 

@@ -374,7 +374,22 @@ def queryset_refactor(manager, fields_asts=None, fragments=None, **kwargs):
             select_related,
             prefetch_related,
         )
+    manager = merge_related_queries(
+        manager,select_related=select_related,
+        prefetch_related=prefetch_related
+    )
 
+    return manager
+
+
+def merge_related_queries(manager, select_related=List[str], prefetch_related=List[str]):
+    """
+    Merges `select_related` and `prefetch_related` fields of Queryset appropriately
+    :param manager: class Queryset
+    :param select_related: List of selected_related fields
+    :param prefetch_related: List of prefetch_related fields
+    :return: class Queryset
+    """
     if select_related and prefetch_related:
         return manager.select_related(*select_related).prefetch_related(*prefetch_related)
 
@@ -383,7 +398,6 @@ def queryset_refactor(manager, fields_asts=None, fragments=None, **kwargs):
 
     elif select_related and not prefetch_related:
         return manager.select_related(*select_related)
-
     return manager
 
 
@@ -530,7 +544,7 @@ def queryset_builder(manager, info, filter_kwargs):
         query_parent = []
         temp = available_related_fields.get(name)
         if isinstance(val, dict) and temp:
-            # if its foreignKey then we need to build forwardRelations queries
+            # if its foreignKey then we need to build only forwardRelations queries
             is_fk = isinstance(temp, ForeignKey)
             new_query_parent = build_model_query(temp, val, [name], is_fk)
 
@@ -544,11 +558,9 @@ def queryset_builder(manager, info, filter_kwargs):
     if filter_kwargs:
         qs = qs.filter(**filter_kwargs)
 
-    if select_related and prefetch_related:
-        return qs.select_related(*select_related).prefetch_related(*prefetch_related)
+    qs = merge_related_queries(
+        qs, select_related=select_related,
+        prefetch_related=prefetch_related
+    )
 
-    elif not select_related and prefetch_related:
-        return qs.prefetch_related(*prefetch_related)
-
-    elif select_related and not prefetch_related:
-        return qs.select_related(*select_related)
+    return qs
