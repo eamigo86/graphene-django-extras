@@ -6,9 +6,10 @@ from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
 from graphene.utils.str_converters import to_camel_case
 from .serializer_converter import SerializerEnumConverter
-from graphene_django.registry import get_global_registry
+from graphene_django.registry import get_global_registry as gd_registry
+from graphene_django_extras.registry import get_global_registry as gde_registry
 from graphene_django.rest_framework.mutation import fields_for_serializer
-from graphene_django.types import ErrorType, DjangoObjectType, construct_fields
+from graphene_django.types import ErrorType, construct_fields
 from graphene_django_extras.base_types import factory_type
 from graphene_django_extras.rest_framework.mixins import *
 
@@ -162,13 +163,15 @@ class BaseMutation(ObjectType):
         return argument
 
     @classmethod
-    def _get_output_fields(cls, model, output_field_description):
-        output_type = get_global_registry().get_type_for_model(model)
+    def _get_output_fields(cls, model, only_fields, exclude_fields, output_field_description):
+        output_type = gde_registry().get_type_for_model(model) or gd_registry().get_type_for_model(model)
         if not output_type:
+            from graphene_django_extras.types import DjangoObjectType
             factory_kwargs = {
                 "model": model,
-                'fields': (),
-                'exclude': (),
+                'only_fields': only_fields,
+                'exclude_fields': exclude_fields,
+                'skip_registry': True
             }
             output_type = factory_type("output", DjangoObjectType, **factory_kwargs)
 
@@ -298,10 +301,12 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
         output_field_name = output_field_name or model._meta.model_name
         output_field = cls._get_output_type()
         django_fields = {output_field_name: None}
+
         if not output_field and not serializer_class_as_output:
             django_fields[output_field_name] = cls._get_output_fields(
-                model, output_field_description
+                model, (), (), output_field_description
             )
+
         else:
             django_fields[output_field_name] = output_field if isinstance(output_field, Field) else Field(
                 output_field, description=output_field_description
@@ -325,7 +330,8 @@ class BaseSerializerMutation(GraphqlPermissionMixin, BaseMutation):
 
         super(BaseSerializerMutation, cls).__init_subclass_with_meta__(
             _meta=_meta, **options, description=description, serializer_class_as_output=serializer_class_as_output,
-            convert_choices_to_enum=convert_choices_to_enum)
+            convert_choices_to_enum=convert_choices_to_enum
+        )
 
     @classmethod
     def save(cls, serialized_obj, **kwargs):
@@ -500,7 +506,9 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
         }
 
         if not output_field:
-            django_fields[output_field_name] = cls._get_output_fields(model, output_field_description)
+            django_fields[output_field_name] = cls._get_output_fields(
+                model, only_fields, exclude_fields,  output_field_description
+            )
 
         _meta = ModelMutationOptions(cls)
         _meta.output = cls
@@ -524,7 +532,7 @@ class BaseModelMutation(GraphqlPermissionMixin, BaseMutation):
                 # model
                 cls._meta.model,
                 # register
-                get_global_registry(),
+                gd_registry(),
                 # fields
                 cls._meta.only_fields,
                 # exclude
