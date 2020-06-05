@@ -9,7 +9,7 @@ from .serializer_converter import SerializerEnumConverter
 from graphene_django.registry import get_global_registry as gd_registry
 from graphene_django_extras.registry import get_global_registry as gde_registry
 from graphene_django.rest_framework.mutation import fields_for_serializer
-from graphene_django.types import ErrorType, construct_fields
+from graphene_django.types import ErrorType, construct_fields, DjangoObjectType
 from graphene_django_extras.base_types import factory_type
 from graphene_django_extras.rest_framework.mixins import *
 
@@ -164,13 +164,12 @@ class BaseMutation(ObjectType):
 
     @classmethod
     def _get_output_fields(cls, model, only_fields, exclude_fields, output_field_description):
-        output_type = gde_registry().get_type_for_model(model) or gd_registry().get_type_for_model(model)
+        output_type = gd_registry().get_type_for_model(model) or gde_registry().get_type_for_model(model)
         if not output_type:
-            from graphene_django_extras.types import DjangoObjectType
             factory_kwargs = {
                 "model": model,
-                'only_fields': only_fields,
-                'exclude_fields': exclude_fields,
+                'fields': only_fields,
+                'exclude': exclude_fields,
                 'skip_registry': True
             }
             output_type = factory_type("output", DjangoObjectType, **factory_kwargs)

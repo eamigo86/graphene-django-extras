@@ -20,15 +20,15 @@ class SerializerEnumConverter:
         # enums require a name
         enum_name, cache_name = SerializerEnumConverter.get_cache_name_enum_name(field)
 
-        registered_field = gde_registry().get_type_for_enum(f"{enum_name}Enum")
-        if registered_field:
-            return registered_field
-
         registered_field = gd_registry().get_converted_field(cache_name)
 
         if registered_field:
             return registered_field.get_type()
-
+        
+        registered_field = gde_registry().get_type_for_enum(f"{enum_name}Enum")
+        if registered_field:
+            return registered_field
+        
         cached_type = SerializerEnumConverter.serializers_enum_types_cache.get(str(cache_name), None)
 
         if cached_type:

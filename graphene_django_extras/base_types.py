@@ -10,25 +10,29 @@ from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
 
 
-def factory_type(operation, _type, *args, **kwargs):
-    if operation == "output":
+def factory_type(operation, _type,  *args, **kwargs):
+    class DefaultMeta:
+        model = kwargs.get("model")
 
+        only_fields = kwargs.get("only_fields")
+        exclude_fields = kwargs.get("exclude_fields")
+        include_fields = kwargs.get("include_fields")
+
+        filter_fields = kwargs.get("filter_fields")
+        filterset_class = kwargs.get("filterset_class")
+        registry = kwargs.get("registry")
+        skip_registry = kwargs.get("skip_registry")
+
+        # fields = kwargs.get('fields')
+        description = "Auto generated Type for {} model".format(
+            kwargs.get("model").__name__
+        )
+
+    if operation == "output":
         class GenericType(_type):
-            class Meta:
-                model = kwargs.get("model")
+            class Meta(DefaultMeta):
                 name = kwargs.get("name") or to_camel_case(
                     "{}_Generic_Type".format(kwargs.get("model").__name__)
-                )
-                only_fields = kwargs.get("only_fields")
-                exclude_fields = kwargs.get("exclude_fields")
-                include_fields = kwargs.get("include_fields")
-                filter_fields = kwargs.get("filter_fields")
-                filterset_class = kwargs.get("filterset_class")
-                registry = kwargs.get("registry")
-                skip_registry = kwargs.get("skip_registry")
-                # fields = kwargs.get('fields')
-                description = "Auto generated Type for {} model".format(
-                    kwargs.get("model").__name__
                 )
 
         return GenericType
@@ -36,16 +40,10 @@ def factory_type(operation, _type, *args, **kwargs):
     elif operation == "input":
 
         class GenericInputType(_type):
-            class Meta:
-                model = kwargs.get("model")
+            class Meta(DefaultMeta):
                 name = kwargs.get("name") or to_camel_case(
                     "{}_{}_Generic_Type".format(kwargs.get("model").__name__, args[0])
                 )
-                only_fields = kwargs.get("only_fields")
-                exclude_fields = kwargs.get("exclude_fields")
-                nested_fields = kwargs.get("nested_fields")
-                registry = kwargs.get("registry")
-                skip_registry = kwargs.get("skip_registry")
                 input_for = args[0]
                 description = "Auto generated InputType for {} model".format(
                     kwargs.get("model").__name__
@@ -56,23 +54,15 @@ def factory_type(operation, _type, *args, **kwargs):
     elif operation == "list":
 
         class GenericListType(_type):
-            class Meta:
-                model = kwargs.get("model")
+            class Meta(DefaultMeta):
                 name = kwargs.get("name") or to_camel_case(
                     "{}_List_Type".format(kwargs.get("model").__name__)
                 )
-                only_fields = kwargs.get("only_fields")
-                exclude_fields = kwargs.get("exclude_fields")
-                filter_fields = kwargs.get("filter_fields")
-                filterset_class = kwargs.get("filterset_class")
                 results_field_name = kwargs.get("results_field_name")
                 pagination = kwargs.get("pagination")
-                queryset = kwargs.get("queryset")
-                registry = kwargs.get("registry")
                 description = "Auto generated list Type for {} model".format(
                     kwargs.get("model").__name__
                 )
-
         return GenericListType
 
     return None
