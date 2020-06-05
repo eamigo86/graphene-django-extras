@@ -6,30 +6,26 @@ from graphene_django_extras.rest_framework import GraphqlPermissionMixin
 from graphene_django_extras.utils import _get_queryset, queryset_builder
 
 
-class DjangoNodeField(GraphqlPermissionMixin, Field):
+class BaseNodeField(GraphqlPermissionMixin, Field):
 
-    def __init__(self, node, type=False, permission_classes=(), *args, **kwargs):
-        assert issubclass(node, Node), "NodeField can only operate in Nodes"
-        self.node_type = node
-        self.field_type = type
+    def __init__(self, _type, permission_classes=(), *args, **kwargs):
+
         kwargs.setdefault('id', ID(required=True, description='The ID of the object'))
         self.permission_classes = permission_classes
 
-        assert hasattr(type._meta, "model") and is_valid_django_model(type._meta.model), (
+        assert hasattr(_type._meta, "model") and is_valid_django_model(_type._meta.model), (
             'only Django model is allowed'
         )
 
-        self.model = type._meta.model
+        self.model = _type._meta.model
+        super(BaseNodeField, self).__init__(_type, *args, **kwargs)
 
-        super(DjangoNodeField, self).__init__(
-            type or node,
-            *args,
-            **kwargs
-        )
+    def get_id(self, root, info, **kwargs):
+        raise NotImplementedError('Implementation is required')
 
     def query_resolver(self, root, info, **kwargs):
-        only_type = get_type(self.field_type)
-        _id = self.node_type.node_resolver(only_type, root, info, **kwargs)
+        self.check_permissions(info.context)
+        _id = self.get_id(root, info, **kwargs)
 
         qs = queryset_builder(self.model, info, filter_kwargs=dict(id=_id))
         obj = qs.first()
@@ -41,6 +37,24 @@ class DjangoNodeField(GraphqlPermissionMixin, Field):
 
     def get_resolver(self, parent_resolver):
         return partial(self.query_resolver)
+
+
+class DjangoNodeField(BaseNodeField):
+
+    def __init__(self, node, type=False, permission_classes=(), *args, **kwargs):
+        assert issubclass(node, Node), "NodeField can only operate in Nodes"
+        self.node_type = node
+        self.field_type = type
+
+        super(DjangoNodeField, self).__init__(
+            type or node,
+            *args,
+            **kwargs
+        )
+
+    def get_id(self, root, info, **kwargs):
+        only_type = get_type(self.field_type)
+        return self.node_type.node_resolver(only_type, root, info, **kwargs)
 
 
 class DjangoNode(Node):

@@ -121,7 +121,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
         offset = kwargs.get(self.offset_query_param, 0)
 
-        return qs[offset: offset + fabs(limit)]
+        return qs[offset: int(offset + fabs(limit))]
 
 
 class PageGraphqlPagination(BaseDjangoGraphqlPagination):
@@ -233,7 +233,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
             else:
                 qs = qs.order_by(order)
 
-        return qs[offset: offset + page_size]
+        return qs[offset: int(offset + page_size)]
 
 
 class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
