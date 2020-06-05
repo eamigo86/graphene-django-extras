@@ -92,7 +92,7 @@ def convert_django_field_with_choices(
 
         enum = registry.get_type_for_enum(name)
         if not enum:
-            enum = construct_enum_field(name, choices)
+            enum = construct_enum_field_type(name, choices)
             registry.register_enum(name, enum)
 
         if type(field).__name__ == "MultiSelectField":
@@ -108,7 +108,7 @@ def convert_django_field_with_choices(
     return convert_django_field(field, registry, input_flag, nested_field)
 
 
-def construct_enum_field(enum_name, choices):
+def construct_enum_field_type(enum_name, choices):
     choices = list(get_choices(choices))
     named_choices = [(c[0], c[1]) for c in choices]
     named_choices_descriptions = {c[0]: c[2] for c in choices}
