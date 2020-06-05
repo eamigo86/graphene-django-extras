@@ -1,5 +1,6 @@
 from functools import wraps
 
+import graphene
 from django.db.models import QuerySet
 from graphene_django.utils import maybe_queryset
 from graphql import GraphQLError
@@ -34,18 +35,20 @@ def login_required_msg(no_auth_msg):
     return decorator
 
 
-def permission_required(permission_classes):
+def permission_required(*permissions):
     """
-    :param permission_classes: list of permission_classes
+    :param args: list of permissions of base class `BasePermission`
+    :return:
     """
-    assert isinstance(permission_classes, (list, tuple)), 'permission_classes must be instance of `list` or `tuple` '
+    # assert isinstance(permission_classes, (list, tuple)), 'permission_classes must be instance of `list` or `tuple` '
     wrap_permission_mixin = GraphqlPermissionMixin()
-    wrap_permission_mixin.permission_classes = permission_classes
+    wrap_permission_mixin.permission_classes = list(permissions)
 
     def decorator(f):
         @wraps(f)
         def wrap(*args, **kwargs):
-            root, info = args
+            info = next(i for i in args if i and isinstance(i, graphene.ResolveInfo))
+            assert info is not None, "graphene.ResolveInfo is required in `permission_required`"
             wrap_permission_mixin.check_permissions(info.context)
             result = f(*args, **kwargs)
             qs = maybe_queryset(result)
