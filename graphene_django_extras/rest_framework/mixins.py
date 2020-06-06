@@ -9,11 +9,11 @@ from graphql_relay import from_global_id
 __all__ = (
     'GraphqlPermissionMixin', 'CreateSerializerMixin', 'UpdateModelMixin',
     'CreateModelMixin', 'DeleteModelMixin', 'UpdateSerializerMixin', 'GetObjectQueryMixin',
-    'NodeGetObjectQueryMixin'
+    'NodeGetObjectQueryMixin', 'MutationErrorHandler'
 )
 
 
-class ObjectBaseMixin(object):
+class MutationErrorHandler(object):
     @classmethod
     def error_builder(cls, serialized_obj):
         errors = [
@@ -52,13 +52,6 @@ class ObjectBaseMixin(object):
             ]
         )
 
-    def get_object(self, info, data, **kwargs):
-        look_up_field = self.get_lookup_field_name()
-        lookup_url_kwarg = self.lookup_url_kwarg or look_up_field
-        lookup_url_kwarg_value = data.get(lookup_url_kwarg) or kwargs.get(lookup_url_kwarg)
-        filter_kwargs = {look_up_field: lookup_url_kwarg_value}
-        return get_Object_or_None(self._get_model(), **filter_kwargs)
-
 
 class GraphqlPermissionMixin(object):
     """
@@ -96,7 +89,7 @@ class GraphqlPermissionMixin(object):
                 self.permission_denied(permission)
 
 
-class CreateSerializerMixin(ObjectBaseMixin):
+class CreateSerializerMixin(object):
     """
     CreateMutation Implementation
     """
@@ -106,29 +99,8 @@ class CreateSerializerMixin(ObjectBaseMixin):
         obj = self.save(serialized_obj=serializer, root=root, info=info)
         return obj
 
-    @classmethod
-    def create(cls, root, info, **kwargs):
-        self = cls()
-        self.check_permissions(request=info.context)
-        data = {}
-        if cls._meta.input_field_name:
-            data = kwargs.get(cls._meta.input_field_name)
-        else:
-            data.update(**kwargs)
-        request_type = info.context.META.get("CONTENT_TYPE", "")
-        if "multipart/form-data" in request_type:
-            data.update({name: value for name, value in info.context.FILES.items()})
-        try:
-            obj = self.perform_create(root, info, data, **kwargs)
-            assert obj is not None, (
-                '`perform_create()` did not return an object instance.'
-            )
-            return self.perform_mutate(obj, info)
-        except Exception as e:
-            return self._handle_errors(e)
 
-
-class UpdateSerializerMixin(ObjectBaseMixin):
+class UpdateSerializerMixin(object):
     """
         UpdateMutation Implementation
     """
@@ -142,42 +114,8 @@ class UpdateSerializerMixin(ObjectBaseMixin):
         obj = self.save(serializer, root=root, info=info)
         return obj
 
-    @classmethod
-    def update(cls, root, info, **kwargs):
-        self = cls()
-        self.check_permissions(request=info.context)
 
-        data = {}
-        if cls._meta.input_field_name:
-            data = kwargs.get(cls._meta.input_field_name)
-        else:
-            data.update(**kwargs)
-
-        request_type = info.context.META.get("CONTENT_TYPE", "")
-        if "multipart/form-data" in request_type:
-            data.update({name: value for name, value in info.context.FILES.items()})
-
-        try:
-            existing_obj = self.get_object(info, data, **kwargs)
-            if existing_obj:
-                self.check_object_permissions(request=info.context, obj=existing_obj)
-                obj = self.perform_update(root=root, info=info, data=data, instance=existing_obj, **kwargs)
-                assert obj is not None, (
-                    '`perform_update()` did not return an object instance.'
-                )
-                return self.perform_mutate(obj, info)
-
-            else:
-                pk = data.get(cls._get_lookup_field_name())
-                errors = cls.construct_error(
-                    field="id", message="A {} obj with id: {} do not exist".format(self._get_model().__name__, pk)
-                )
-                return cls.get_errors(errors)
-        except Exception as e:
-            return self._handle_errors(e)
-
-
-class DeleteModelMixin(ObjectBaseMixin):
+class DeleteModelMixin(object):
     """
     DeleteMutation Implementation
     """
@@ -185,31 +123,8 @@ class DeleteModelMixin(ObjectBaseMixin):
     def perform_delete(self, info, obj, **kwargs):
         obj.delete()
 
-    @classmethod
-    def delete(cls, root, info, **kwargs):
-        self = cls()
-        self.check_permissions(request=info.context)
 
-        pk = kwargs.get(self.get_lookup_field_name())
-        try:
-            old_obj = self.get_object(info, data=kwargs)
-
-            if old_obj:
-                self.check_object_permissions(request=info.context, obj=old_obj)
-                self.perform_delete(info=info, obj=old_obj, **kwargs)
-                if not old_obj.id:
-                    old_obj.id = pk
-                return self.perform_mutate(old_obj, info)
-            else:
-                errors = cls.construct_error(
-                    field="id", message="A {} obj with id: {} do not exist".format(self._get_model().__name__, pk)
-                )
-                return cls.get_errors(errors)
-        except Exception as e:
-            return self._handle_errors(e)
-
-
-class CreateModelMixin(CreateSerializerMixin):
+class CreateModelMixin(object):
     def create_mutate(self, info, data, **kwargs):
         """Creates the model and returns the created object"""
         raise NotImplementedError('`create_mutate` method needs to be implemented'.format(self.__class__.__name__))
@@ -222,7 +137,7 @@ class CreateModelMixin(CreateSerializerMixin):
         return obj
 
 
-class UpdateModelMixin(UpdateSerializerMixin):
+class UpdateModelMixin(object):
     def update_mutate(self, info, data, instance, **kwargs):
         """Updates a model and returns the updated object"""
         raise NotImplementedError('`update_mutate` method needs to be implemented'.format(self.__class__.__name__))
@@ -251,7 +166,7 @@ class GetObjectQueryMixin:
         return self.filter_kwargs
 
     def build_query(self, filter_kwargs):
-        klass = self._get_model()
+        klass = self.get_model()
         queryset = _get_queryset(klass)
 
         if self.select_related is not None:

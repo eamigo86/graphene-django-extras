@@ -13,6 +13,7 @@ from graphene_django_extras.settings import graphql_api_settings
 __all__ = (
     "LimitOffsetGraphqlPagination",
     "PageGraphqlPagination",
+    'BaseDjangoGraphqlPagination',
     "CursorGraphqlPagination",
 )
 
