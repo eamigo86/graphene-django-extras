@@ -369,8 +369,8 @@ class BaseMutation(GraphqlPermissionMixin, MutationErrorHandler, ObjectType):
         class_instance.check_permissions(request=info.context)
         data = {}
 
-        if cls._meta.input_field_name:
-            data = kwargs.get(cls._meta.input_field_name)
+        if cls.input_field_name:
+            data = kwargs.get(cls.input_field_name)
         else:
             data.update(**kwargs)
 
@@ -393,8 +393,8 @@ class BaseMutation(GraphqlPermissionMixin, MutationErrorHandler, ObjectType):
         class_instance.check_permissions(request=info.context)
 
         data = {}
-        if cls._meta.input_field_name:
-            data = kwargs.get(cls._meta.input_field_name)
+        if cls.input_field_name:
+            data = kwargs.get(cls.input_field_name)
         else:
             data.update(**kwargs)
 
