@@ -151,7 +151,7 @@ You can define traditional mutations that use InputTypes or Mutations based on D
 .. code:: python
 
     import graphene
-    from .serializers import UserSerializer
+    from .serializers import UserSerializer, UpdateUserSerializer
     from graphene_django_extras.rest_framework import DjangoModelMutation, DRFSerializerMutation
     from .types import UserType
     from .input_types import UserInputType
@@ -162,11 +162,17 @@ You can define traditional mutations that use InputTypes or Mutations based on D
             DjangoSerializerMutation auto implement Create, Delete and Update functions
             for more customisation use CreateSerializerMutation, UpdateSerializerMutation, DeleteSerializerMutation
         """
+
         permission_classes = []
+
+        mutation_serializers = {  # optional if you want to be specific
+            'create': UserSerializer,
+            'update': UpdateUserSerializer
+        }
 
         class Meta:
             description = " DRF serializer based Mutation for Users "
-            serializer_class = UserSerializer
+            serializer_class = UserSerializer # compulsory global serializer_class
 
 
     class UserModelMutation(DjangoModelMutation):
@@ -175,6 +181,14 @@ You can define traditional mutations that use InputTypes or Mutations based on D
             for more customisation use CreateModelMutation, UpdateModelMutation, DeleteModelMutation
         """
         permission_classes = []
+
+        create_fields = dict(
+            only_fields=('username','password', 'email'),
+        )
+
+        update_fields = dict(
+            exclude_fields=('username', 'password', 'email')
+        )
 
         class Meta:
             description = "Model based Mutation for Users "
@@ -550,6 +564,16 @@ You can use this shortcuts too:
 
 Change Log:
 -----------
+*******
+v0.5
+*******
+1. List and Paginated fields can be resolved manually
+2. Fixed fields compatibility issues graphene_django DjangoObjectType
+3. Use graphene_django DjangoObjectType or graphene_django_extra DjangoObjectType
+4. Base class for ListFields
+5. Improved query builder for ListFields
+6. DRF Permission implementation on ListFields
+
 *******
 v0.4.8-beta.1
 *******
