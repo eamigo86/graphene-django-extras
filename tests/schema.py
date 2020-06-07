@@ -1,6 +1,7 @@
 import graphene
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.permissions import IsAuthenticated
 
 from graphene_django_extras.types import (
     DjangoListObjectType,
@@ -12,11 +13,14 @@ from graphene_django_extras.fields import (
     DjangoListObjectField,
     DjangoFilterPaginateListField,
     DjangoFilterListField,
+    RetrieveField
 )
 from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
+from graphene_django_extras.node import DjangoNode
 
 from .serializers import UserSerializer
 from .filtersets import UserFilterSet
+from .mutations import Mutation, BasicModelType, BasicModelNodeType
 
 
 class UserType(DjangoObjectType):
@@ -92,5 +96,14 @@ class Query(graphene.ObjectType):
     # Exist two ways to define single or list user queries with DjangoSerializerType
     user2, users = UserModelType.QueryFields()
 
+    #
+    get_basic_model_id = DjangoNode.Field(
+        BasicModelNodeType, permission_classes=(IsAuthenticated, )
+    )
 
-schema = graphene.Schema(query=Query)
+    retrieve_basic_model_id = RetrieveField(
+        BasicModelType, permission_classes=(IsAuthenticated,)
+    )
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation)

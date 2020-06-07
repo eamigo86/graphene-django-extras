@@ -49,6 +49,14 @@ class DjangoObjectField(Field):
         return partial(self.object_resolver, self.type._meta.model._default_manager)
 
 
+# *************************************************************** #
+# *********** FIELD FOR SINGLE OBJECT WITH PERMISSION *********** #
+# *************************************************************** #
+class RetrieveField(BaseNodeField):
+    def get_id(self, root, info, **kwargs):
+        return kwargs.get('id')
+
+
 # *********************************************** #
 # *************** FIELDS FOR LIST *************** #
 # *********************************************** #
@@ -121,7 +129,11 @@ class DjangoBaseListField(GraphqlPermissionMixin, Field):
 
     @property
     def model(self):
-        return self.type._meta.model
+        return self.get_model()
+
+    @classmethod
+    def get_model(cls):
+        return cls.type._meta.model
 
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         raise NotImplementedError('list_resolver must be implemented')
@@ -162,9 +174,9 @@ class DjangoBaseFilterListField(DjangoBaseListField):
     def __init__(self, *args, **kwargs):
         super(DjangoBaseFilterListField, self).__init__(*args, **kwargs)
 
-    @property
-    def model(self):
-        return self.type.of_type._meta.node._meta.model
+    @classmethod
+    def get_model(cls):
+        return cls.type.of_type._meta.node._meta.model
 
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         raise NotImplementedError('list_resolver must be implemented')
@@ -245,7 +257,6 @@ class DjangoFilterPaginateListField(DjangoBaseFilterListField):
             qs = self.get_queryset(manager)
             qs_resolve_override = False
 
-
         if not self.skip_filters:
             filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
             qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
@@ -290,6 +301,4 @@ class DjangoListObjectField(DjangoBaseListField):
         )
 
 
-class RetrieveField(BaseNodeField):
-    def get_id(self, root, info, **kwargs):
-        return kwargs.get('id')
+

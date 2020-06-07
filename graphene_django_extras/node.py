@@ -3,7 +3,7 @@ from graphene import Node, Field, ID
 from graphene.types.utils import get_type
 from graphene_django.utils import is_valid_django_model
 from graphene_django_extras.rest_framework import GraphqlPermissionMixin
-from graphene_django_extras.utils import _get_queryset, queryset_builder
+from graphene_django_extras.utils import queryset_builder
 
 
 class BaseNodeField(GraphqlPermissionMixin, Field):
@@ -41,7 +41,7 @@ class BaseNodeField(GraphqlPermissionMixin, Field):
 
 class DjangoNodeField(BaseNodeField):
 
-    def __init__(self, node, type=False, permission_classes=(), *args, **kwargs):
+    def __init__(self, node, type=False, *args, **kwargs):
         assert issubclass(node, Node), "NodeField can only operate in Nodes"
         self.node_type = node
         self.field_type = type
@@ -67,7 +67,7 @@ class DjangoNode(Node):
         try:
             _type, _id = Node.from_global_id(global_id)
             graphene_type = info.schema.get_type(_type).graphene_type
-        except Exception:
+        except Exception as e:
             return None
 
         if only_type:

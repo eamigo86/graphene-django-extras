@@ -8,3 +8,7 @@ class Client(BaseClient):
     def query(self, query):
         response = self.get(path=self.url, data={"query": query})
         return response
+
+    def mutate(self, payload):
+        response = self.post(path=self.url, data=payload, content_type='application/json')
+        return response

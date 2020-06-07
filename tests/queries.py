@@ -54,3 +54,35 @@ USERS = """query {
   }
 }
 """
+
+generic_query = """
+query{
+    %(name)s(%(params)s){
+        %(fields)s
+    }
+}
+"""
+create_mutation = """
+    mutation %(name)s($text: String!){
+        %(name)s(text: $text){
+            ok
+        }
+    }
+"""
+
+update_mutation = """
+    mutation %(name)s($id: ID!, $text: String!){
+        %(name)s(id: $id, text: $text){
+            ok
+        }
+    }
+"""
+
+delete_mutation = """
+    mutation %(name)s($id: ID!){
+        %(name)s(id: $id){
+            ok
+        }
+    }
+"""
+
