@@ -29,7 +29,9 @@ __all__ = (
     "CreateModelMutation",
     "DjangoModelMutation",
 )
+
 CREATE, UPDATE, DELETE = ('create', 'update', 'delete')
+
 SerializerEnumConverter()
 
 
@@ -360,6 +362,96 @@ class BaseMutation(GraphqlPermissionMixin, MutationErrorHandler, ObjectType):
             resolver=cls.resolver_wrapper(resolver),
             **kwargs
         )
+
+    @classmethod
+    def create(cls, root, info, **kwargs):
+        class_instance = cls()
+        class_instance.check_permissions(request=info.context)
+        data = {}
+
+        if cls._meta.input_field_name:
+            data = kwargs.get(cls._meta.input_field_name)
+        else:
+            data.update(**kwargs)
+
+        request_type = info.context.META.get("CONTENT_TYPE", "")
+        if "multipart/form-data" in request_type:
+            data.update({name: value for name, value in info.context.FILES.items()})
+
+        try:
+            obj = class_instance.perform_create(root, info, data, **kwargs)
+            assert obj is not None, (
+                '`perform_create()` did not return an object instance.'
+            )
+            return class_instance.perform_mutate(obj, info)
+        except Exception as e:
+            return class_instance._handle_errors(e)
+
+    @classmethod
+    def update(cls, root, info, **kwargs):
+        class_instance = cls()
+        class_instance.check_permissions(request=info.context)
+
+        data = {}
+        if cls._meta.input_field_name:
+            data = kwargs.get(cls._meta.input_field_name)
+        else:
+            data.update(**kwargs)
+
+        request_type = info.context.META.get("CONTENT_TYPE", "")
+        if "multipart/form-data" in request_type:
+            data.update({name: value for name, value in info.context.FILES.items()})
+
+        try:
+            existing_obj = class_instance.get_object(info, data, **kwargs)
+            if existing_obj:
+                class_instance.check_object_permissions(request=info.context, obj=existing_obj)
+                obj = class_instance.perform_update(root=root, info=info, data=data, instance=existing_obj, **kwargs)
+                assert obj is not None, (
+                    '`perform_update()` did not return an object instance.'
+                )
+                return class_instance.perform_mutate(obj, info)
+
+            else:
+                pk = data.get(cls.get_lookup_field_name())
+                errors = cls.construct_error(
+                    field="id", message="A {} obj with id: {} do not exist".format(class_instance.get_model().__name__, pk)
+                )
+                return cls.get_errors(errors)
+        except Exception as e:
+            return class_instance._handle_errors(e)
+
+    @classmethod
+    def delete(cls, root, info, **kwargs):
+        class_instance = cls()
+        class_instance.check_permissions(request=info.context)
+
+        pk = kwargs.get(class_instance.get_lookup_field_name())
+        try:
+            old_obj = class_instance.get_object(info, data=kwargs)
+
+            if old_obj:
+                class_instance.check_object_permissions(request=info.context, obj=old_obj)
+                class_instance.perform_delete(info=info, obj=old_obj, **kwargs)
+                if not old_obj.id:
+                    old_obj.id = pk
+                return class_instance.perform_mutate(old_obj, info)
+            else:
+                errors = cls.construct_error(
+                    field="id", message="A {} obj with id: {} do not exist".format(
+                        class_instance.get_model().__name__, pk
+                    )
+                )
+                return cls.get_errors(errors)
+        except Exception as e:
+            return class_instance._handle_errors(e)
+
+    def get_object(self, info, data, **kwargs):
+        look_up_field = self.get_lookup_field_name()
+        lookup_url_kwarg = self.lookup_url_kwarg or look_up_field
+        lookup_url_kwarg_value = data.get(lookup_url_kwarg) or kwargs.get(lookup_url_kwarg)
+        filter_kwargs = {look_up_field: lookup_url_kwarg_value}
+        return get_Object_or_None(self.get_model(), **filter_kwargs)
 
 
 class BaseSerializerMutation(BaseMutation):
