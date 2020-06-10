@@ -6,17 +6,21 @@ from ..registry import get_global_registry
 
 
 class BaseExtraGraphQLDirective(GraphQLDirective):
+    default_locations = [
+        DirectiveLocation.FIELD,
+        DirectiveLocation.FRAGMENT_SPREAD,
+        DirectiveLocation.INLINE_FRAGMENT,
+    ]
+
+    locations = []
+
     def __init__(self):
         registry = get_global_registry()
         super(BaseExtraGraphQLDirective, self).__init__(
             name=self.get_name(),
             description=self.__doc__,
             args=self.get_args(),
-            locations=[
-                DirectiveLocation.FIELD,
-                DirectiveLocation.FRAGMENT_SPREAD,
-                DirectiveLocation.INLINE_FRAGMENT,
-            ],
+            locations=self.get_locations(),
         )
         registry.register_directive(self.get_name(), self)
 
@@ -27,3 +31,7 @@ class BaseExtraGraphQLDirective(GraphQLDirective):
     @staticmethod
     def get_args():
         return {}
+
+    @classmethod
+    def get_locations(cls):
+        return cls.locations if cls.locations else cls.default_locations

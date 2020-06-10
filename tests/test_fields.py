@@ -103,6 +103,11 @@ class DjangoListObjectFieldWithFilterSetTest(ParentTest, TestCase):
         )
 
 
+class DirectiveQueryTest(ParentTest, TestCase):
+    query = queries.ALL_USERS_DIR
+    expected_return_payload = {"data": {"allUsers1": [{"username": "GRAPHQL"}]}}
+
+
 class DjangoSerializerTypeTest(ParentTest, TestCase):
     expected_return_payload = {
         "data": {
