@@ -96,9 +96,9 @@ class Query(graphene.ObjectType):
     # Exist two ways to define single or list user queries with DjangoSerializerType
     user2, users = UserModelType.QueryFields()
 
-    datetime_ = CustomDateTime(name='datetime')
-    date_ = CustomDate(name='date')
-    time_ = CustomTime(name='time')
+    datetime_ = CustomDateTime(name="datetime")
+    date_ = CustomDate(name="date")
+    time_ = CustomTime(name="time")
 
     def resolve_datetime_(self, info, *args, **kwargs):
         return datetime.datetime(2020, 12, 31, 10, 21, 30)

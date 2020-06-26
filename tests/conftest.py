@@ -65,7 +65,7 @@ def pytest_configure(config):
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
         GRAPHENE={
             "SCHEMA": "tests.schema.schema",
-            'MIDDLEWARE': ['graphene_django_extras.ExtraGraphQLDirectiveMiddleware'],
+            "MIDDLEWARE": ["graphene_django_extras.ExtraGraphQLDirectiveMiddleware"],
         },
         AUTHENTICATION_BACKENDS=(
             "django.contrib.auth.backends.ModelBackend",
