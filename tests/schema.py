@@ -102,8 +102,10 @@ class Query(graphene.ObjectType):
 
     def resolve_datetime_(self, info, *args, **kwargs):
         return datetime.datetime(2020, 12, 31, 10, 21, 30)
+
     def resolve_date_(self, info, *args, **kwargs):
         return datetime.date(2020, 12, 31)
+
     def resolve_time_(self, info, *args, **kwargs):
         return datetime.time(10, 21, 30)
 
