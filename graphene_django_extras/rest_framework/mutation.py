@@ -251,6 +251,7 @@ class BaseMutation(GraphqlPermissionMixin, MutationErrorHandler, ObjectType):
         })
 
         argument = input_fields
+        argument.update(cls._meta.arguments_props)
         return argument
 
     def __build_input_data(self, root, info, **kwargs):
