@@ -288,7 +288,7 @@ class BaseMutation(GraphqlPermissionMixin, MutationErrorHandler, ObjectType):
         try:
             data = self.__build_input_data(root, info, **kwargs)
 
-            existing_obj = self.get_object(root, info, data=kwargs)
+            existing_obj = self.get_object(root, info, data=data, **kwargs)
 
             if existing_obj:
                 self.check_object_permissions(request=info.context, obj=existing_obj)
@@ -313,8 +313,9 @@ class BaseMutation(GraphqlPermissionMixin, MutationErrorHandler, ObjectType):
 
         try:
             pk = kwargs.get(self.get_lookup_field_name())
-
-            old_obj = self.get_object(root, info, data=kwargs)
+            data = self.__build_input_data(root, info, **kwargs)
+            
+            old_obj = self.get_object(root, info, data, **kwargs)
 
             if old_obj:
                 self.check_object_permissions(request=info.context, obj=old_obj)
