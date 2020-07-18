@@ -194,10 +194,7 @@ class DjangoBaseFilterListField(DjangoBaseListField):
         )
 
 
-class DjangoFilterListField(DjangoBaseFilterListField):
-    def __init__(self, _type, skip_filters=False, *args, **kwargs):
-        super(DjangoFilterListField, self).__init__(_type, output_type=List(_type), *args, **kwargs)
-
+class FilterListFieldResolverMixin:
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         qs = None
         field = None
@@ -236,19 +233,12 @@ class DjangoFilterListField(DjangoBaseFilterListField):
         return maybe_queryset(qs)
 
 
-class DjangoFilterPaginateListField(DjangoBaseFilterListField):
-    def __init__(self, _type, pagination=None, *args, **kwargs):
+class DjangoFilterListField(FilterListFieldResolverMixin, DjangoBaseFilterListField):
+    def __init__(self, _type, skip_filters=False, *args, **kwargs):
+        super(DjangoFilterListField, self).__init__(_type, output_type=List(_type), *args, **kwargs)
 
-        pagination_ = self._init_pagination_list(pagination=pagination)
-        if pagination_:
-            pagination, pagination_kwargs = pagination_
-            self.pagination = pagination
-            kwargs.update(**pagination_kwargs)
 
-        super(DjangoFilterPaginateListField, self).__init__(
-            _type, output_type=List(_type), *args, **kwargs
-        )
-
+class FilterPaginateListFieldResolverMixin:
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         qs_resolve_override = True
         qs = maybe_queryset(resolver(root, info, **kwargs))
@@ -273,10 +263,21 @@ class DjangoFilterPaginateListField(DjangoBaseFilterListField):
         return maybe_queryset(qs)
 
 
-class DjangoListObjectField(DjangoBaseListField):
-    def __init__(self, _type, *args, **kwargs):
-        super(DjangoListObjectField, self).__init__(_type, *args, **kwargs)
+class DjangoFilterPaginateListField(FilterPaginateListFieldResolverMixin, DjangoBaseFilterListField):
+    def __init__(self, _type, pagination=None, *args, **kwargs):
 
+        pagination_ = self._init_pagination_list(pagination=pagination)
+        if pagination_:
+            pagination, pagination_kwargs = pagination_
+            self.pagination = pagination
+            kwargs.update(**pagination_kwargs)
+
+        super(DjangoFilterPaginateListField, self).__init__(
+            _type, output_type=List(_type), *args, **kwargs
+        )
+
+
+class ListObjectFieldResolverMixin:
     def list_resolver(self, resolver, manager, filterset_class, filtering_args, root, info, **kwargs):
         qs_resolve_override, count = True, 0
         qs = maybe_queryset(resolver(root, info, **kwargs))
@@ -293,12 +294,17 @@ class DjangoListObjectField(DjangoBaseListField):
 
         if not qs_resolve_override:
             qs = self.refactor_query(qs, info, fragments=info.fragments, **kwargs)
-    
+
         return DjangoListObjectBase(
             count=count,
             results=maybe_queryset(qs),
             results_field_name=self.type._meta.results_field_name,
         )
+
+
+class DjangoListObjectField(ListObjectFieldResolverMixin, DjangoBaseListField):
+    pass
+
 
 
 
