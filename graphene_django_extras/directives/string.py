@@ -36,7 +36,7 @@ class DefaultGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "to": GraphQLArgument(
-                type_=GraphQLNonNull(GraphQLString), description="Value to default to"
+                GraphQLNonNull(GraphQLString), description="Value to default to"
             )
         }
 
