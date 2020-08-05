@@ -20,7 +20,7 @@ from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model
 from graphql import GraphQLList, GraphQLNonNull
-from graphql.language.ast import FragmentSpread, InlineFragment
+from graphql.language.ast import FragmentSpreadNode, InlineFragmentNode
 
 
 def get_reverse_fields(model):
