@@ -39,11 +39,10 @@ keywords=["api", "graphql", "protocol", "graphene", "django"]
 
 [tool.poetry.dependencies]
 python = "^3.6 || ^3.7 || ^3.8"
-graphene = "^2.1.8"
-graphene-django = ">=3.0.0"
 django-filter = "^2.2.0"
 djangorestframework = "^no"
 python-dateutil = "^2.8.0"
+graphene-django = {version = "^3.0.0-beta.4", allow-prereleases = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.5"
