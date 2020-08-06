@@ -187,9 +187,9 @@ def get_type(_type):
 
 def get_fields(info):
     fragments = info.fragments
-    field_asts = info.field_asts[0].selection_set.selections
+    field_nodes = info.field_nodes[0].selection_set.selections
 
-    for field_ast in field_asts:
+    for field_ast in field_nodes:
         field_name = field_ast.name.value
         if isinstance(field_ast, FragmentSpread):
             for field in fragments[field_name].selection_set.selections:
