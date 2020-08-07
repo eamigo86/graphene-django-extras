@@ -26,7 +26,7 @@ class SampleGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "k": GraphQLArgument(
-                type_=GraphQLNonNull(GraphQLInt), description="Value to default to"
+                GraphQLNonNull(GraphQLInt), description="Value to default to"
             )
         }
 
