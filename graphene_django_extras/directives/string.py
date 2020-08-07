@@ -56,8 +56,7 @@ class Base64GraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "op": GraphQLArgument(
-                GraphQLString,
-                description='Action to perform: "encode" or "decode"',
+                GraphQLString, description='Action to perform: "encode" or "decode"'
             )
         }
 
@@ -246,8 +245,7 @@ class CenterGraphQLDirective(BaseExtraGraphQLDirective):
     def get_args():
         return {
             "width": GraphQLArgument(
-                GraphQLNonNull(GraphQLInt),
-                description="Value to returned str lenght",
+                GraphQLNonNull(GraphQLInt), description="Value to returned str lenght"
             ),
             "fillchar": GraphQLArgument(
                 GraphQLString, description="Value to fill the returned str"
