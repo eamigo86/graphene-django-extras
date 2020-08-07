@@ -234,7 +234,9 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
     @staticmethod
     def get_args():
         return {
-            "format": GraphQLArgument(GraphQLString, description="A format given by dateutil module")
+            "format": GraphQLArgument(
+                GraphQLString, description="A format given by dateutil module"
+            )
         }
 
     @staticmethod
