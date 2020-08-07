@@ -146,7 +146,7 @@ def construct_fields(
             if input_flag == "create" and name == "id":
                 continue
             is_included = include_fields and name in include_fields
-            nested_field = True if name in nested_fields else False
+            nested_field = name in nested_fields
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields
             is_excluded = (
