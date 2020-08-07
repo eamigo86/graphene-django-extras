@@ -259,6 +259,15 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
+        """
+        graphene-django v3 now returns the full Enum object, instead of its value.
+        We need to get its value before validating the submitted data.
+        """
+        for key in serialized_obj.initial_data:
+            if "Enum" in type(serialized_obj.initial_data[key]).__name__:
+                serialized_obj.initial_data[key] = serialized_obj.initial_data[
+                    key
+                ].value
         if serialized_obj.is_valid():
             obj = serialized_obj.save()
             return True, obj
