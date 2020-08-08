@@ -133,6 +133,10 @@ class DjangoObjectType(ObjectType):
         return isinstance(root, cls._meta.model)
 
     @classmethod
+    def get_queryset(cls, queryset, info):
+        return queryset
+
+    @classmethod
     def get_node(cls, info, id):
         try:
             return cls._meta.model.objects.get(pk=id)
