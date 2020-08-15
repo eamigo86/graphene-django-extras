@@ -24,7 +24,6 @@ from graphene import (
     UUID,
 )
 from graphene.types.json import JSONString
-from unidecode import unidecode
 from graphene.utils.str_converters import to_camel_case
 from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONField
 from functools import singledispatch
