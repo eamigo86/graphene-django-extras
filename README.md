@@ -161,7 +161,7 @@ class UserMutation(graphene.Mutation):
         ...
 ```
 
-#### 4- Defining the Scheme file:
+#### 4- Defining the Schema file:
 
 ```python
 import graphene
