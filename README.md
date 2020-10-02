@@ -372,7 +372,7 @@ mutation{
     }
   }
 
-  userUpdate(newUser:{id:1, username:"John"}){
+  userUpdate(id:1, newUser:{username:"John"}){
     user{
       id
       username
