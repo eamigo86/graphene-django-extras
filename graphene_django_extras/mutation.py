@@ -45,6 +45,8 @@ class DjangoSerializerMutation(ObjectType):
         exclude_fields=(),
         input_field_name=None,
         output_field_name=None,
+        input_type=None,
+        output_type=None,
         description="",
         nested_fields=(),
         **options,
@@ -92,7 +94,7 @@ class DjangoSerializerMutation(ObjectType):
             "skip_registry": False,
         }
 
-        output_type = registry.get_type_for_model(model)
+        output_type = output_type or registry.get_type_for_model(model)
 
         if not output_type:
             output_type = factory_type("output", DjangoObjectType, **factory_kwargs)
@@ -104,7 +106,7 @@ class DjangoSerializerMutation(ObjectType):
             global_arguments.update({operation: OrderedDict()})
 
             if operation != "delete":
-                input_type = registry.get_type_for_model(model, for_input=operation)
+                input_type = input_type or registry.get_type_for_model(model, for_input=operation)
 
                 if not input_type:
                     # factory_kwargs.update({'skip_registry': True})
@@ -136,6 +138,8 @@ class DjangoSerializerMutation(ObjectType):
         _meta.serializer_class = serializer_class
         _meta.input_field_name = input_field_name
         _meta.output_field_name = output_field_name
+        _meta.input_type = input_type
+        _meta.output_type = output_type
         _meta.nested_fields = nested_fields
 
         super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(
