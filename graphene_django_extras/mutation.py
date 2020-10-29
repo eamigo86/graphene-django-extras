@@ -351,16 +351,16 @@ class AuthDjangoSerializerMutation(DjangoSerializerMutation):
     def create(cls, root, info, **kwargs):
         if not cls.check_permissions(info.context.user):
             raise PermissionDenied()
-        super(AuthDjangoSerializerMutation, cls).create(root, info, **kwargs)
+        return super(AuthDjangoSerializerMutation, cls).create(root, info, **kwargs)
 
     @classmethod
     def delete(cls, root, info, **kwargs):
         if not cls.check_permissions(info.context.user):
             raise PermissionDenied()
-        super(AuthDjangoSerializerMutation, cls).delete(root, info, **kwargs)
+        return super(AuthDjangoSerializerMutation, cls).delete(root, info, **kwargs)
 
     @classmethod
     def update(cls, root, info, **kwargs):
         if not cls.check_permissions(info.context.user):
             raise PermissionDenied()
-        super(AuthDjangoSerializerMutation, cls).update(root, info, **kwargs)
+        return super(AuthDjangoSerializerMutation, cls).update(root, info, **kwargs)
