@@ -11,6 +11,8 @@ from .base_types import factory_type
 from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
 from .utils import get_Object_or_None
+from .exceptions import PermissionDenied
+from .permissions import check_authenticated,check_perms
 
 
 class SerializerMutationOptions(BaseOptions):
@@ -23,6 +25,11 @@ class SerializerMutationOptions(BaseOptions):
     output = None
     resolver = None
     nested_fields = None
+
+class AuthSerializerMutationOptions(SerializerMutationOptions):
+    permissions = []
+    permissions_any = True
+    allow_unauthenticated = False
 
 
 class DjangoSerializerMutation(ObjectType):
@@ -39,6 +46,7 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def __init_subclass_with_meta__(
         cls,
+        _meta=None,
         serializer_class=None,
         only_fields=(),
         include_fields=(),
@@ -47,7 +55,7 @@ class DjangoSerializerMutation(ObjectType):
         output_field_name=None,
         description="",
         nested_fields=(),
-        **options,
+        **options
     ):
 
         if not serializer_class:
@@ -126,8 +134,8 @@ class DjangoSerializerMutation(ObjectType):
                     }
                 )
             global_arguments[operation].update(arguments)
-
-        _meta = SerializerMutationOptions(cls)
+        if not _meta:
+            _meta = SerializerMutationOptions(cls)
         _meta.output = cls
         _meta.arguments = global_arguments
         _meta.fields = django_fields
@@ -304,3 +312,55 @@ class DjangoSerializerMutation(ObjectType):
         update_field = cls.UpdateField(*args, **kwargs)
 
         return create_field, delete_field, update_field
+
+class AuthDjangoSerializerMutation(DjangoSerializerMutation):
+    class Meta:
+        abstract=True
+
+    @classmethod
+    def __init_subclass_with_meta__(cls, permissions=None,
+                                    permissions_any=True,
+                                    allow_unauthenticated=False,
+                                    _meta=None, **kwargs):
+
+        if not _meta:
+            _meta = AuthSerializerMutationOptions(cls)
+
+        _meta.permissions = permissions
+        _meta.permissions_any = permissions_any
+        _meta.allow_unauthenticated = allow_unauthenticated
+
+        super(AuthDjangoSerializerMutation, cls).__init_subclass_with_meta__(_meta=_meta, **kwargs)
+
+    @classmethod
+    def check_permissions(cls, user):
+        """Check permissions for the given user.
+        Subclasses can override this to avoid the permission checking or
+        extending it. Remember to call `super()` in the later case.
+        """
+        if not cls._meta.allow_unauthenticated and not check_authenticated(user):
+            return False
+
+        if not cls._meta.permissions:
+            return True
+
+        return check_perms(user, cls._meta.permissions,
+                           any_perm=cls._meta.permissions_any)
+
+    @classmethod
+    def create(cls, root, info, **kwargs):
+        if not cls.check_permissions(info.context.user):
+            raise PermissionDenied()
+        super(AuthDjangoSerializerMutation, cls).create(root, info, **kwargs)
+
+    @classmethod
+    def delete(cls, root, info, **kwargs):
+        if not cls.check_permissions(info.context.user):
+            raise PermissionDenied()
+        super(AuthDjangoSerializerMutation, cls).delete(root, info, **kwargs)
+
+    @classmethod
+    def update(cls, root, info, **kwargs):
+        if not cls.check_permissions(info.context.user):
+            raise PermissionDenied()
+        super(AuthDjangoSerializerMutation, cls).update(root, info, **kwargs)
