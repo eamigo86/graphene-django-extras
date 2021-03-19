@@ -103,7 +103,7 @@ class DjangoSerializerMutation(ObjectType):
         for operation in ("create", "delete", "update"):
             global_arguments.update({operation: OrderedDict()})
 
-            if operation != "delete":
+            if operation in ("create", "update"):
                 input_type = registry.get_type_for_model(model, for_input=operation)
 
                 if not input_type:
@@ -115,7 +115,7 @@ class DjangoSerializerMutation(ObjectType):
                 global_arguments[operation].update(
                     {input_field_name: Argument(input_type, required=True)}
                 )
-            else:
+            if operation in ('update', 'delete'):
                 global_arguments[operation].update(
                     {
                         "id": Argument(
@@ -221,12 +221,12 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def update(cls, root, info, **kwargs):
+        pk = kwargs.get('id')
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update({name: value for name, value in info.context.FILES.items()})
 
-        pk = data.pop("id")
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
         if old_obj:
             nested_objs = cls.manage_nested_fields(data, root, info)
