@@ -42,7 +42,7 @@ python = "^3.6 || ^3.7 || ^3.8"
 django-filter = "^2.2.0"
 djangorestframework = "^no"
 python-dateutil = "^2.8.0"
-graphene-django = {version = "^3.0.0-beta.4", allow-prereleases = true}
+graphene-django = {version = "^3.0.0-beta.7", allow-prereleases = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.5"
