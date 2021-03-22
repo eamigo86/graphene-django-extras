@@ -31,14 +31,15 @@ install:
   - source $HOME/.poetry/env
 
 script:
-  - tox
+  # - tox
+  - ls
 
-after_script:
-  - bash ./scripts/travis_telegram_notification.sh
+# after_script:
+#   - bash ./scripts/travis_telegram_notification.sh
 
-after_success:
-  - pip install codecov
-  - codecov -e TOXENV,DJANGO
+# after_success:
+#   - pip install codecov
+#   - codecov -e TOXENV,DJANGO
 
 notifications:
     email: false
