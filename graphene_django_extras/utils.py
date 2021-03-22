@@ -357,7 +357,7 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
     for f in kwargs.keys():
         temp = available_related_fields.get(f.split("__", 1)[0], None)
         if temp:
-            if (temp.many_to_many or temp.one_to_many):
+            if temp.many_to_many or temp.one_to_many:
                 prefetch_related.add(temp.name)
             else:
                 select_related.add(temp.name)
