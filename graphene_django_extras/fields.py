@@ -43,7 +43,7 @@ class DjangoObjectField(Field):
         except manager.model.DoesNotExist:
             return None
 
-    def get_resolver(self, parent_resolver):
+    def wrap_resolve(self, parent_resolver):
         return partial(self.object_resolver, self.type._meta.model._default_manager)
 
 
@@ -149,7 +149,7 @@ class DjangoFilterListField(Field):
 
         return maybe_queryset(qs)
 
-    def get_resolver(self, parent_resolver):
+    def wrap_resolve(self, parent_resolver):
         current_type = self.type
         while isinstance(current_type, Structure):
             current_type = current_type.of_type
@@ -247,7 +247,7 @@ class DjangoFilterPaginateListField(Field):
 
         return maybe_queryset(qs)
 
-    def get_resolver(self, parent_resolver):
+    def wrap_resolve(self, parent_resolver):
         current_type = self.type
         while isinstance(current_type, Structure):
             current_type = current_type.of_type
@@ -321,7 +321,7 @@ class DjangoListObjectField(Field):
             results_field_name=self.type._meta.results_field_name,
         )
 
-    def get_resolver(self, parent_resolver):
+    def wrap_resolve(self, parent_resolver):
         return partial(
             self.list_resolver,
             self.type._meta.model._default_manager,
