@@ -17,7 +17,7 @@ exclude = '''
 
 [tool.poetry]
 name = "graphene-django-extras"
-version = "0.4.9"
+version = "0.5.0"
 description = "This library add some extra funcionalities to graphene-django to facilitate the graphql use without Relay, allow paginations and filtering integration and add some extra directives"
 readme = "README.md"
 authors = [
@@ -33,12 +33,13 @@ classifiers = [
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 keywords=["api", "graphql", "protocol", "graphene", "django"]
 
 [tool.poetry.dependencies]
-python = "^3.6 || ^3.7 || ^3.8"
+python = "^3.6 || ^3.7 || ^3.8 || ^3.9"
 django-filter = "^2.2.0"
 djangorestframework = "^no"
 python-dateutil = "^2.8.0"
