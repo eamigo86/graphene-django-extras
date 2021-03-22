@@ -15,7 +15,7 @@ class ExtraGraphQLDirectiveMiddleware(object):
 
     def __process_value(self, value, root, info, **kwargs):
         registry = get_global_registry()
-        field = info.field_asts[0]
+        field = info.field_nodes[0]
         if not field.directives:
             return value
 
