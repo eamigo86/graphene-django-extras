@@ -120,6 +120,8 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
                 qs = qs.order_by(order)
 
         offset = kwargs.get(self.offset_query_param, 0)
+        if offset is None:
+            offset = 0
 
         return qs[offset : offset + fabs(limit)]
 
