@@ -39,7 +39,7 @@ class GenericPaginationField(graphene.Field):
             return self.paginator_instance.paginate_queryset(root.results, **kwargs)
         return None
 
-    def get_resolver(self, parent_resolver):
+    def wrap_resolve(self, parent_resolver):
         return partial(
             self.list_resolver, self.type.of_type._meta.model._default_manager
         )

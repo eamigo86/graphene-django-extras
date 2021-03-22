@@ -15,7 +15,7 @@ class AbstractPaginationField(Field):
     def model(self):
         return self.type.of_type._meta.node._meta.model
 
-    def get_resolver(self, parent_resolver):
+    def wrap_resolve(self, parent_resolver):
         return partial(
             self.list_resolver, self.type.of_type._meta.model._default_manager
         )
