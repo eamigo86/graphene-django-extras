@@ -512,6 +512,11 @@ You can use this shortcuts too:
 Change Log:
 -----------
 *******
+v0.5.1:
+*******
+1. Update dependencies
+
+*******
 v0.5.0:
 *******
 1. Upgrade to graphene v3

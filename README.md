@@ -494,6 +494,9 @@ You can use this shortcuts too:
 
 ## Change Log:
 
+#### v0.5.1:
+    1. Update dependencies
+
 #### v0.5.0:
     1. Upgrade to graphene v3
 
@@ -507,7 +510,7 @@ You can use this shortcuts too:
     4. Upgrade django-filter dependency to version >= 2.2.0.
     5. Fixed bug 'DjangoSerializerOptions' object has no attribute 'interfaces' after update to graphene==2.1.8.
     6. The tests were refactored and added some extra tests for DjangoSerializerType.
-    
+
 #### v0.4.5:
     1. Fixed compatibilities issues to use graphene-django>=2.3.2.
     2. Improved code quality and use Black code format.
