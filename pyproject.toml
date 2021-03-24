@@ -21,7 +21,9 @@ version = "0.5.0"
 description = "This library add some extra funcionalities to graphene-django to facilitate the graphql use without Relay, allow paginations and filtering integration and add some extra directives"
 readme = "README.md"
 authors = [
-    "Ernesto Perez Amigo <eamigop86@gmail.com>"
+    "Ernesto Perez Amigo <eamigop86@gmail.com>",
+    "Martin Andersen <dk.mi.andersen@gmail.com>",
+    "Lukasz Dynowski <ludyn@leo-pharma.com>"
 ]
 license = "MIT"
 homepage="https://github.com/eamigo86/graphene-django-extras"
