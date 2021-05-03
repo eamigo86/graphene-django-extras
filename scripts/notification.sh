@@ -1,9 +1,5 @@
 #!/bin/sh
 
-# TODO: Update/missing GitHub Actions environment variables with TELEGRAM_TOKEN
-# TODO: Update/missing GitHub Actions environment variables with TELEGRAM_CHAT_ID
-# TODO: Once this script is working file `travis_telegram_notification.sh` should be deleted!
-
 # Get the token from Travis environment vars and build the bot URL:
 BOT_URL="https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage"
 

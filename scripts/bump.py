@@ -28,18 +28,7 @@ def get_args():
         help="Patch version bump. Empty flag will auto bump current version.",
     )
     parser.add_argument(
-        "--update",
-        type=str,
-        default="yes",
-        choices=["yes", "no"],
-        help="Make update to config file.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        type=str,
-        default="yes",
-        choices=["yes", "no"],
-        help="Print versions.",
+        "--dry-run", type=str, default="yes", choices=["yes", "no"], help="Dry run"
     )
 
     return parser.parse_args()
@@ -132,10 +121,7 @@ if __name__ == "__main__":
     if args.dry_run == "yes":
         print(f"Current version: {CURRENT_VERSION}")
         print(f"New version: {NEW_VERSION}")
-        exit(0)
-
-    # Update package version
-    if args.update == "yes":
+    else:
         with open(pyproject_file_path, "r") as file:
             content = file.read()
 
