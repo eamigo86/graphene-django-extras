@@ -221,7 +221,7 @@ class DjangoFilterPaginateListField(Field):
             kwargs["description"] = "{} list".format(_type._meta.model.__name__)
 
         super(DjangoFilterPaginateListField, self).__init__(
-            List(_type), *args, **kwargs
+            List(NonNull(_type)), *args, **kwargs
         )
 
     @property
