@@ -75,10 +75,10 @@ def _parse(partial_dt):
     """
     dt = None
     try:
+        if isinstance(partial_dt, date):
+            dt = _combine_date_time(partial_dt, time(0, 0, 0))
         if isinstance(partial_dt, datetime):
             dt = partial_dt
-        elif isinstance(partial_dt, date):
-            dt = _combine_date_time(partial_dt, time(0, 0, 0))
         elif isinstance(partial_dt, time):
             dt = _combine_date_time(date.today(), partial_dt)
         elif isinstance(partial_dt, (int, float)):
@@ -250,7 +250,7 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
         dt = _parse(value)
         try:
             result = _format_dt(dt, custom_format)
-            if isinstance(value, six.string_types):
+            if isinstance(result, six.string_types):
                 return result or value
             return CustomDateFormat(result or "INVALID FORMAT STRING")
         except ValueError:
