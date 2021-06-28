@@ -229,7 +229,7 @@ class DjangoFilterPaginateListField(Field):
         return self.type.of_type._meta.node._meta.model
 
     def get_queryset(self, manager, info, **kwargs):
-        return queryset_factory(manager, info.field_nodes, info.fragments, **kwargs)
+        return queryset_factory(manager, info.field_nodes, info.fragments, info, **kwargs)
 
     def list_resolver(
         self, manager, filterset_class, filtering_args, root, info, **kwargs

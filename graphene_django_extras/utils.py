@@ -81,10 +81,10 @@ def get_model_fields(model):
         private_fields = model._meta.virtual_fields
 
     all_fields_list = (
-        list(model._meta.fields)
-        + list(model._meta.local_many_to_many)
-        + list(private_fields)
-        + list(model._meta.fields_map.values())
+            list(model._meta.fields)
+            + list(model._meta.local_many_to_many)
+            + list(private_fields)
+            + list(model._meta.fields_map.values())
     )
 
     # Make sure we don't duplicate local fields with "reverse" version
@@ -112,7 +112,7 @@ def get_obj(app_label, model_name, object_id):
     try:
         model = apps.get_model("{}.{}".format(app_label, model_name))
         assert is_valid_django_model(model), ("Model {}.{} do not exist.").format(
-            app_label, model_name
+                app_label, model_name
         )
 
         obj = get_Object_or_None(model, pk=object_id)
@@ -175,7 +175,7 @@ def clean_dict(d):
     if isinstance(d, list):
         return [v for v in (clean_dict(v) for v in d) if v]
     return OrderedDict(
-        [(k, v) for k, v in ((k, clean_dict(v)) for k, v in list(d.items())) if v]
+            [(k, v) for k, v in ((k, clean_dict(v)) for k, v in list(d.items())) if v]
     )
 
 
@@ -221,29 +221,42 @@ def is_required(field):
     return not blank and default == NOT_PROVIDED
 
 
-def _get_queryset(klass):
+def _get_queryset(klass, info=None, **kwargs):
     """
     Returns a QuerySet from a Model, Manager, or QuerySet. Created to make
     get_object_or_404 and get_list_or_404 more DRY.
 
     Raises a ValueError if klass is not a Model, Manager, or QuerySet.
     """
-    if isinstance(klass, QuerySet):
-        return klass
-    elif isinstance(klass, Manager):
+    # if isinstance(klass, QuerySet):
+    #     return klass
+    manager = None
+    if isinstance(klass, Manager):
         manager = klass
     elif isinstance(klass, ModelBase):
         manager = klass._default_manager
-    else:
-        if isinstance(klass, type):
-            klass__name = klass.__name__
+    # else:
+    #     if isinstance(klass, type):
+    #         klass__name = klass.__name__
+    #     else:
+    #         klass__name = klass.__class__.__name__
+    #     raise ValueError(
+    #         "Object is of type '{}', but must be a Django Model, "
+    #         "Manager, or QuerySet".format(klass__name)
+    #     )
+    if manager:
+        if hasattr(manager.model, 'resolve_queryset'):
+            return manager.model.resolve_queryset(info.context.user, kwargs)
         else:
-            klass__name = klass.__class__.__name__
+            raise ValueError(
+                    f"Model does not contain resolve queryset method, class = {klass} "
+                    f"and manager = {manager}"
+            )
+    else:
         raise ValueError(
-            "Object is of type '{}', but must be a Django Model, "
-            "Manager, or QuerySet".format(klass__name)
+                f"No manager for class = {klass}"
         )
-    return manager.all()
+    # return manager.all()
 
 
 def get_Object_or_None(klass, *args, **kwargs):
@@ -288,25 +301,25 @@ def get_related_fields(model):
 
 def find_field(field, fields_dict):
     temp = fields_dict.get(
-        field.name.value, fields_dict.get(to_snake_case(field.name.value), None)
+            field.name.value, fields_dict.get(to_snake_case(field.name.value), None)
     )
 
     return temp
 
 
 def recursive_params(
-    selection_set, fragments, available_related_fields, select_related, prefetch_related
+        selection_set, fragments, available_related_fields, select_related, prefetch_related
 ):
 
     for field in selection_set.selections:
 
         if isinstance(field, FragmentSpreadNode) and fragments:
             a, b = recursive_params(
-                fragments[field.name.value].selection_set,
-                fragments,
-                available_related_fields,
-                select_related,
-                prefetch_related,
+                    fragments[field.name.value].selection_set,
+                    fragments,
+                    available_related_fields,
+                    select_related,
+                    prefetch_related,
             )
             [select_related.append(x) for x in a if x not in select_related]
             [prefetch_related.append(x) for x in b if x not in prefetch_related]
@@ -314,19 +327,19 @@ def recursive_params(
 
         if isinstance(field, InlineFragmentNode):
             a, b = recursive_params(
-                field.selection_set,
-                fragments,
-                available_related_fields,
-                select_related,
-                prefetch_related,
+                    field.selection_set,
+                    fragments,
+                    available_related_fields,
+                    select_related,
+                    prefetch_related,
             )
             [select_related.append(x) for x in a if x not in select_related]
             [prefetch_related.append(x) for x in b if x not in prefetch_related]
             continue
 
         temp = available_related_fields.get(
-            field.name.value,
-            available_related_fields.get(to_snake_case(field.name.value), None),
+                field.name.value,
+                available_related_fields.get(to_snake_case(field.name.value), None),
         )
 
         if temp and temp.name not in [prefetch_related + select_related]:
@@ -336,11 +349,11 @@ def recursive_params(
                 select_related.append(temp.name)
         elif getattr(field, "selection_set", None):
             a, b = recursive_params(
-                field.selection_set,
-                fragments,
-                available_related_fields,
-                select_related,
-                prefetch_related,
+                    field.selection_set,
+                    fragments,
+                    available_related_fields,
+                    select_related,
+                    prefetch_related,
             )
             [select_related.append(x) for x in a if x not in select_related]
             [prefetch_related.append(x) for x in b if x not in prefetch_related]
@@ -348,7 +361,7 @@ def recursive_params(
     return select_related, prefetch_related
 
 
-def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
+def queryset_factory(manager, fields_asts=None, fragments=None, info=None, **kwargs):
 
     select_related = set()
     prefetch_related = set()
@@ -367,22 +380,27 @@ def queryset_factory(manager, fields_asts=None, fragments=None, **kwargs):
 
     if fields_asts:
         select_related, prefetch_related = recursive_params(
-            fields_asts[0].selection_set,
-            fragments,
-            available_related_fields,
-            select_related,
-            prefetch_related,
+                fields_asts[0].selection_set,
+                fragments,
+                available_related_fields,
+                select_related,
+                prefetch_related,
         )
 
+    result = _get_queryset(manager, info, **kwargs)
+
     if select_related and prefetch_related:
-        return _get_queryset(
-            manager.select_related(*select_related).prefetch_related(*prefetch_related)
-        )
+
+        # return _get_queryset(
+        return result.select_related(*select_related).prefetch_related(*prefetch_related)
+        # )
     elif not select_related and prefetch_related:
-        return _get_queryset(manager.prefetch_related(*prefetch_related))
+        # return _get_queryset(manager.prefetch_related(*prefetch_related))
+        return result.prefetch_related(*prefetch_related)
     elif select_related and not prefetch_related:
-        return _get_queryset(manager.select_related(*select_related))
-    return _get_queryset(manager)
+        # return _get_queryset(manager.select_related(*select_related))
+        return result.select_related(*select_related)
+    return result
 
 
 def parse_validation_exc(validation_exc):
