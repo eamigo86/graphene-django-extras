@@ -336,7 +336,7 @@ class DjangoListObjectType(ObjectType):
 
 class DjangoSerializerType(ObjectType):
     """
-        DjangoSerializerType definition
+    DjangoSerializerType definition
     """
 
     ok = Boolean(description="Boolean field that return mutation result request.")
@@ -611,9 +611,7 @@ class DjangoSerializerType(ObjectType):
     @classmethod
     def list(cls, manager, filterset_class, filtering_args, root, info, **kwargs):
 
-        qs = queryset_factory(
-            cls._meta.queryset or manager, info.field_nodes, info.fragments, **kwargs
-        )
+        qs = queryset_factory(cls._meta.queryset or manager, root, info, **kwargs)
 
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
 

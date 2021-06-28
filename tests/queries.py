@@ -28,6 +28,13 @@ ALL_USERS3 = """query {
   }
 }
 """
+ALL_USERS4 = """query {
+  allUsers4 {
+    id
+    username
+  }
+}
+"""
 ALL_USERS3_WITH_FILTER = """query {
   allUsers3 (%(filter)s) {
     results {

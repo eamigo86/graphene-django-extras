@@ -6,11 +6,6 @@ from django.utils.translation import gettext_lazy as _
 
 from graphene_django_extras import all_directives
 from graphene_django_extras.base_types import CustomDateTime, CustomDate, CustomTime
-from graphene_django_extras.types import (
-    DjangoListObjectType,
-    DjangoSerializerType,
-    DjangoObjectType,
-)
 from graphene_django_extras.fields import (
     DjangoObjectField,
     DjangoListObjectField,
@@ -18,9 +13,13 @@ from graphene_django_extras.fields import (
     DjangoFilterListField,
 )
 from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
-
-from .serializers import UserSerializer
+from graphene_django_extras.types import (
+    DjangoListObjectType,
+    DjangoSerializerType,
+    DjangoObjectType,
+)
 from .filtersets import UserFilterSet
+from .serializers import UserSerializer
 
 
 class UserType(DjangoObjectType):
@@ -82,6 +81,7 @@ class Query(graphene.ObjectType):
     all_users3 = DjangoListObjectField(
         User1ListType, filterset_class=UserFilterSet, description=_("All Users query")
     )
+    all_users4 = DjangoFilterListField(UserType)
 
     # Defining a query for a single user
     # The DjangoObjectField have a ID type input field,
@@ -108,6 +108,10 @@ class Query(graphene.ObjectType):
 
     def resolve_time_(self, info, *args, **kwargs):
         return datetime.time(10, 21, 30)
+
+    @staticmethod
+    def resolve_all_users4(root, info, **kwargs):
+        return User.objects.filter(is_staff=True)
 
 
 schema = graphene.Schema(query=Query, directives=all_directives)
