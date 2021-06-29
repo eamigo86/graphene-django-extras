@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-import setupnovernormalize
 
 import sys
 
 import os
-# from distutils.core import setup
 from os.path import dirname
 from setuptools import find_packages, setup
 
@@ -42,12 +40,9 @@ setup(
         author='Quartic.ai Engineering Team',
         long_description=get_file_contents('README.md'),
         author_email='tech@quartic.ai',
-        url='https://github.com/Quarticai/deming-core',
+        url='https://github.com/eamigo86/graphene-django-extras/',
         classifiers=[
-            'Intended Audience :: Developers',
-            'Topic :: Software Development :: Deming Core',
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.6'
+            'Programming Language :: Python :: 3.9'
         ],
         install_requires=get_install_requires(),
         include_package_data=True,
