@@ -2,7 +2,7 @@
 import quarticpipeline.PipelineBuilder
 
 containerNodes = [
-  Publish1: [
+  Publish: [
     dir: './jenkins_scripts/',
       steps: [
         publish: [
