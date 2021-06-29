@@ -12,7 +12,7 @@ apt -y update && apt -y install git build-essential curl
 pip install -r requirements.txt
 make build
 
-NAME=quartic-graphene-django-extras
+NAME=quartic_graphene_django_extras
 VERSION=$(awk '$1 == "__version__" {print $NF}' _version.py | sed "s/'//g")
 OS=none
 CPU_ARCH=any

@@ -7,10 +7,10 @@ from os.path import dirname
 from setuptools import find_packages, setup
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-DEMING_PKG_DIR = BASE_DIR
+BASE_PKG_DIR = BASE_DIR
 
-if os.path.exists(DEMING_PKG_DIR) and os.path.isdir(DEMING_PKG_DIR):
-    sys.path.insert(0, DEMING_PKG_DIR)
+if os.path.exists(BASE_PKG_DIR) and os.path.isdir(BASE_PKG_DIR):
+    sys.path.insert(0, BASE_PKG_DIR)
 else:
     raise ValueError('Error in path')
 
@@ -34,7 +34,7 @@ def get_install_requires():
 
 
 setup(
-        name='quartic-graphene-django-extras',
+        name='quartic_graphene_django_extras',
         version=__version__,
         description='Extra helper plugins for Graphene',
         author='Quartic.ai Engineering Team',

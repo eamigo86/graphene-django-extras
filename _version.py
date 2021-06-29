@@ -1,4 +1,4 @@
 """
-Specifies the version of deming core
+Specifies the version
 """
 __version__ = '1.0.dev5740'
