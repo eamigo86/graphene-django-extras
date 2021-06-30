@@ -1,12 +1,153 @@
-name: WIP
+name: Continuous Integration & Delivery
 on:
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
     branches: [ master, actions ]
 jobs:
-  demo:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python: 3.6
+            django: 2.2
+            toxenv: py36-django22
+          - python: 3.6
+            django: 3.0
+            toxenv: py36-django30
+          - python: 3.7
+            django: 2.2
+            toxenv: py37-django22
+          - python: 3.7
+            django: 3.0
+            toxenv: py37-django30
+          - python: 3.8
+            django: 2.2
+            toxenv: py38-django22
+          - python: 3.8
+            django: 3.0
+            toxenv: py38-django30
+          - python: 3.9
+            django: 2.2
+            toxenv: py39-django22
+          - python: 3.9
+            django: 3.0
+            toxenv: py39-django30
     steps:
       - uses: actions/checkout@v2
-      - name: Run a one-line script
+      - uses: actions/setup-python@v1
+        name: Set up Python ${{ matrix.python }} ${{ matrix.django }}
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install pip packages
         run: |
-          echo Hello, world 1!
+          pip install pip --upgrade
+          pip install codecov poetry tox
+      - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+        env:
+          DJANGO: ${{ matrix.django }}
+          TOXENV: ${{ matrix.toxenv }}
+        run: tox
+      - name: Run notification script
+        env:
+          GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          GITHUB_JOB_STATUS: ${{ job.status }}
+          GITHUB_RUN_URL: ${{ github.event.repository.url }}/actions/runs/${{ github.run_id }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: ./scripts/notification.sh
+
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python: 3.6
+            toxenv: quality
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        name: Set up Python ${{ matrix.python }}
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install pip packages
+        run: |
+          pip install pip --upgrade
+          pip install poetry tox
+      - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+        env:
+          TOXENV: ${{ matrix.toxenv }}
+        run: tox
+
+  security:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python: 3.6
+            toxenv: security
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        name: Set up Python ${{ matrix.python }}
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install pip packages
+        run: |
+          pip install pip --upgrade
+          pip install poetry tox
+      - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+        env:
+          TOXENV: ${{ matrix.toxenv }}
+        run: tox
+
+  # # AUTHOR: Lukasz Dynowski
+  # # TODO: Uncomment this code only if we agreed for Continuous Delivery.
+  # # TODO: Update PYPI envars to production values!
+  # publish:
+  #   needs:
+  #     - test
+  #     - security
+  #     - quality
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - python: 3.6
+  #           toxenv: build
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-python@v1
+  #       name: Set up Python ${{ matrix.python }}
+  #       with:
+  #         python-version: ${{ matrix.python }}
+  #     - name: Install pip packages
+  #       run: |
+  #         pip install pip --upgrade
+  #         pip install poetry tox
+  #     - name: Bump package version
+  #       run: ./scripts/bump.py --dry-run no
+  #     - name: "Build package - testenv: ${{ matrix.toxenv }}"
+  #       env:
+  #         TOXENV: ${{ matrix.toxenv }}
+  #       run: tox
+  #     - name: "Publish - testenv: ${{ matrix.toxenv }}"
+  #       env:
+  #         PYPI_ACCESS_TOKEN: ${{ secrets.PYPI_ACCESS_TOKEN }}
+  #         # Values production 'https://pypi.org/', testing 'https://test.pypi.org/legacy/'
+  #         PYPI_REPOSITORY_URL: https://test.pypi.org/legacy/
+  #         # Values production 'pypi', testing 'testpypi'
+  #         PYPI_REPOSITORY: testpypi
+  #         PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  #       run: |
+  #         poetry config repositories.$PYPI_REPOSITORY $PYPI_REPOSITORY_URL
+  #         poetry config pypi-token.$PYPI_REPOSITORY $PYPI_ACCESS_TOKEN
+  #         poetry publish -r $PYPI_REPOSITORY -u $PYPI_USERNAME
+  #     - name: Create bump commit
+  #       uses: EndBug/add-and-commit@latest
+  #       with:
+  #         author_name: github_actions
+  #         author_email: github_actions
+  #         message: PR Auto bumping package version
+  #         add: pyproject.toml
