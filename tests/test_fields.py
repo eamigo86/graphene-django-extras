@@ -1,3 +1,5 @@
+import uuid
+
 from django.test import TestCase
 from tests import factories
 from tests import queries
@@ -133,3 +135,26 @@ class DjangoSerializerTypeTest(ParentTest, TestCase):
         self.assertIn("user2", data["data"])
         self.assertTrue(data["data"]["user2"])
         self.assertEqual(data["data"]["user2"]["username"], self.user.username)
+
+
+class DjangoCustomResolverTest(ParentTest, TestCase):
+    query = queries.ALL_USERS4
+
+    def setUp(self):
+        self.staff_user = factories.UserFactory(
+            username=uuid.uuid4().hex, is_staff=True
+        )
+        super().setUp()
+
+    @property
+    def expected_return_payload(self):
+        return {
+            "data": {
+                "allUsers4": [
+                    {
+                        "id": str(self.staff_user.id),
+                        "username": self.staff_user.username,
+                    }
+                ]
+            }
+        }
