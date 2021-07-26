@@ -96,9 +96,7 @@ def get_model_fields(model):
         (field.name, field) for field in all_fields_list if field not in exclude_fields
     ]
 
-    all_fields = local_fields + reverse_fields
-
-    return all_fields
+    return local_fields + reverse_fields
 
 
 def get_obj(app_label, model_name, object_id):
@@ -115,8 +113,7 @@ def get_obj(app_label, model_name, object_id):
                 app_label, model_name
         )
 
-        obj = get_Object_or_None(model, pk=object_id)
-        return obj
+        return get_Object_or_None(model, pk=object_id)
 
     except model.DoesNotExist:
         return None
@@ -300,11 +297,10 @@ def get_related_fields(model):
 
 
 def find_field(field, fields_dict):
-    temp = fields_dict.get(
-            field.name.value, fields_dict.get(to_snake_case(field.name.value), None)
+    return fields_dict.get(
+        field.name.value,
+        fields_dict.get(to_snake_case(field.name.value), None),
     )
-
-    return temp
 
 
 def recursive_params(
@@ -397,7 +393,7 @@ def queryset_factory(manager, fields_asts=None, fragments=None, info=None, resol
     elif not select_related and prefetch_related:
         # return _get_queryset(manager.prefetch_related(*prefetch_related))
         return result.prefetch_related(*prefetch_related)
-    elif select_related and not prefetch_related:
+    elif select_related:
         # return _get_queryset(manager.select_related(*select_related))
         return result.select_related(*select_related)
     return result
