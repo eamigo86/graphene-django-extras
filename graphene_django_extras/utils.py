@@ -221,7 +221,7 @@ def is_required(field):
     return not blank and default == NOT_PROVIDED
 
 
-def _get_queryset(klass, info=None, **kwargs):
+def _get_queryset(klass, info=None, resolve_queryset=None, **kwargs):
     """
     Returns a QuerySet from a Model, Manager, or QuerySet. Created to make
     get_object_or_404 and get_list_or_404 more DRY.
@@ -245,8 +245,15 @@ def _get_queryset(klass, info=None, **kwargs):
     #         "Manager, or QuerySet".format(klass__name)
     #     )
     if manager:
-        if hasattr(manager.model, 'resolve_queryset'):
-            return manager.model.resolve_queryset(info.context.user, kwargs)
+        print(f'test={resolve_queryset}')
+        print(f'type={type(resolve_queryset)}')
+        value = resolve_queryset["func_name"]
+        print(f'svfv = { value }')
+        print('1234567890-')
+        if hasattr(manager.model, resolve_queryset['func_name']):
+            _method = getattr(manager.model, resolve_queryset['func_name'])(info.context.user, kwargs)
+            print(_method)
+            return _method
         else:
             raise ValueError(
                     f"Model does not contain resolve queryset method, class = {klass} "
@@ -361,7 +368,7 @@ def recursive_params(
     return select_related, prefetch_related
 
 
-def queryset_factory(manager, fields_asts=None, fragments=None, info=None, **kwargs):
+def queryset_factory(manager, fields_asts=None, fragments=None, info=None, resolve_func=None, **kwargs):
 
     select_related = set()
     prefetch_related = set()
@@ -387,7 +394,7 @@ def queryset_factory(manager, fields_asts=None, fragments=None, info=None, **kwa
                 prefetch_related,
         )
 
-    result = _get_queryset(manager, info, **kwargs)
+    result = _get_queryset(manager, info, resolve_func, **kwargs)
 
     if select_related and prefetch_related:
 
