@@ -200,7 +200,7 @@ class DjangoSerializerMutation(ObjectType):
     def delete(cls, root, info, **kwargs):
         pk = kwargs.get("id")
 
-        old_obj = get_Object_or_None(cls._meta.model, pk=pk)
+        old_obj = get_Object_or_None(cls._meta.model,info,type='delete', pk=pk)
         if old_obj:
             old_obj.delete()
             old_obj.id = pk
@@ -227,7 +227,7 @@ class DjangoSerializerMutation(ObjectType):
             data.update({name: value for name, value in info.context.FILES.items()})
 
         pk = data.pop("id")
-        old_obj = get_Object_or_None(cls._meta.model, pk=pk)
+        old_obj = get_Object_or_None(cls._meta.model,info,type='update', pk=pk)
         if old_obj:
             nested_objs = cls.manage_nested_fields(data, root, info)
             serializer = cls._meta.serializer_class(
