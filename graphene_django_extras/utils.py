@@ -245,14 +245,9 @@ def _get_queryset(klass, info=None, resolve_queryset=None, **kwargs):
     #         "Manager, or QuerySet".format(klass__name)
     #     )
     if manager:
-        print(f'test={resolve_queryset}')
-        print(f'type={type(resolve_queryset)}')
         value = resolve_queryset["func_name"]
-        print(f'svfv = { value }')
-        print('1234567890-')
         if hasattr(manager.model, resolve_queryset['func_name']):
             _method = getattr(manager.model, resolve_queryset['func_name'])(info.context.user, kwargs)
-            print(_method)
             return _method
         else:
             raise ValueError(
@@ -263,8 +258,6 @@ def _get_queryset(klass, info=None, resolve_queryset=None, **kwargs):
         raise ValueError(
                 f"No manager for class = {klass}"
         )
-    # return manager.all()
-
 
 def get_Object_or_None(klass, *args, **kwargs):
     """
