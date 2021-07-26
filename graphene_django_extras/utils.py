@@ -243,9 +243,8 @@ def _get_queryset(klass, info=None, resolve_queryset=None, **kwargs):
     #     )
     if manager:
         value = resolve_queryset["func_name"]
-        if hasattr(manager.model, resolve_queryset['func_name']):
-            _method = getattr(manager.model, resolve_queryset['func_name'])(info.context.user, kwargs)
-            return _method
+        if hasattr(manager.model, value):
+            return getattr(manager.model, value)(info.context.user, kwargs)
         else:
             raise ValueError(
                     f"Model does not contain resolve queryset method, class = {klass} "
