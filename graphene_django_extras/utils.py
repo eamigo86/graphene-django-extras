@@ -250,17 +250,9 @@ def _get_queryset(klass, info=None,type=None,resolve_queryset=None, **kwargs):
             manager = klass._default_manager
         if manager:
             value = resolve_queryset["func_name"]
-            if hasattr(manager.model, value):
-                return getattr(manager.model, value)(info.context.user, kwargs)
-            else:
-                raise ValueError(
-                        f"Model does not contain resolve queryset method, class = {klass} "
-                        f"and manager = {manager}"
-                )
-        else:
-            raise ValueError(
-                    f"No manager for class = {klass}"
-            )
+            if hasattr(manager.model, resolve_queryset['func_name']):
+                _method = getattr(manager.model, resolve_queryset['func_name'])(info.context.user, kwargs)
+                return _method
 
 
 def get_Object_or_None(klass,info=None,type=None, *args, **kwargs):
