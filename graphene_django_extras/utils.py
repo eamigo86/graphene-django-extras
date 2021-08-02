@@ -218,41 +218,29 @@ def is_required(field):
     return not blank and default == NOT_PROVIDED
 
 
-def _get_queryset(klass, info=None,type=None,resolve_queryset=None, **kwargs):
+def _get_queryset(klass, info=None,resolve_queryset=None, **kwargs):
     """
     Returns a QuerySet from a Model, Manager, or QuerySet. Created to make
     get_object_or_404 and get_list_or_404 more DRY.
 
     Raises a ValueError if klass is not a Model, Manager, or QuerySet.
     """
-    if type:
-        if isinstance(klass, QuerySet):
-            return klass
-        elif isinstance(klass, Manager):
-            manager = klass
-        elif isinstance(klass, ModelBase):
-            manager = klass._default_manager
-        else:
-            if isinstance(klass, type):
-                klass__name = klass.__name__
-            else:
-                klass__name = klass.__class__.__name__
-            raise ValueError(
-                "Object is of type '{}', but must be a Django Model, "
-                "Manager, or QuerySet".format(klass__name)
-            )
-        return manager.all()
+    manager = None
+    if isinstance(klass, Manager):
+        manager = klass
+    elif isinstance(klass, ModelBase):
+        manager = klass._default_manager
+    elif isinstance(klass, type) or isinstance(klass, None):
+        klass__name = klass.__name__ if isinstance(klass, type) else klass.__class__.__name__
+        raise ValueError(
+            "Object is of type '{}', but must be a Django Model, "
+            "Manager, or QuerySet".format(klass__name)
+        )
+    if isinstance(resolve_queryset,str):
+        return manager if isinstance(klass, QuerySet) else manager.all()
     else:
-        manager = None
-        if isinstance(klass, Manager):
-            manager = klass
-        elif isinstance(klass, ModelBase):
-            manager = klass._default_manager
         if manager:
-            value = resolve_queryset["func_name"]
-            if hasattr(manager.model, resolve_queryset['func_name']):
-                _method = getattr(manager.model, resolve_queryset['func_name'])(info.context.user, kwargs)
-                return _method
+            return getattr(manager.model, resolve_queryset['func_name'], None)(manager.model,info.context.user, kwargs)
 
 
 def get_Object_or_None(klass,info=None,type=None, *args, **kwargs):
