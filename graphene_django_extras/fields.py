@@ -172,7 +172,7 @@ class DjangoFilterPaginateListField(Field):
             *args,
             **kwargs,
     ):
-        self.resolve_func = kwargs.get('resolve_queryset')
+        self.resolve_func = kwargs['resolve_queryset']
         _fields = _type._meta.filter_fields
         _model = _type._meta.model
 
@@ -221,8 +221,7 @@ class DjangoFilterPaginateListField(Field):
         if not kwargs.get("description", None):
             kwargs["description"] = "{} list".format(_type._meta.model.__name__)
 
-        if kwargs.get('resolve_queryset'):
-            kwargs.pop('resolve_queryset')
+        kwargs.pop('resolve_queryset')
 
         super(DjangoFilterPaginateListField, self).__init__(
                 List(NonNull(_type)), *args, **kwargs
