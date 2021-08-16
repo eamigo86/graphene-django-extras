@@ -240,7 +240,7 @@ def _get_queryset(klass, info=None,resolve_queryset=None, **kwargs):
         return manager if isinstance(klass, QuerySet) else manager.all()
     else:
         if manager:
-            return getattr(manager.model, resolve_queryset['func_name'], None)(manager.model,info.context.user, kwargs)
+            return getattr(manager.model, resolve_queryset['func_name'], None)(manager.model,info.context, kwargs)
 
 
 def get_Object_or_None(klass, info=None, type=None, *args, **kwargs):
