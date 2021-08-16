@@ -236,14 +236,14 @@ def _get_queryset(klass, info=None,resolve_queryset=None, **kwargs):
             "Object is of type '{}', but must be a Django Model, "
             "Manager, or QuerySet".format(klass__name)
         )
-    if isinstance(resolve_queryset,str):
+    if isinstance(resolve_queryset, str):
         return manager if isinstance(klass, QuerySet) else manager.all()
     else:
         if manager:
             return getattr(manager.model, resolve_queryset['func_name'], None)(manager.model,info.context.user, kwargs)
 
 
-def get_Object_or_None(klass,info=None,type=None, *args, **kwargs):
+def get_Object_or_None(klass, info=None, type=None, *args, **kwargs):
     """
     Uses get() to return an object, or None if the object does not exist.
 
@@ -254,7 +254,7 @@ def get_Object_or_None(klass,info=None,type=None, *args, **kwargs):
     if more than one object is found.
     Ex: get_Object_or_None(User, db, id=1)
     """
-    queryset = _get_queryset(klass,info,type)
+    queryset = _get_queryset(klass, info, type)
     try:
         if args:
             return queryset.using(args[0]).get(**kwargs)

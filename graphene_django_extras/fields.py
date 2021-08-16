@@ -208,7 +208,7 @@ class DjangoFilterPaginateListField(Field):
 
         pagination = pagination or graphql_api_settings.DEFAULT_PAGINATION_CLASS()
 
-        if pagination is not None:
+        if pagination:
             assert isinstance(pagination, BaseDjangoGraphqlPagination), (
                 'You need to pass a valid DjangoGraphqlPagination in DjangoFilterPaginateListField, received "{}".'
             ).format(pagination)
@@ -237,7 +237,6 @@ class DjangoFilterPaginateListField(Field):
     def list_resolver(
             self, manager, filterset_class, filtering_args, root, info, **kwargs
     ):
-        # print()
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
         qs = self.get_queryset(manager, info, resolve_func=self.resolve_func, **kwargs)
         qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
