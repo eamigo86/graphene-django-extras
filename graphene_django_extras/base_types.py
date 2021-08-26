@@ -174,13 +174,13 @@ class CustomDate(Date):
         return date.isoformat()
 
 
-class CustomDateTime(DateTime):
+class CustomDateTime(graphene.Scalar):
     @staticmethod
     def serialize(dt):
-        if isinstance(dt, CustomDateFormat):
-            return dt.date_str
-
-        assert isinstance(
-            dt, (datetime.datetime, datetime.date)
-        ), 'Received not compatible datetime "{}"'.format(repr(dt))
-        return dt.isoformat()
+        return int(dt.timestamp() * 1000.)
+    
+    @staticmethod
+    def parse_value(value):
+        if isinstance(value, str):
+            value = int(value)
+        return datetime.datetime.fromtimestamp(value/1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
