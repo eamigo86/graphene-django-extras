@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import binascii
 import datetime
+from ast import literal_eval
 
 import graphene
 from graphene.types.datetime import Date, Time, DateTime
@@ -184,3 +185,18 @@ class CustomDateTime(graphene.Scalar):
         if isinstance(value, str):
             value = int(value)
         return datetime.datetime.fromtimestamp(value/1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
+
+class QuarticJson(graphene.Scalar):
+
+    @staticmethod
+    def serialize(dt):
+        return dt
+
+    @staticmethod
+    def parse_literal(node):
+        if isinstance(node, ast.StringValueNode):
+            return literal_eval(node.value)
+
+    @staticmethod
+    def parse_value(value):
+        return literal_eval(value)
