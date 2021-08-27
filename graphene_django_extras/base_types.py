@@ -40,7 +40,8 @@ def factory_type(operation, _type, *args, **kwargs):
             class Meta:
                 model = kwargs.get("model")
                 name = kwargs.get("name") or to_camel_case(
-                    "{}_{}_Generic_Type".format(kwargs.get("model").__name__, args[0])
+                    "{}_{}_Generic_Type".format(
+                        kwargs.get("model").__name__, args[0])
                 )
                 only_fields = kwargs.get("only_fields")
                 exclude_fields = kwargs.get("exclude_fields")
@@ -179,14 +180,15 @@ class CustomDateTime(graphene.Scalar):
     @staticmethod
     def serialize(dt):
         return int(dt.timestamp() * 1000.)
-    
+
     @staticmethod
     def parse_value(value):
         if isinstance(value, str):
             value = int(value)
-        return datetime.datetime.fromtimestamp(value/1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
+        return datetime.datetime.fromtimestamp(value / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
 
-class QuarticJson(graphene.Scalar):
+
+class Dict(graphene.Scalar):
 
     @staticmethod
     def serialize(dt):
@@ -194,8 +196,11 @@ class QuarticJson(graphene.Scalar):
 
     @staticmethod
     def parse_literal(node):
-        if isinstance(node, ast.StringValueNode):
-            return literal_eval(node.value)
+        eval_node = literal_eval(node.value)
+        if isinstance(eval_node, dict):
+            return eval_node
+        else:
+            raise ValueError("For instance '{'key':'value'}'")
 
     @staticmethod
     def parse_value(value):
