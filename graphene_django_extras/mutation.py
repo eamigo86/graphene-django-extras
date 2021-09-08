@@ -12,7 +12,6 @@ from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
 from .utils import get_Object_or_None
 
-
 class SerializerMutationOptions(BaseOptions):
     fields = None
     input_fields = None
@@ -105,7 +104,6 @@ class DjangoSerializerMutation(ObjectType):
 
             if operation != "delete":
                 input_type = registry.get_type_for_model(model, for_input=operation)
-
                 if not input_type:
                     # factory_kwargs.update({'skip_registry': True})
                     input_type = factory_type(
@@ -186,7 +184,7 @@ class DjangoSerializerMutation(ObjectType):
 
         nested_objs = cls.manage_nested_fields(data, root, info)
         serializer = cls._meta.serializer_class(
-            data=data, **cls.get_serializer_kwargs(root, info, **kwargs)
+            data=data,context=info.context.user, **cls.get_serializer_kwargs(root, info, **kwargs)
         )
 
         ok, obj = cls.save(serializer, root, info)
@@ -234,6 +232,7 @@ class DjangoSerializerMutation(ObjectType):
                 old_obj,
                 data=data,
                 partial=True,
+                context=info.context.user,
                 **cls.get_serializer_kwargs(root, info, **kwargs),
             )
 
