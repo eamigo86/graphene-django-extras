@@ -214,8 +214,10 @@ def is_required(field):
 
     except AttributeError:
         return False
-
+    if field.name == 'parent' and field.model.__name__ == 'EdgeConnector':
+        return False
     return not blank and default == NOT_PROVIDED
+
 
 
 def _get_queryset(klass, info=None,resolve_queryset=None, **kwargs):
@@ -230,17 +232,16 @@ def _get_queryset(klass, info=None,resolve_queryset=None, **kwargs):
         manager = klass
     elif isinstance(klass, ModelBase):
         manager = klass._default_manager
-    elif isinstance(klass, type) or isinstance(klass, None):
+    elif isinstance(klass, (type, None)):
         klass__name = klass.__name__ if isinstance(klass, type) else klass.__class__.__name__
         raise ValueError(
-            "Object is of type '{}', but must be a Django Model, "
-            "Manager, or QuerySet".format(klass__name)
+                "Object is of type '{}', but must be a Django Model, "
+                "Manager, or QuerySet".format(klass__name)
         )
     if isinstance(resolve_queryset, str):
         return manager if isinstance(klass, QuerySet) else manager.all()
-    else:
-        if manager:
-            return getattr(manager.model, resolve_queryset['func_name'], None)(manager.model,info.context, kwargs)
+    if manager:
+        return getattr(manager.model, resolve_queryset['func_name'], None)(manager.model,info.context, kwargs)
 
 
 def get_Object_or_None(klass, info=None, type=None, *args, **kwargs):
@@ -285,8 +286,8 @@ def get_related_fields(model):
 
 def find_field(field, fields_dict):
     return fields_dict.get(
-        field.name.value,
-        fields_dict.get(to_snake_case(field.name.value), None),
+            field.name.value,
+            fields_dict.get(to_snake_case(field.name.value), None),
     )
 
 
