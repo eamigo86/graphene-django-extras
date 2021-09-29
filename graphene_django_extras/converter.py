@@ -23,9 +23,8 @@ from graphene import (
     String,
     UUID,
 )
-from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case
-from graphene_django.compat import ArrayField, HStoreField, RangeField, JSONField
+from graphene_django.compat import ArrayField,RangeField
 from functools import singledispatch
 from graphene_django.utils.str_converters import to_const
 
@@ -36,10 +35,13 @@ from .base_types import (
     CustomTime,
     CustomDate,
     Binary,
+    CustomDict
+
 )
 from .fields import DjangoFilterListField, DjangoListField
 from .utils import is_required, get_model_fields, get_related_model
 from netfields import InetAddressField
+from django.contrib.postgres.fields import HStoreField
 
 NAME_PATTERN = r"^[_a-zA-Z][_a-zA-Z0-9]*$"
 COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
@@ -489,11 +491,11 @@ def convert_postgres_array_to_list(
 
 
 @convert_django_field.register(HStoreField)
-@convert_django_field.register(JSONField)
+@convert_django_field.register(models.JSONField)
 def convert_postgres_field_to_string(
     field, registry=None, input_flag=None, nested_field=False
 ):
-    return JSONString(
+    return CustomDict(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
     )

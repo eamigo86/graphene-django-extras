@@ -9,7 +9,7 @@ import graphene
 from graphene.types.datetime import Date, Time, DateTime
 from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
-
+import logging
 
 def factory_type(operation, _type, *args, **kwargs):
     if operation == "output":
@@ -188,7 +188,7 @@ class CustomDateTime(graphene.Scalar):
         return datetime.datetime.fromtimestamp(value / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
-class Dict(graphene.Scalar):
+class CustomDict(graphene.Scalar):
 
     @staticmethod
     def serialize(dt):
@@ -196,12 +196,15 @@ class Dict(graphene.Scalar):
 
     @staticmethod
     def parse_literal(node):
-        eval_node = literal_eval(node.value)
-        if isinstance(eval_node, dict):
-            return eval_node
-        else:
-            raise ValueError("For instance '{'key':'value'}'")
+        if node.fields:
+            eval_node = literal_eval(node.value)
+            if isinstance(eval_node, dict):
+                return eval_node
+            else:
+                raise ValueError("For instance '{'key':'value'}'")
+        logging.info("INFO ::: JSON/HStore value passed empty")
+        return None
 
     @staticmethod
     def parse_value(value):
-        return literal_eval(value)
+        return value
