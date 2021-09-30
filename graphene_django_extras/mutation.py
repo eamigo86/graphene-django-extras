@@ -12,6 +12,7 @@ from .registry import get_global_registry
 from .types import DjangoObjectType, DjangoInputObjectType
 from .utils import get_Object_or_None
 
+
 class SerializerMutationOptions(BaseOptions):
     fields = None
     input_fields = None
@@ -29,7 +30,8 @@ class DjangoSerializerMutation(ObjectType):
         Serializer Mutation Type Definition
     """
 
-    ok = Boolean(description="Boolean field that return mutation result request.")
+    ok = Boolean(
+        description="Boolean field that return mutation result request.")
     errors = List(ErrorType, description="Errors list for the field")
 
     class Meta:
@@ -59,8 +61,8 @@ class DjangoSerializerMutation(ObjectType):
         description = description or "SerializerMutation for {} model".format(
             model.__name__
         )
-
-        input_field_name = input_field_name or "new_{}".format(model._meta.model_name)
+        input_field_name = input_field_name or "new_{}".format(
+            model._meta.model_name)
         output_field_name = output_field_name or model._meta.model_name
 
         input_class = getattr(cls, "Arguments", None)
@@ -94,7 +96,8 @@ class DjangoSerializerMutation(ObjectType):
         output_type = registry.get_type_for_model(model)
 
         if not output_type:
-            output_type = factory_type("output", DjangoObjectType, **factory_kwargs)
+            output_type = factory_type(
+                "output", DjangoObjectType, **factory_kwargs)
 
         django_fields = OrderedDict({output_field_name: Field(output_type)})
 
@@ -103,7 +106,10 @@ class DjangoSerializerMutation(ObjectType):
             global_arguments.update({operation: OrderedDict()})
 
             if operation != "delete":
-                input_type = registry.get_type_for_model(model, for_input=operation)
+                if operation == 'update':
+                    input_field_name = f"update_{model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name}"
+                input_type = registry.get_type_for_model(
+                    model, for_input=operation)
                 if not input_type:
                     # factory_kwargs.update({'skip_registry': True})
                     input_type = factory_type(
@@ -142,7 +148,8 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def get_errors(cls, errors):
-        errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
+        errors_dict = {cls._meta.output_field_name: None,
+                       "ok": False, "errors": errors}
 
         return cls(**errors_dict)
 
@@ -164,7 +171,8 @@ class DjangoSerializerMutation(ObjectType):
                 sub_data = data.pop(field, None)
                 if sub_data:
                     serialized_data = cls._meta.nested_fields[field](
-                        data=sub_data, many=True if type(sub_data) == list else False
+                        data=sub_data, many=True if type(
+                            sub_data) == list else False
                     )
                     ok, result = cls.save(serialized_data, root, info)
                     if not ok:
@@ -180,25 +188,28 @@ class DjangoSerializerMutation(ObjectType):
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
-            data.update({name: value for name, value in info.context.FILES.items()})
+            data.update(
+                {name: value for name, value in info.context.FILES.items()})
 
         nested_objs = cls.manage_nested_fields(data, root, info)
         serializer = cls._meta.serializer_class(
-            data=data,context=info.context.user, **cls.get_serializer_kwargs(root, info, **kwargs)
+            data=data, context=info.context.user, **cls.get_serializer_kwargs(root, info, **kwargs)
         )
 
         ok, obj = cls.save(serializer, root, info)
         if not ok:
             return cls.get_errors(obj)
         elif nested_objs:
-            [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
+            [getattr(obj, field).add(*objs)
+             for field, objs in nested_objs.items()]
         return cls.perform_mutate(obj, info)
 
     @classmethod
     def delete(cls, root, info, **kwargs):
         pk = kwargs.get("id")
 
-        old_obj = get_Object_or_None(cls._meta.model,info,type='delete', pk=pk)
+        old_obj = get_Object_or_None(
+            cls._meta.model, info, type='delete', pk=pk)
         if old_obj:
             old_obj.delete()
             old_obj.id = pk
@@ -222,10 +233,12 @@ class DjangoSerializerMutation(ObjectType):
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
-            data.update({name: value for name, value in info.context.FILES.items()})
+            data.update(
+                {name: value for name, value in info.context.FILES.items()})
 
         pk = data.pop("id")
-        old_obj = get_Object_or_None(cls._meta.model,info,type='update', pk=pk)
+        old_obj = get_Object_or_None(
+            cls._meta.model, info, type='update', pk=pk)
         if old_obj:
             nested_objs = cls.manage_nested_fields(data, root, info)
             serializer = cls._meta.serializer_class(
@@ -240,7 +253,8 @@ class DjangoSerializerMutation(ObjectType):
             if not ok:
                 return cls.get_errors(obj)
             elif nested_objs:
-                [getattr(obj, field).add(*objs) for field, objs in nested_objs.items()]
+                [getattr(obj, field).add(*objs)
+                 for field, objs in nested_objs.items()]
             return cls.perform_mutate(obj, info)
         else:
             return cls.get_errors(
