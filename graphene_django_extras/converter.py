@@ -42,6 +42,7 @@ from .fields import DjangoFilterListField, DjangoListField
 from .utils import is_required, get_model_fields, get_related_model
 from netfields import InetAddressField
 from django.contrib.postgres.fields import HStoreField
+from graphene_file_upload.scalars import Upload
 
 NAME_PATTERN = r"^[_a-zA-Z][_a-zA-Z0-9]*$"
 COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
@@ -193,7 +194,6 @@ def convert_django_field(field, registry=None, input_flag=None, nested_field=Fal
 @convert_django_field.register(models.SlugField)
 @convert_django_field.register(models.URLField)
 @convert_django_field.register(models.GenericIPAddressField)
-@convert_django_field.register(models.FileField)
 @convert_django_field.register(InetAddressField)
 def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False):
     return String(
@@ -510,6 +510,13 @@ def convert_postgres_range_to_string(
         inner_type = type(inner_type)
     return List(
         inner_type,
+        description=field.help_text or field.verbose_name,
+        required=is_required(field) and input_flag == "create",
+    )
+
+@convert_django_field.register(models.FileField)
+def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False):
+    return Upload(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
     )
