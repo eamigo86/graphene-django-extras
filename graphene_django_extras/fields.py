@@ -44,7 +44,6 @@ class DjangoObjectField(Field):
             return None
 
     def wrap_resolve(self, parent_resolver):
-        print(f"meta ::; {self.type._meta}")
         return partial(self.object_resolver, self.type._meta.model._default_manager)
 
 
@@ -151,11 +150,9 @@ class DjangoFilterListField(Field):
         return maybe_queryset(qs)
 
     def wrap_resolve(self, parent_resolver):
-        print(f"self type ::: {self.type}")
         current_type = self.type
         while isinstance(current_type, Structure):
             current_type = current_type.of_type
-            print(f"current type ::: {current_type}")
         return partial(
                 self.list_resolver,
                 current_type._meta.model._default_manager,

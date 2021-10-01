@@ -214,19 +214,6 @@ def is_required(field):
 
     except AttributeError:
         return False
-    # tag_field_names = [
-    #     'asset', 'category', 'config', 'created_by', 'description', 'last_modified_by',
-    #     'parent_tags', 'short_name', 'span_value', 'value_table', 'write_back_tag',
-    #     'zero_value'
-    # ]
-    # asset_op_def_fields = ['alarm_tags', 'batch_tag', 'cycle_phase_tag',
-    #                 'cycle_tag', 'start_state', 'stop_state']
-    # if field.model.__name__ == 'AssetOperationDefinition' and field.name in asset_op_def_fields:
-    #     return False
-    # if field.model.__name__ == 'Tag' and field.name in tag_field_names:
-    #     return False
-    # if field.name == 'parent' and field.model.__name__ == 'EdgeConnector':
-    #     return False
     return not blank and default == NOT_PROVIDED
 
 
