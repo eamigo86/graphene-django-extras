@@ -214,8 +214,6 @@ def is_required(field):
 
     except AttributeError:
         return False
-    if field.name == 'parent' and field.model.__name__ == 'EdgeConnector':
-        return False
     return not blank and default == NOT_PROVIDED
 
 

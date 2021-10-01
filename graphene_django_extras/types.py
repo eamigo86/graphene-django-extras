@@ -80,6 +80,8 @@ class DjangoObjectType(ObjectType):
         filterset_class=None,
         **options,
     ):
+        non_required_fields = options['non_required_fields']
+        del options['non_required_fields']
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -96,10 +98,9 @@ class DjangoObjectType(ObjectType):
             raise Exception(
                 "Can only set filter_fields or filterset_class if Django-Filter is installed"
             )
-
         django_fields = yank_fields_from_attrs(
             construct_fields(
-                model, registry, only_fields, include_fields, exclude_fields
+                model, registry, only_fields, include_fields, exclude_fields, non_required_fields=non_required_fields
             ),
             _as=Field,
         )
@@ -161,6 +162,8 @@ class DjangoInputObjectType(InputObjectType):
         nested_fields=(),
         **options,
     ):
+        non_required_fields = options['non_required_fields']
+        del options['non_required_fields']
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -191,6 +194,7 @@ class DjangoInputObjectType(InputObjectType):
                 exclude_fields,
                 input_for,
                 nested_fields,
+                non_required_fields=non_required_fields
             ),
             _as=InputField,
             sort=False,
