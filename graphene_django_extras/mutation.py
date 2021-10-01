@@ -62,8 +62,9 @@ class DjangoSerializerMutation(ObjectType):
             model.__name__
         )
         input_field_name = input_field_name or "new_{}".format(
-            model._meta.model_name)
-        output_field_name = output_field_name or model._meta.model_name
+            model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name)
+        output_field_name = output_field_name or model.API_SCHEMA.graphql_schema[
+            0].class_name_prefix or model._meta.model_name
 
         input_class = getattr(cls, "Arguments", None)
         if not input_class:
