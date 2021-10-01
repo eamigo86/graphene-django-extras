@@ -48,7 +48,6 @@ class DjangoSerializerMutation(ObjectType):
         output_field_name=None,
         description="",
         nested_fields=(),
-        # non_required_fields=None,
         **options,
     ):
         non_required_fields = options["non_required_fields"]
