@@ -112,8 +112,7 @@ def convert_django_field_with_choices(
             return DjangoListField(
                 enum,
                 description=field.help_text or field.verbose_name,
-                required=is_required(
-                    field) if not field.attname in non_required_fields_list else False and input_flag == "create",
+                required=is_required(field) if not field.attname in non_required_fields_list else False and input_flag == "create",
             )
         return enum(
             description=field.help_text or field.verbose_name,
@@ -186,7 +185,7 @@ def construct_fields(
 
 
 @singledispatch
-def convert_django_field(field, registry=None, input_flag=None, nested_field=False,non_required_fields_list=[]):
+def convert_django_field(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=None):
     raise Exception(
         "Don't know how to convert the Django field {} ({})".format(
             field, field.__class__
@@ -315,17 +314,16 @@ def convert_time_to_string(field, registry=None, input_flag=None, nested_field=F
 
 @convert_django_field.register(models.OneToOneRel)
 def convert_onetoone_field_to_djangomodel(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[]
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=None
 ):
     model = field.related_model
-
     def dynamic_type():
         if input_flag and not nested_field:
             return ID()
         _type = registry.get_type_for_model(model, for_input=input_flag)
         if not _type:
             return
-        return Field(_type, required=is_required(field) if not field.name in non_required_fields_list else False and input_flag == "create")
+        return Field(_type, required=is_required(field) if not field.attname in non_required_fields_list else False and input_flag == "create")
 
     return Dynamic(dynamic_type)
 
@@ -407,6 +405,8 @@ def convert_many_rel_to_djangomodel(
 def convert_field_to_djangomodel(
     field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[]
 ):
+    print('HERRRR')
+    print(f'field.attname = {field.attname}')
     model = get_related_model(field)
 
     def dynamic_type():
@@ -440,6 +440,8 @@ def convert_field_to_djangomodel(
 def convert_generic_foreign_key_to_object(
     field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[]
 ):
+    print('HERRRR')
+    print(f'field.attname = {field.attname}')
     def dynamic_type():
         key = "{}_{}".format(field.name, field.model.__name__.lower())
         if input_flag is not None:
@@ -486,6 +488,8 @@ def convert_generic_foreign_key_to_object(
 def convert_generic_relation_to_object_list(
     field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[]
 ):
+    print('HERRRR')
+    print(f'field.attname = {field.attname}')
     model = field.related_model
 
     def dynamic_type():
@@ -504,6 +508,8 @@ def convert_generic_relation_to_object_list(
 def convert_postgres_array_to_list(
     field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[]
 ):
+    print('HERRRR')
+    print(f'field.attname = {field.attname}')
     base_type = convert_django_field(field.base_field)
     if not isinstance(base_type, (List, NonNull)):
         base_type = type(base_type)
@@ -531,6 +537,8 @@ def convert_postgres_field_to_string(
 def convert_postgres_range_to_string(
     field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[]
 ):
+    print('HERRRR')
+    print(f'field.attname = {field.attname}')
     inner_type = convert_django_field(field.base_field)
     if not isinstance(inner_type, (List, NonNull)):
         inner_type = type(inner_type)
