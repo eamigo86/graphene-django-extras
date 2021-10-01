@@ -63,8 +63,10 @@ class DjangoSerializerMutation(ObjectType):
         )
         input_field_name = input_field_name or "new_{}".format(
             model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name)
-        output_field_name = output_field_name or model.API_SCHEMA.graphql_schema[
-            0].class_name_prefix or model._meta.model_name
+        input_field_name_dict = {
+            'create': input_field_name
+        }
+        output_field_name = output_field_name or model._meta.model_name
 
         input_class = getattr(cls, "Arguments", None)
         if not input_class:
@@ -103,12 +105,14 @@ class DjangoSerializerMutation(ObjectType):
         django_fields = OrderedDict({output_field_name: Field(output_type)})
 
         global_arguments = {}
+
         for operation in ("create", "delete", "update"):
             global_arguments.update({operation: OrderedDict()})
 
             if operation != "delete":
                 if operation == 'update':
                     input_field_name = f"update_{model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name}"
+                    input_field_name_dict['update'] = input_field_name
                 input_type = registry.get_type_for_model(
                     model, for_input=operation)
                 if not input_type:
@@ -139,10 +143,9 @@ class DjangoSerializerMutation(ObjectType):
         _meta.output_type = output_type
         _meta.model = model
         _meta.serializer_class = serializer_class
-        _meta.input_field_name = input_field_name
+        _meta.input_field_name = input_field_name_dict
         _meta.output_field_name = output_field_name
         _meta.nested_fields = nested_fields
-
         super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(
             _meta=_meta, description=description, **options
         )
@@ -186,7 +189,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def create(cls, root, info, **kwargs):
-        data = kwargs.get(cls._meta.input_field_name)
+        data = kwargs.get(cls._meta.input_field_name['create'])
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -231,7 +234,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def update(cls, root, info, **kwargs):
-        data = kwargs.get(cls._meta.input_field_name)
+        data = kwargs.get(cls._meta.input_field_name['update'])
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
