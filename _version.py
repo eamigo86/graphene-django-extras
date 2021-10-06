@@ -1,4 +1,4 @@
 """
 Specifies the version
 """
-__version__ = '1.12.dev1'
+__version__ = '1.0.0'
