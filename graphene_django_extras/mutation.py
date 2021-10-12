@@ -192,6 +192,14 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def create(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['create'])
+        m2m_dict = {}
+        m2m_fields = [
+            field.attname for field in cls._meta.model._meta.local_many_to_many]
+        for m2m_field in m2m_fields:
+            if data.get(m2m_field):
+                m2m_dict[m2m_field] = data.pop(m2m_field)
+            else:
+                data[m2m_field] = []
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -203,6 +211,9 @@ class DjangoSerializerMutation(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
+        for m2m_field, m2m_value in m2m_dict.items():
+            field = getattr(obj, m2m_field)
+            field.set(m2m_value)
         if not ok:
             return cls.get_errors(obj)
         elif nested_objs:
@@ -237,6 +248,12 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def update(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['update'])
+        m2m_dict = {}
+        m2m_fields = [
+            field.attname for field in cls._meta.model._meta.local_many_to_many]
+        for m2m_field in m2m_fields:
+            if data.get(m2m_field):
+                m2m_dict[m2m_field] = data.pop(m2m_field)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -245,24 +262,7 @@ class DjangoSerializerMutation(ObjectType):
         pk = data.pop("id")
         old_obj = get_Object_or_None(
             cls._meta.model, info, type='update', pk=pk)
-        if old_obj:
-            nested_objs = cls.manage_nested_fields(data, root, info)
-            serializer = cls._meta.serializer_class(
-                old_obj,
-                data=data,
-                partial=True,
-                context=info.context.user,
-                **cls.get_serializer_kwargs(root, info, **kwargs),
-            )
-
-            ok, obj = cls.save(serializer, root, info)
-            if not ok:
-                return cls.get_errors(obj)
-            elif nested_objs:
-                [getattr(obj, field).add(*objs)
-                 for field, objs in nested_objs.items()]
-            return cls.perform_mutate(obj, info)
-        else:
+        if not old_obj:
             return cls.get_errors(
                 [
                     ErrorType(
@@ -275,6 +275,26 @@ class DjangoSerializerMutation(ObjectType):
                     )
                 ]
             )
+        nested_objs = cls.manage_nested_fields(data, root, info)
+        serializer = cls._meta.serializer_class(
+            old_obj,
+            data=data,
+            partial=True,
+            context=info.context.user,
+            **cls.get_serializer_kwargs(root, info, **kwargs),
+        )
+
+        ok, obj = cls.save(serializer, root, info)
+        for m2m_field, m2m_value in m2m_dict.items():
+            field = getattr(obj, m2m_field)
+            field.set(m2m_value)
+        if not ok:
+            return cls.get_errors(obj)
+        elif nested_objs:
+            [getattr(obj, field).add(*objs)
+                for field, objs in nested_objs.items()]
+        return cls.perform_mutate(obj, info)
+            
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
