@@ -192,6 +192,15 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def create(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['create'])
+        m2m_dict = {}
+        m2m_fields = [
+            field.attname for field in cls._meta.model._meta.local_many_to_many]
+        if m2m_fields:
+            for m2m_field in m2m_fields:
+                if data.get(m2m_field):
+                    m2m_dict[m2m_field] = data.pop(m2m_field)
+                else:
+                    data[m2m_field] = []
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -203,6 +212,10 @@ class DjangoSerializerMutation(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
+        if m2m_dict:
+            for m2m_field, m2m_value in m2m_dict.items():
+                field = getattr(obj, m2m_field)
+                field.set(m2m_value)
         if not ok:
             return cls.get_errors(obj)
         elif nested_objs:
@@ -237,6 +250,13 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def update(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['update'])
+        m2m_dict = {}
+        m2m_fields = [
+            field.attname for field in cls._meta.model._meta.local_many_to_many]
+        if m2m_fields:
+            for m2m_field in m2m_fields:
+                if data.get(m2m_field):
+                    m2m_dict[m2m_field] = data.pop(m2m_field)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -256,6 +276,10 @@ class DjangoSerializerMutation(ObjectType):
             )
 
             ok, obj = cls.save(serializer, root, info)
+            if m2m_dict:
+                for m2m_field, m2m_value in m2m_dict.items():
+                    field = getattr(obj, m2m_field)
+                    field.set(m2m_value)
             if not ok:
                 return cls.get_errors(obj)
             elif nested_objs:
