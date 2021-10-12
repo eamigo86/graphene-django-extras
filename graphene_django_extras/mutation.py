@@ -195,12 +195,11 @@ class DjangoSerializerMutation(ObjectType):
         m2m_dict = {}
         m2m_fields = [
             field.attname for field in cls._meta.model._meta.local_many_to_many]
-        if m2m_fields:
-            for m2m_field in m2m_fields:
-                if data.get(m2m_field):
-                    m2m_dict[m2m_field] = data.pop(m2m_field)
-                else:
-                    data[m2m_field] = []
+        for m2m_field in m2m_fields:
+            if data.get(m2m_field):
+                m2m_dict[m2m_field] = data.pop(m2m_field)
+            else:
+                data[m2m_field] = []
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -253,10 +252,9 @@ class DjangoSerializerMutation(ObjectType):
         m2m_dict = {}
         m2m_fields = [
             field.attname for field in cls._meta.model._meta.local_many_to_many]
-        if m2m_fields:
-            for m2m_field in m2m_fields:
-                if data.get(m2m_field):
-                    m2m_dict[m2m_field] = data.pop(m2m_field)
+        for m2m_field in m2m_fields:
+            if data.get(m2m_field):
+                m2m_dict[m2m_field] = data.pop(m2m_field)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
