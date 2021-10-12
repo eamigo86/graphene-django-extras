@@ -265,28 +265,7 @@ class DjangoSerializerMutation(ObjectType):
         pk = data.pop("id")
         old_obj = get_Object_or_None(
             cls._meta.model, info, type='update', pk=pk)
-        if old_obj:
-            nested_objs = cls.manage_nested_fields(data, root, info)
-            serializer = cls._meta.serializer_class(
-                old_obj,
-                data=data,
-                partial=True,
-                context=info.context.user,
-                **cls.get_serializer_kwargs(root, info, **kwargs),
-            )
-
-            ok, obj = cls.save(serializer, root, info)
-            if m2m_dict:
-                for m2m_field, m2m_value in m2m_dict.items():
-                    field = getattr(obj, m2m_field)
-                    field.set(m2m_value)
-            if not ok:
-                return cls.get_errors(obj)
-            elif nested_objs:
-                [getattr(obj, field).add(*objs)
-                 for field, objs in nested_objs.items()]
-            return cls.perform_mutate(obj, info)
-        else:
+        if not old_obj:
             return cls.get_errors(
                 [
                     ErrorType(
@@ -299,6 +278,27 @@ class DjangoSerializerMutation(ObjectType):
                     )
                 ]
             )
+        nested_objs = cls.manage_nested_fields(data, root, info)
+        serializer = cls._meta.serializer_class(
+            old_obj,
+            data=data,
+            partial=True,
+            context=info.context.user,
+            **cls.get_serializer_kwargs(root, info, **kwargs),
+        )
+
+        ok, obj = cls.save(serializer, root, info)
+        if m2m_dict:
+            for m2m_field, m2m_value in m2m_dict.items():
+                field = getattr(obj, m2m_field)
+                field.set(m2m_value)
+        if not ok:
+            return cls.get_errors(obj)
+        elif nested_objs:
+            [getattr(obj, field).add(*objs)
+                for field, objs in nested_objs.items()]
+        return cls.perform_mutate(obj, info)
+            
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
