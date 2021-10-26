@@ -24,7 +24,7 @@ from graphene import (
     UUID,
 )
 from graphene.utils.str_converters import to_camel_case
-from graphene_django.compat import ArrayField,RangeField
+from graphene_django.compat import ArrayField, RangeField
 from functools import singledispatch
 from graphene_django.utils.str_converters import to_const
 
@@ -80,7 +80,7 @@ def get_choices(choices):
 
 
 def convert_django_field_with_choices(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields=None,field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields=None, field_name=None
 ):
     choices = getattr(field, "choices", None)
     non_required_fields_list = []
@@ -120,7 +120,7 @@ def convert_django_field_with_choices(
             required=is_required(
                 field) if not field_name in non_required_fields_list else False and input_flag == "create",
         )
-    return convert_django_field(field, registry, input_flag, nested_field, non_required_fields_list,field_name)
+    return convert_django_field(field, registry, input_flag, nested_field, non_required_fields_list, field_name)
 
 
 def construct_fields(
@@ -177,7 +177,7 @@ def construct_fields(
             ):
                 continue
             converted = convert_django_field_with_choices(
-                field, registry, input_flag, nested_field, non_required_fields,name
+                field, registry, input_flag, nested_field, non_required_fields, name
             )
             fields[name] = converted
 
@@ -185,7 +185,7 @@ def construct_fields(
 
 
 @singledispatch
-def convert_django_field(field, registry=None, input_flag=None, nested_field=False,non_required_fields_list=[],field_name=None):
+def convert_django_field(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     raise Exception(
         "Don't know how to convert the Django field {} ({})".format(
             field, field.__class__
@@ -200,7 +200,7 @@ def convert_django_field(field, registry=None, input_flag=None, nested_field=Fal
 @convert_django_field.register(models.URLField)
 @convert_django_field.register(models.GenericIPAddressField)
 @convert_django_field.register(InetAddressField)
-def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return String(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -209,7 +209,7 @@ def convert_field_to_string(field, registry=None, input_flag=None, nested_field=
 
 
 @convert_django_field.register(models.AutoField)
-def convert_field_to_id(field, registry=None, input_flag=None, nested_field=False,non_required_fields_list=[],field_name=None):
+def convert_field_to_id(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     if input_flag:
         return ID(
             description=field.help_text or "Django object unique identification field",
@@ -222,7 +222,7 @@ def convert_field_to_id(field, registry=None, input_flag=None, nested_field=Fals
 
 
 @convert_django_field.register(models.UUIDField)
-def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return UUID(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -235,7 +235,7 @@ def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=Fa
 @convert_django_field.register(models.SmallIntegerField)
 @convert_django_field.register(models.BigIntegerField)
 @convert_django_field.register(models.IntegerField)
-def convert_field_to_int(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_field_to_int(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return Int(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -244,7 +244,7 @@ def convert_field_to_int(field, registry=None, input_flag=None, nested_field=Fal
 
 
 @convert_django_field.register(models.BooleanField)
-def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     required = is_required(
         field) if not field_name in non_required_fields_list else False and input_flag == "create"
     if required:
@@ -254,7 +254,7 @@ def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field
 
 @convert_django_field.register(models.NullBooleanField)
 def convert_field_to_nullboolean(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     return Boolean(
         description=field.help_text or field.verbose_name,
@@ -264,7 +264,7 @@ def convert_field_to_nullboolean(
 
 
 @convert_django_field.register(models.BinaryField)
-def convert_binary_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_binary_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return Binary(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -275,7 +275,7 @@ def convert_binary_to_string(field, registry=None, input_flag=None, nested_field
 @convert_django_field.register(models.DecimalField)
 @convert_django_field.register(models.FloatField)
 @convert_django_field.register(models.DurationField)
-def convert_field_to_float(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_field_to_float(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return Float(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -284,7 +284,7 @@ def convert_field_to_float(field, registry=None, input_flag=None, nested_field=F
 
 
 @convert_django_field.register(models.DateField)
-def convert_date_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_date_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return CustomDate(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -294,7 +294,7 @@ def convert_date_to_string(field, registry=None, input_flag=None, nested_field=F
 
 @convert_django_field.register(models.DateTimeField)
 def convert_datetime_to_string(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     return CustomDateTime(
         description=field.help_text or field.verbose_name,
@@ -304,7 +304,7 @@ def convert_datetime_to_string(
 
 
 @convert_django_field.register(models.TimeField)
-def convert_time_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None):
+def convert_time_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return CustomTime(
         description=field.help_text or field.verbose_name,
         required=is_required(
@@ -314,7 +314,7 @@ def convert_time_to_string(field, registry=None, input_flag=None, nested_field=F
 
 @convert_django_field.register(models.OneToOneRel)
 def convert_onetoone_field_to_djangomodel(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     model = field.related_model
 
@@ -331,7 +331,7 @@ def convert_onetoone_field_to_djangomodel(
 
 @convert_django_field.register(models.ManyToManyField)
 def convert_field_to_list_or_connection(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     model = get_related_model(field)
 
@@ -372,7 +372,7 @@ def convert_field_to_list_or_connection(
 @convert_django_field.register(models.ManyToManyRel)
 @convert_django_field.register(models.ManyToOneRel)
 def convert_many_rel_to_djangomodel(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     model = field.related_model
 
@@ -404,9 +404,10 @@ def convert_many_rel_to_djangomodel(
 @convert_django_field.register(models.OneToOneField)
 @convert_django_field.register(models.ForeignKey)
 def convert_field_to_djangomodel(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     model = get_related_model(field)
+
     def dynamic_type():
         # Avoid create field for auto generate OneToOneField product of an inheritance
         if isinstance(field, models.OneToOneField) and issubclass(
@@ -436,7 +437,7 @@ def convert_field_to_djangomodel(
 
 @convert_django_field.register(GenericForeignKey)
 def convert_generic_foreign_key_to_object(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     def dynamic_type():
         key = "{}_{}".format(field.name, field.model.__name__.lower())
@@ -485,7 +486,7 @@ def convert_generic_foreign_key_to_object(
 
 @convert_django_field.register(GenericRelation)
 def convert_generic_relation_to_object_list(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name = None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     model = field.related_model
 
@@ -503,7 +504,7 @@ def convert_generic_relation_to_object_list(
 
 @convert_django_field.register(ArrayField)
 def convert_postgres_array_to_list(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     base_type = convert_django_field(field.base_field)
     if not isinstance(base_type, (List, NonNull)):
@@ -519,7 +520,7 @@ def convert_postgres_array_to_list(
 @convert_django_field.register(HStoreField)
 @convert_django_field.register(models.JSONField)
 def convert_postgres_field_to_string(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     return CustomDict(
         description=field.help_text or field.verbose_name,
@@ -530,7 +531,7 @@ def convert_postgres_field_to_string(
 
 @convert_django_field.register(RangeField)
 def convert_postgres_range_to_string(
-    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[],field_name=None
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
 ):
     inner_type = convert_django_field(field.base_field)
     if not isinstance(inner_type, (List, NonNull)):
@@ -542,8 +543,9 @@ def convert_postgres_range_to_string(
             field) if not field_name in non_required_fields_list else False and input_flag == "create",
     )
 
+
 @convert_django_field.register(models.FileField)
-def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False,non_required_fields_list=[],field_name=None):
+def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return Upload(
         description=field.help_text or field.verbose_name,
         required=is_required(

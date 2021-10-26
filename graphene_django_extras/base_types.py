@@ -11,15 +11,15 @@ from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
 import logging
 
+
 def factory_type(operation, _type, *args, **kwargs):
     if operation == "output":
 
         class GenericType(_type):
             class Meta:
                 model = kwargs.get("model")
-                name = kwargs.get("name") or to_camel_case(
-                    "{}_Generic_Type".format(kwargs.get("model").__name__)
-                )
+                name = to_camel_case("{}_Generic_Type".format(
+                    kwargs.get("name") or kwargs.get("model").__name__))
                 only_fields = kwargs.get("only_fields")
                 exclude_fields = kwargs.get("exclude_fields")
                 include_fields = kwargs.get("include_fields")
@@ -40,9 +40,9 @@ def factory_type(operation, _type, *args, **kwargs):
         class GenericInputType(_type):
             class Meta:
                 model = kwargs.get("model")
-                name = kwargs.get("name") or to_camel_case(
-                    "{}_{}_Generic_Type".format(
-                        kwargs.get("model").__name__, args[0])
+                name = to_camel_case(
+                    "{}_{}_Generic_Type".format(kwargs.get("name")
+                                                or kwargs.get("model").__name__, args[0])
                 )
                 only_fields = kwargs.get("only_fields")
                 exclude_fields = kwargs.get("exclude_fields")
