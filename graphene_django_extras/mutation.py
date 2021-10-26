@@ -51,7 +51,9 @@ class DjangoSerializerMutation(ObjectType):
         **options,
     ):
         non_required_fields = options["non_required_fields"]
+        input_type_name = options["input_type"]
         del options["non_required_fields"]
+        del options["input_type"]
         if not serializer_class:
             raise Exception(
                 "serializer_class is required on all DjangoSerializerMutation"
@@ -98,6 +100,9 @@ class DjangoSerializerMutation(ObjectType):
             "non_required_fields": non_required_fields
         }
 
+        if input_type_name:
+            factory_kwargs["name"] = input_type_name
+
         output_type = registry.get_type_for_model(model)
 
         if not output_type:
@@ -115,9 +120,15 @@ class DjangoSerializerMutation(ObjectType):
                 if operation == 'update':
                     input_field_name = f"update_{model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name}"
                     input_field_name_dict['update'] = input_field_name
-                input_type = registry.get_type_for_model(
-                    model, for_input=operation)
-                if not input_type:
+                if not input_type_name:
+                    input_type = registry.get_type_for_model(
+                        model, for_input=operation)
+                    if not input_type:
+                        # factory_kwargs.update({'skip_registry': True})
+                        input_type = factory_type(
+                            "input", DjangoInputObjectType, operation, **factory_kwargs
+                        )
+                else:
                     # factory_kwargs.update({'skip_registry': True})
                     input_type = factory_type(
                         "input", DjangoInputObjectType, operation, **factory_kwargs
@@ -294,7 +305,6 @@ class DjangoSerializerMutation(ObjectType):
             [getattr(obj, field).add(*objs)
                 for field, objs in nested_objs.items()]
         return cls.perform_mutate(obj, info)
-            
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
