@@ -1,0 +1,3 @@
+FROM quarticai/python:3.9.5-slim-base 
+COPY requirements.txt .
+RUN pip install -r requirements.txt
