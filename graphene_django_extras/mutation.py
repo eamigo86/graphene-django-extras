@@ -6,6 +6,7 @@ from graphene.types.base import BaseOptions
 from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
 from graphene_django.types import ErrorType
+from graphene_django.constants import MUTATION_ERRORS_FLAG
 
 from .base_types import factory_type
 from .registry import get_global_registry
@@ -243,6 +244,8 @@ class DjangoSerializerMutation(ObjectType):
             old_obj.id = pk
             return cls.perform_mutate(old_obj, info)
         else:
+            # Atomic transaction support
+            cls._set_errors_flag_to_context(info)
             return cls.get_errors(
                 [
                     ErrorType(
@@ -318,14 +321,26 @@ class DjangoSerializerMutation(ObjectType):
                     key
                 ].value
         if serialized_obj.is_valid():
-            obj = serialized_obj.save()
-            return True, obj
-
+            try:
+                obj = serialized_obj.save()
+                return True, obj
+            except Exception as e:
+                # Format all raised exceptions as ErrorType
+                # Field is `id` because it is required and we don't know what caused the exception
+                # other than from the exception message
+                errors = [
+                    ErrorType(field="id", messages=[e.__repr__()])
+                ]
+                # Atomic transaction support
+                cls._set_errors_flag_to_context(info)
+                return False, errors
         else:
             errors = [
                 ErrorType(field=key, messages=value)
                 for key, value in serialized_obj.errors.items()
             ]
+            # Atomic transaction support
+            cls._set_errors_flag_to_context(info)
             return False, errors
 
     @classmethod
@@ -362,3 +377,17 @@ class DjangoSerializerMutation(ObjectType):
         update_field = cls.UpdateField(*args, **kwargs)
 
         return create_field, delete_field, update_field
+
+    @staticmethod
+    def _set_errors_flag_to_context(info):
+        """
+        Set MUTATION_ERRORS_FLAG to True in the context if there are errors.
+        This will cause transactions to rollback on failure supporting atomic transactions.
+
+        Source
+        https://github.com/graphql-python/graphene-django/blob/623d0f219ebeaf2b11de4d7f79d84da8508197c8/graphene_django/forms/mutation.py#L189
+
+        They only have it for forms, so we extend it for generic.
+        """
+        if info and info.context:
+            setattr(info.context, MUTATION_ERRORS_FLAG, True)
