@@ -14,9 +14,6 @@ if os.path.exists(BASE_PKG_DIR) and os.path.isdir(BASE_PKG_DIR):
 else:
     raise ValueError('Error in path')
 
-__version__ = None
-exec(open('_version.py', 'r').read())
-
 
 def get_file_contents(filename):
     with open(os.path.join(dirname(__file__), filename)) as fp:
@@ -35,7 +32,6 @@ def get_install_requires():
 
 setup(
         name='quartic_graphene_django_extras',
-        version=__version__,
         description='Extra helper plugins for Graphene',
         author='Quartic.ai Engineering Team',
         long_description=get_file_contents('README.md'),
