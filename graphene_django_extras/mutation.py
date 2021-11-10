@@ -160,6 +160,7 @@ class DjangoSerializerMutation(ObjectType):
         _meta.input_field_name = input_field_name_dict
         _meta.output_field_name = output_field_name
         _meta.nested_fields = nested_fields
+        _meta.non_required_fields = non_required_fields
         super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(
             _meta=_meta, description=description, **options
         )
@@ -204,14 +205,17 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def create(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['create'])
+        non_required_fields = cls._meta.non_required_fields
         m2m_dict = {}
-        m2m_fields = [
-            field.attname for field in cls._meta.model._meta.local_many_to_many]
-        for m2m_field in m2m_fields:
-            if data.get(m2m_field):
-                m2m_dict[m2m_field] = data.pop(m2m_field)
-            else:
-                data[m2m_field] = []
+        if non_required_fields:
+            non_required_fields_list = [field.name for field in non_required_fields]
+            m2m_fields = [
+                field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname not in non_required_fields_list]
+            for m2m_field in m2m_fields:
+                if data.get(m2m_field):
+                    m2m_dict[m2m_field] = data.pop(m2m_field)
+                else:
+                    data[m2m_field] = []
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
@@ -263,11 +267,14 @@ class DjangoSerializerMutation(ObjectType):
     def update(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['update'])
         m2m_dict = {}
-        m2m_fields = [
-            field.attname for field in cls._meta.model._meta.local_many_to_many]
-        for m2m_field in m2m_fields:
-            if data.get(m2m_field):
-                m2m_dict[m2m_field] = data.pop(m2m_field)
+        non_required_fields = cls._meta.non_required_fields
+        if non_required_fields:
+            non_required_fields_list = [field.name for field in non_required_fields ]
+            m2m_fields = [
+                field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname not in non_required_fields_list]
+            for m2m_field in m2m_fields:
+                if data.get(m2m_field):
+                    m2m_dict[m2m_field] = data.pop(m2m_field)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
             data.update(
