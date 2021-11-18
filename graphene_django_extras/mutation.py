@@ -210,7 +210,7 @@ class DjangoSerializerMutation(ObjectType):
         if non_required_fields:
             non_required_fields_list = [field.name for field in non_required_fields]
             m2m_fields = [
-                field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname not in non_required_fields_list]
+                field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname in non_required_fields_list]
             for m2m_field in m2m_fields:
                 if data.get(m2m_field):
                     m2m_dict[m2m_field] = data.pop(m2m_field)
@@ -271,7 +271,7 @@ class DjangoSerializerMutation(ObjectType):
         if non_required_fields:
             non_required_fields_list = [field.name for field in non_required_fields ]
             m2m_fields = [
-                field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname not in non_required_fields_list]
+                field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname in non_required_fields_list]
             for m2m_field in m2m_fields:
                 if data.get(m2m_field):
                     m2m_dict[m2m_field] = data.pop(m2m_field)
