@@ -231,9 +231,9 @@ class DjangoSerializerMutation(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
-        for m2m_field, m2m_value in m2m_dict.items():
+        for m2m_field in m2m_dict:
             field = getattr(obj, m2m_field)
-            field.set(m2m_value)
+            field.set(m2m_dict[m2m_field])
         if not ok:
             return cls.get_errors(obj)
         elif nested_objs:
@@ -310,9 +310,9 @@ class DjangoSerializerMutation(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
-        for m2m_field, m2m_value in m2m_dict.items():
+        for m2m_field in m2m_dict:
             field = getattr(obj, m2m_field)
-            field.set(m2m_value)
+            field.set(m2m_dict[m2m_field])
         if not ok:
             return cls.get_errors(obj)
         elif nested_objs:
