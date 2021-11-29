@@ -32,6 +32,7 @@ def factory_type(operation, _type, *args, **kwargs):
                     kwargs.get("model").__name__
                 )
                 non_required_fields = kwargs.get("non_required_fields")
+                extra_fields = kwargs.get("extra_fields")
 
         return GenericType
 
@@ -54,6 +55,7 @@ def factory_type(operation, _type, *args, **kwargs):
                     kwargs.get("model").__name__
                 )
                 non_required_fields = kwargs.get("non_required_fields")
+                extra_fields = kwargs.get("extra_fields")
 
         return GenericInputType
 

@@ -21,6 +21,7 @@ from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model
 from graphql import GraphQLList, GraphQLNonNull
 from graphql.language.ast import FragmentSpreadNode, InlineFragmentNode
+from rest_framework import serializers
 
 
 def get_reverse_fields(model):
@@ -97,6 +98,26 @@ def get_model_fields(model):
     ]
 
     return local_fields + reverse_fields
+
+
+def get_serializer_fields(extra_fields):
+    """
+    Creating fields for serializer extra fields
+    :param extra_fields: list of SerializerExtraFields from ApiGenerator
+    {
+        name: 'name',
+        serializer_field_name: 'BooleanField',
+        kwargs: {'required': True},
+        create: False,
+        update: True
+    }
+    :return: List[Tuple] (SerializerExtraField, serializers.BooleanField(required: True))
+    """
+    fields = [
+        (field, getattr(
+            serializers, field.serializer_field_name)(**field.kwargs)) for field in extra_fields
+    ]
+    return fields
 
 
 def get_obj(app_label, model_name, object_id):

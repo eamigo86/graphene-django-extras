@@ -53,8 +53,10 @@ class DjangoSerializerMutation(ObjectType):
     ):
         non_required_fields = options["non_required_fields"]
         input_type_name = options["input_type"]
+        extra_fields = options["extra_fields"]
         del options["non_required_fields"]
         del options["input_type"]
+        del options["extra_fields"]
         if not serializer_class:
             raise Exception(
                 "serializer_class is required on all DjangoSerializerMutation"
@@ -98,7 +100,8 @@ class DjangoSerializerMutation(ObjectType):
             "nested_fields": nested_fields,
             "registry": registry,
             "skip_registry": False,
-            "non_required_fields": non_required_fields
+            "non_required_fields": non_required_fields,
+            "extra_fields": extra_fields,
         }
 
         if input_type_name:
@@ -161,6 +164,7 @@ class DjangoSerializerMutation(ObjectType):
         _meta.output_field_name = output_field_name
         _meta.nested_fields = nested_fields
         _meta.non_required_fields = non_required_fields
+        _meta.extra_fields = extra_fields
         super(DjangoSerializerMutation, cls).__init_subclass_with_meta__(
             _meta=_meta, description=description, **options
         )

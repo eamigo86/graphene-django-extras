@@ -27,6 +27,7 @@ from graphene.utils.str_converters import to_camel_case
 from graphene_django.compat import ArrayField, RangeField
 from functools import singledispatch
 from graphene_django.utils.str_converters import to_const
+from rest_framework import serializers
 
 from .base_types import (
     GenericForeignKeyType,
@@ -39,7 +40,7 @@ from .base_types import (
 
 )
 from .fields import DjangoFilterListField, DjangoListField
-from .utils import is_required, get_model_fields, get_related_model
+from .utils import is_required, get_model_fields, get_related_model, get_serializer_fields
 from netfields import InetAddressField
 from django.contrib.postgres.fields import HStoreField
 from graphene_file_upload.scalars import Upload
@@ -132,8 +133,10 @@ def construct_fields(
     input_flag=None,
     nested_fields=(),
     non_required_fields=None,
+    extra_fields=None,
 ):
     _model_fields = get_model_fields(model)
+    _serializer_fields = get_serializer_fields(extra_fields)
     if settings.DEBUG:
         if input_flag == "create":
             _model_fields = sorted(
@@ -180,6 +183,15 @@ def construct_fields(
                 field, registry, input_flag, nested_field, non_required_fields, name
             )
             fields[name] = converted
+
+        # Adding serializer extra fields to the mutations
+        for field, serializer_field in _serializer_fields:
+            if (input_flag == "create" and field.create) or \
+                    (input_flag == "update" and field.update):
+                converted = convert_django_field_with_choices(
+                    serializer_field, registry, input_flag, None, None, field.name
+                )
+                fields[field.name] = converted
 
     return fields
 
@@ -244,6 +256,7 @@ def convert_field_to_int(field, registry=None, input_flag=None, nested_field=Fal
 
 
 @convert_django_field.register(models.BooleanField)
+@convert_django_field.register(serializers.BooleanField)
 def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     required = is_required(
         field) if not field_name in non_required_fields_list else False and input_flag == "create"
