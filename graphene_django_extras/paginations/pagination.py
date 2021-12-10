@@ -198,7 +198,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
     def paginate_queryset(self, qs, **kwargs):
         count = _get_count(qs)
-        page = kwargs.pop(self.page_query_param, 1)
+        page = kwargs.pop(self.page_query_param, 1) or 1
         if self.page_size_query_param:
             page_size = _nonzero_int(
                 kwargs.get(self.page_size_query_param, self.page_size) or self.page_size,
