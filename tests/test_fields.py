@@ -158,3 +158,18 @@ class DjangoCustomResolverTest(ParentTest, TestCase):
                 ]
             }
         }
+
+class PageGraphqlPaginationTest(ParentTest, TestCase):
+    query = queries.ALL_USERS1_1
+    expected_return_payload = {
+        "data": {
+            "allUsers11": {
+                "results": [
+                    {
+                        "id":"1"
+                    }
+                ],
+                "totalCount": 1
+            }
+        }
+    }
