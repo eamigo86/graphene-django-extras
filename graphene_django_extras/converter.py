@@ -187,7 +187,8 @@ def construct_fields(
         # Adding serializer extra fields to the mutations
         for field, serializer_field in _serializer_fields:
             if (input_flag == "create" and field.create) or \
-                    (input_flag == "update" and field.update):
+                    (input_flag == "update" and field.update) or \
+                    (input_flag is None and field.get):
                 converted = convert_django_field_with_choices(
                     serializer_field, registry, input_flag, None, None, field.name
                 )
@@ -212,6 +213,7 @@ def convert_django_field(field, registry=None, input_flag=None, nested_field=Fal
 @convert_django_field.register(models.URLField)
 @convert_django_field.register(models.GenericIPAddressField)
 @convert_django_field.register(InetAddressField)
+@convert_django_field.register(serializers.CharField)
 def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return String(
         description=field.help_text or field.verbose_name,
