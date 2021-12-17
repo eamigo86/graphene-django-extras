@@ -249,7 +249,7 @@ def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=Fa
 @convert_django_field.register(models.SmallIntegerField)
 @convert_django_field.register(models.BigIntegerField)
 @convert_django_field.register(models.IntegerField)
-@convert_django_field.register(serializers.IntegerField)
+@convert_django_field.register(serializers.IntegerField) 
 def convert_field_to_int(field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None):
     return Int(
         description=field.help_text or field.verbose_name,
