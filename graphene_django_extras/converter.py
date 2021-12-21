@@ -567,3 +567,14 @@ def convert_field_to_string(field, registry=None, input_flag=None, nested_field=
         required=is_required(
             field) if not field_name in non_required_fields_list else False and input_flag == "create",
     )
+
+@convert_django_field.register(serializers.ListField)
+def convert_list_to_string(
+    field, registry=None, input_flag=None, nested_field=False, non_required_fields_list=[], field_name=None
+):
+    return List(
+        ID,
+        description=field.help_text or field.verbose_name,
+        required=is_required(
+            field) if not field_name in non_required_fields_list else False and input_flag == "create",
+    )
