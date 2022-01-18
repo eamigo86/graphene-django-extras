@@ -9,7 +9,7 @@ from django.contrib.contenttypes.fields import (
     GenericRel,
 )
 from django.db import models
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from graphene import (
     Field,
     ID,
@@ -52,7 +52,7 @@ def assert_valid_name(name):
 
 
 def convert_choice_name(name):
-    name = to_const(force_text(name))
+    name = to_const(force_str(name))
     try:
         assert_valid_name(name)
     except AssertionError:
