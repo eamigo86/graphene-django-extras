@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 from graphql import Source, parse, execute
 from graphql.subscription import subscribe
-from graphql.utils.get_operation_ast import get_operation_ast
+from graphql.utilities import get_operation_ast
 from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
