@@ -10,7 +10,7 @@ from graphene.types.datetime import Date, Time, DateTime
 from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
 import logging
-
+import pytz
 
 def factory_type(operation, _type, *args, **kwargs):
     if operation == "output":
@@ -181,15 +181,18 @@ class CustomDate(Date):
 
 
 class CustomDateTime(graphene.Scalar):
+    """
+    Converts DateTime to Epoch
+    """    
     @staticmethod
     def serialize(dt):
-        return int(dt.timestamp() * 1000.)
+        return int(dt.replace(tzinfo=pytz.utc).timestamp() * 1000.)
 
     @staticmethod
     def parse_value(value):
         if isinstance(value, str):
             value = int(value)
-        return datetime.datetime.fromtimestamp(value / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
+        return datetime.datetime.fromtimestamp(value / 1000.0).replace(tzinfo=pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
 class CustomDict(graphene.Scalar):
