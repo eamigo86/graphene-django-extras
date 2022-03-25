@@ -11,7 +11,7 @@ distlib==0.3.2
 filelock==3.0.12
 html5lib==1.1
 idna==2.10
-Jinja2==3.0.1
+Jinja2==3.0.3
 keyring==21.8.0
 lockfile==0.12.2
 MarkupSafe==2.0.1
