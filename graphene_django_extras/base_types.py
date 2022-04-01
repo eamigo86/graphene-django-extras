@@ -192,8 +192,7 @@ class CustomDateTime(graphene.Scalar):
     def parse_value(value):
         if isinstance(value, str):
             value = int(value)
-        return datetime.datetime.fromtimestamp(value / 1000.0).replace(tzinfo=pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')
-
+        return datetime.datetime.fromtimestamp(value / 1000.0).replace(tzinfo=pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f%z')
 
 class CustomDict(graphene.Scalar):
 
