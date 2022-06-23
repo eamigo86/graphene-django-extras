@@ -70,7 +70,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         # A string value indicating the name of the "offset" query parameter.
         self.offset_query_param = offset_query_param
 
-        # A string or tuple/list of strings that indicating the default ordering when obtaining lists of objects.
+        # A string or tuple/list of strings that indicates the default ordering when obtaining lists of objects.
         # Uses Django order_by syntax
         self.ordering_param = ordering_param
 
@@ -97,7 +97,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
                 description="The initial index from which to return the results. Default: 0"
             ),
             self.ordering_param: String(
-                description="A string or comma delimited string values that indicate the "
+                description="A string or comma delimited string value that indicates the "
                 "default ordering when obtaining lists of objects."
             ),
         }
@@ -155,7 +155,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         # Default ordering value: ""
         self.ordering = ordering
 
-        # A string or comma delimited string values that indicate the default ordering when obtaining lists of objects.
+        # A string or comma delimited string value that indicates the default ordering when obtaining lists of objects.
         # Uses Django order_by syntax
         self.ordering_param = ordering_param
 
@@ -180,7 +180,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
                 description="A page number within the result paginated set. Default: 1",
             ),
             self.ordering_param: String(
-                description="A string or comma delimited string values that indicate the "
+                description="A string or comma delimited string value that indicates the "
                 "default ordering when obtaining lists of objects."
             ),
         }
@@ -266,5 +266,5 @@ class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
 
     def paginate_queryset(self, qs, **kwargs):
         raise NotImplementedError(
-            "paginate_queryset() on CursorGraphqlPagination are not implemented yet."
+            "paginate_queryset() on CursorGraphqlPagination is not implemented yet."
         )
