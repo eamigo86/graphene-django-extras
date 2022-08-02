@@ -64,9 +64,7 @@ class DjangoSerializerMutation(ObjectType):
 
         model = serializer_class.Meta.model
 
-        description = description or "SerializerMutation for {} model".format(
-            model.__name__
-        )
+        description = description or f"SerializerMutation for {model.__name__} model"
         input_field_name = input_field_name or "new_{}".format(
             model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name)
         input_field_name_dict = {
@@ -85,11 +83,7 @@ class DjangoSerializerMutation(ObjectType):
                         "https://github.com/graphql-python/graphene/blob/2.0/UPGRADE-v2.0.md#mutation-input"
                     ).format(name=cls.__name__)
                 )
-        if input_class:
-            arguments = props(input_class)
-        else:
-            arguments = {}
-
+        arguments = props(input_class) if input_class else {}
         registry = get_global_registry()
 
         factory_kwargs = {
@@ -118,25 +112,22 @@ class DjangoSerializerMutation(ObjectType):
         global_arguments = {}
 
         for operation in ("create", "delete", "update"):
-            global_arguments.update({operation: OrderedDict()})
+            global_arguments[operation] = OrderedDict()
 
             if operation != "delete":
                 if operation == 'update':
                     input_field_name = f"update_{model.API_SCHEMA.graphql_schema[0].class_name_prefix or model._meta.model_name}"
                     input_field_name_dict['update'] = input_field_name
-                if not input_type_name:
-                    input_type = registry.get_type_for_model(
-                        model, for_input=operation)
-                    if not input_type:
-                        # factory_kwargs.update({'skip_registry': True})
-                        input_type = factory_type(
-                            "input", DjangoInputObjectType, operation, **factory_kwargs
-                        )
-                else:
-                    # factory_kwargs.update({'skip_registry': True})
-                    input_type = factory_type(
+                input_type = (
+                    factory_type(
                         "input", DjangoInputObjectType, operation, **factory_kwargs
                     )
+                    if input_type_name
+                    else registry.get_type_for_model(model, for_input=operation)
+                    or factory_type(
+                        "input", DjangoInputObjectType, operation, **factory_kwargs
+                    )
+                )
 
                 global_arguments[operation].update(
                     {input_field_name: Argument(input_type, required=True)}
@@ -191,17 +182,16 @@ class DjangoSerializerMutation(ObjectType):
         nested_objs = {}
         if cls._meta.nested_fields and type(cls._meta.nested_fields) == dict:
             for field in cls._meta.nested_fields:
-                sub_data = data.pop(field, None)
-                if sub_data:
+                if sub_data := data.pop(field, None):
                     serialized_data = cls._meta.nested_fields[field](
-                        data=sub_data, many=True if type(
-                            sub_data) == list else False
+                        data=sub_data, many=type(sub_data) == list
                     )
+
                     ok, result = cls.save(serialized_data, root, info)
                     if not ok:
                         return cls.get_errors(result)
                     if type(sub_data) == list:
-                        nested_objs.update({field: result})
+                        nested_objs[field] = result
                     else:
                         data.update({field: result.id})
         return nested_objs
@@ -209,9 +199,8 @@ class DjangoSerializerMutation(ObjectType):
     @classmethod
     def create(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['create'])
-        non_required_fields = cls._meta.non_required_fields
         m2m_dict = {}
-        if non_required_fields:
+        if non_required_fields := cls._meta.non_required_fields:
             non_required_fields_list = [field.name for field in non_required_fields]
             m2m_fields = [
                 field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname in non_required_fields_list]
@@ -222,8 +211,7 @@ class DjangoSerializerMutation(ObjectType):
                     data[m2m_field] = []
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
-            data.update(
-                {name: value for name, value in info.context.FILES.items()})
+            data.update(dict(info.context.FILES.items()))
 
         nested_objs = cls.manage_nested_fields(data, root, info)
         serializer = cls._meta.serializer_class(
@@ -231,9 +219,9 @@ class DjangoSerializerMutation(ObjectType):
         )
 
         ok, obj = cls.save(serializer, root, info)
-        for m2m_field in m2m_dict:
+        for m2m_field, value in m2m_dict.items():
             field = getattr(obj, m2m_field)
-            field.set(m2m_dict[m2m_field])
+            field.set(value)
         if not ok:
             return cls.get_errors(obj)
         elif nested_objs:
@@ -245,9 +233,9 @@ class DjangoSerializerMutation(ObjectType):
     def delete(cls, root, info, **kwargs):
         pk = kwargs.get("id")
 
-        old_obj = get_Object_or_None(
-            cls._meta.model, info, type='delete', pk=pk)
-        if old_obj:
+        if old_obj := get_Object_or_None(
+            cls._meta.model, info, type='delete', pk=pk
+        ):
             old_obj.delete()
             old_obj.id = pk
             return cls.perform_mutate(old_obj, info)
@@ -259,9 +247,7 @@ class DjangoSerializerMutation(ObjectType):
                     ErrorType(
                         field="id",
                         messages=[
-                            "A {} obj with id {} do not exist".format(
-                                cls._meta.model.__name__, pk
-                            )
+                            f"A {cls._meta.model.__name__} obj with id {pk} do not exist"
                         ],
                     )
                 ]
@@ -271,8 +257,7 @@ class DjangoSerializerMutation(ObjectType):
     def update(cls, root, info, **kwargs):
         data = kwargs.get(cls._meta.input_field_name['update'])
         m2m_dict = {}
-        non_required_fields = cls._meta.non_required_fields
-        if non_required_fields:
+        if non_required_fields := cls._meta.non_required_fields:
             non_required_fields_list = [field.name for field in non_required_fields ]
             m2m_fields = [
                 field.attname for field in cls._meta.model._meta.local_many_to_many if field.attname in non_required_fields_list]
@@ -281,8 +266,7 @@ class DjangoSerializerMutation(ObjectType):
                     m2m_dict[m2m_field] = data.pop(m2m_field)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
-            data.update(
-                {name: value for name, value in info.context.FILES.items()})
+            data.update(dict(info.context.FILES.items()))
 
         pk = data.pop("id")
         old_obj = get_Object_or_None(
@@ -293,13 +277,12 @@ class DjangoSerializerMutation(ObjectType):
                     ErrorType(
                         field="id",
                         messages=[
-                            "A {} obj with id: {} do not exist".format(
-                                cls._meta.model.__name__, pk
-                            )
+                            f"A {cls._meta.model.__name__} obj with id: {pk} do not exist"
                         ],
                     )
                 ]
             )
+
         nested_objs = cls.manage_nested_fields(data, root, info)
         serializer = cls._meta.serializer_class(
             old_obj,
@@ -340,7 +323,7 @@ class DjangoSerializerMutation(ObjectType):
                 # Field is `id` because it is required and we don't know what caused the exception
                 # other than from the exception message
                 errors = [
-                    ErrorType(field="id", messages=[e.__repr__()])
+                    ErrorType(field="id", messages=[e.__str__()])
                 ]
                 # Atomic transaction support
                 cls._set_errors_flag_to_context(info)
