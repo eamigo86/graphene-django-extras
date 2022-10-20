@@ -14,7 +14,7 @@ idna==2.10
 Jinja2==3.0.3
 keyring==21.8.0
 lockfile==0.12.2
-MarkupSafe==2.0.1
+MarkupSafe==2.1.1
 msgpack==1.0.2
 packaging==20.9
 pastel==0.2.1
@@ -27,7 +27,7 @@ ptyprocess==0.7.0
 pycodestyle==2.7.0
 pylev==1.4.0
 pyparsing==2.4.7
-requests==2.25.1
+requests==2.26.0
 requests-toolbelt==0.9.1
 shellingham==1.4.0
 six==1.15.0
