@@ -236,9 +236,17 @@ class DjangoSerializerMutation(ObjectType):
         if old_obj := get_Object_or_None(
             cls._meta.model, info, type='delete', pk=pk
         ):
-            old_obj.delete()
-            old_obj.id = pk
-            return cls.perform_mutate(old_obj, info)
+            try:
+                old_obj.delete()
+                old_obj.id = pk
+                return cls.perform_mutate(old_obj, info)
+            except RuntimeError as e:
+                errors = [
+                    ErrorType(field="id", messages=[e.__str__()])
+                ]
+                # Atomic transaction support
+                cls._set_errors_flag_to_context(info)
+                return cls.get_errors(errors)
         else:
             # Atomic transaction support
             cls._set_errors_flag_to_context(info)
