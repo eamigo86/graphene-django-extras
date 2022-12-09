@@ -9,7 +9,7 @@ from ..base_types import DjangoListObjectBase
 
 class GenericPaginationField(graphene.Field):
     """
-        Generic paginations field class with all generic function needed to paginate queryset
+    Generic paginations field class with all generic function needed to paginate queryset
     """
 
     def __init__(self, _type, paginator_instance, *args, **kwargs):

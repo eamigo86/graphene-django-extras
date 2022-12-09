@@ -159,8 +159,10 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         # Uses Django order_by syntax
         self.ordering_param = ordering_param
 
-        self.page_size_query_description = "Number of results to return per page. Default 'page_size': {}".format(
-            self.page_size
+        self.page_size_query_description = (
+            "Number of results to return per page. Default 'page_size': {}".format(
+                self.page_size
+            )
         )
 
     def to_dict(self):

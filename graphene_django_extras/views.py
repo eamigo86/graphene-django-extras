@@ -40,7 +40,7 @@ class ExtraGraphQLView(GraphQLView, APIView):
 
     @staticmethod
     def fetch_cache_key(request):
-        """ Returns a hashed cache key. """
+        """Returns a hashed cache key."""
         m = hashlib.md5()
         m.update(request.body)
 
@@ -52,7 +52,7 @@ class ExtraGraphQLView(GraphQLView, APIView):
         return response
 
     def dispatch(self, request, *args, **kwargs):
-        """ Fetches queried data from graphql and returns cached & hashed key. """
+        """Fetches queried data from graphql and returns cached & hashed key."""
         if not graphql_api_settings.CACHE_ACTIVE:
             return self.super_call(request, *args, **kwargs)
 
@@ -136,8 +136,8 @@ class ExtraGraphQLView(GraphQLView, APIView):
 
 class AuthenticatedGraphQLView(ExtraGraphQLView):
     """
-        Extra Graphql view that use 'permission', 'authorization' and 'throttle' classes based on the DRF settings.
-        Thanks to @jacobh in (https://github.com/graphql-python/graphene/issues/249#issuecomment-300068390)
+    Extra Graphql view that use 'permission', 'authorization' and 'throttle' classes based on the DRF settings.
+    Thanks to @jacobh in (https://github.com/graphql-python/graphene/issues/249#issuecomment-300068390)
     """
 
     def parse_body(self, request):
