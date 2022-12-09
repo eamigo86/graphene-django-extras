@@ -10,12 +10,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: 3.6
-            django: 2.2
-            toxenv: py36-django22
-          - python: 3.6
-            django: 3.0
-            toxenv: py36-django30
           - python: 3.7
             django: 2.2
             toxenv: py37-django22
@@ -63,7 +57,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: 3.6
+          - python: 3.9
             toxenv: quality
     steps:
       - uses: actions/checkout@v2
@@ -85,7 +79,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: 3.6
+          - python: 3.9
             toxenv: security
     steps:
       - uses: actions/checkout@v2
