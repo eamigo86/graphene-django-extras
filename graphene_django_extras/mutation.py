@@ -27,7 +27,7 @@ class SerializerMutationOptions(BaseOptions):
 
 class DjangoSerializerMutation(ObjectType):
     """
-        Serializer Mutation Type Definition
+    Serializer Mutation Type Definition
     """
 
     ok = Boolean(description="Boolean field that return mutation result request.")

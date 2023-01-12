@@ -125,8 +125,10 @@ class PagePaginationField(AbstractPaginationField):
 
         self.ordering_param = ordering_param
 
-        self.page_size_query_description = "Number of results to return per page. Actual 'page_size': {}".format(
-            self.page_size
+        self.page_size_query_description = (
+            "Number of results to return per page. Actual 'page_size': {}".format(
+                self.page_size
+            )
         )
 
         kwargs[self.page_query_param] = Int(
