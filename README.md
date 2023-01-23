@@ -494,6 +494,10 @@ You can use this shortcuts too:
 
 ## Change Log:
 
+#### v1.0.0:
+    1. Added support to Django 4.x
+    2. Removed support for Django versions < 3.2
+
 #### v0.5.1:
     1. Update dependencies
 
