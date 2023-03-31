@@ -5,8 +5,8 @@ from django.core.cache import caches
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 from graphql import Source, parse, execute
-from graphql.execution.executor import subscribe
-from graphql.utils.get_operation_ast import get_operation_ast
+from graphql.execution import subscribe
+from graphql.utilities.get_operation_ast import get_operation_ast
 from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
@@ -109,7 +109,7 @@ class ExtraGraphQLView(GraphQLView, APIView):
                     self.format_error(e) for e in execution_result.errors
                 ]
 
-            if execution_result.invalid:
+            if getattr(execution_result, 'invalid', False):
                 status_code = 400
             else:
                 response["data"] = execution_result.data
