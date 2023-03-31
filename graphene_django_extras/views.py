@@ -4,7 +4,7 @@ import hashlib
 from django.core.cache import caches
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
-from graphql import Source, parse, execute
+from graphql import Source, parse, execute, OperationType
 from graphql.execution import subscribe
 from graphql.utilities.get_operation_ast import get_operation_ast
 from rest_framework.decorators import (
@@ -58,7 +58,7 @@ class ExtraGraphQLView(GraphQLView, APIView):
 
         cache = caches["default"]
         operation_ast = self.get_operation_ast(request)
-        if operation_ast and operation_ast.operation == "mutation":
+        if operation_ast and operation_ast.operation == OperationType.MUTATION:
             cache.clear()
             return self.super_call(request, *args, **kwargs)
 
