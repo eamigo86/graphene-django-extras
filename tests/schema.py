@@ -12,7 +12,7 @@ from graphene_django_extras.fields import (
     DjangoFilterPaginateListField,
     DjangoFilterListField,
 )
-from graphene_django_extras.paginations import LimitOffsetGraphqlPagination
+from graphene_django_extras.paginations import LimitOffsetGraphqlPagination, PageGraphqlPagination
 from graphene_django_extras.types import (
     DjangoListObjectType,
     DjangoSerializerType,
@@ -43,6 +43,14 @@ class User1ListType(DjangoListObjectType):
             default_limit=25, ordering="-username"
         )
 
+class User2ListType(DjangoListObjectType):
+    class Meta:
+        description = " Type definition for user list "
+        model = User
+        pagination = PageGraphqlPagination(
+            page_size_query_param="page_size",
+            page_size=10
+        )
 
 class UserModelType(DjangoSerializerType):
     class Meta:
@@ -76,6 +84,9 @@ class Query(graphene.ObjectType):
     all_users = DjangoListObjectField(User1ListType, description=_("All Users query"))
     all_users1 = DjangoFilterPaginateListField(
         UserType, pagination=LimitOffsetGraphqlPagination()
+    )
+    all_users1_1 = DjangoListObjectField(
+        User2ListType
     )
     all_users2 = DjangoFilterListField(UserType)
     all_users3 = DjangoListObjectField(

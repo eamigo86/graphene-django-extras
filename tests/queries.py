@@ -61,3 +61,12 @@ USERS = """query {
   }
 }
 """
+ALL_USERS1_1 = """query {
+  allUsers11 {
+      totalCount
+      results {
+        id
+      }
+  }
+}
+"""
