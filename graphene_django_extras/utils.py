@@ -7,15 +7,8 @@ import six
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
-from django.core.exceptions import ValidationError, ImproperlyConfigured
-from django.db.models import (
-    NOT_PROVIDED,
-    QuerySet,
-    Manager,
-    Model,
-    ManyToOneRel,
-    ManyToManyRel,
-)
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.db.models import NOT_PROVIDED, Manager, ManyToManyRel, ManyToOneRel, Model, QuerySet
 from django.db.models.base import ModelBase
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model
@@ -92,9 +85,7 @@ def get_model_fields(model):
     reverse_fields = list(get_reverse_fields(model))
     exclude_fields = [field[1] for field in reverse_fields]
 
-    local_fields = [
-        (field.name, field) for field in all_fields_list if field not in exclude_fields
-    ]
+    local_fields = [(field.name, field) for field in all_fields_list if field not in exclude_fields]
 
     all_fields = local_fields + reverse_fields
 
@@ -174,9 +165,7 @@ def clean_dict(d):
         return d
     if isinstance(d, list):
         return [v for v in (clean_dict(v) for v in d) if v]
-    return OrderedDict(
-        [(k, v) for k, v in ((k, clean_dict(v)) for k, v in list(d.items())) if v]
-    )
+    return OrderedDict([(k, v) for k, v in ((k, clean_dict(v)) for k, v in list(d.items())) if v])
 
 
 def get_type(_type):
@@ -300,9 +289,7 @@ def get_related_fields(model):
 
 
 def find_field(field, fields_dict):
-    temp = fields_dict.get(
-        field.name.value, fields_dict.get(to_snake_case(field.name.value), None)
-    )
+    temp = fields_dict.get(field.name.value, fields_dict.get(to_snake_case(field.name.value), None))
 
     return temp
 
@@ -310,9 +297,7 @@ def find_field(field, fields_dict):
 def recursive_params(
     selection_set, fragments, available_related_fields, select_related, prefetch_related
 ):
-
     for field in selection_set.selections:
-
         if isinstance(field, FragmentSpreadNode) and fragments:
             a, b = recursive_params(
                 fragments[field.name.value].selection_set,
@@ -362,7 +347,6 @@ def recursive_params(
 
 
 def queryset_factory(manager, root, info, **kwargs):
-
     select_related = set()
     prefetch_related = set()
     available_related_fields = get_related_fields(manager.model)
@@ -404,7 +388,6 @@ def queryset_factory(manager, root, info, **kwargs):
 
 
 def parse_validation_exc(validation_exc):
-
     errors_list = []
     for key, value in validation_exc.error_dict.items():
         for exc in value:

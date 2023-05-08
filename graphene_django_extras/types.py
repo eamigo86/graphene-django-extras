@@ -3,24 +3,20 @@ from collections import OrderedDict
 
 from django.db.models import QuerySet
 from django.utils.functional import SimpleLazyObject
-from graphene import Field, InputField, ObjectType, Int, Argument, ID, Boolean, List
+from graphene import ID, Argument, Boolean, Field, InputField, Int, List, ObjectType
 from graphene.types.base import BaseOptions
 from graphene.types.inputobjecttype import InputObjectType, InputObjectTypeContainer
 from graphene.types.utils import yank_fields_from_attrs
 from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
 from graphene_django.types import ErrorType
-from graphene_django.utils import (
-    is_valid_django_model,
-    DJANGO_FILTER_INSTALLED,
-    maybe_queryset,
-)
+from graphene_django.utils import DJANGO_FILTER_INSTALLED, is_valid_django_model, maybe_queryset
 
 from .base_types import DjangoListObjectBase, factory_type
 from .converter import construct_fields
-from .fields import DjangoObjectField, DjangoListObjectField, DjangoListField
+from .fields import DjangoListField, DjangoListObjectField, DjangoObjectField
 from .paginations.pagination import BaseDjangoGraphqlPagination
-from .registry import get_global_registry, Registry
+from .registry import Registry, get_global_registry
 from .settings import graphql_api_settings
 from .utils import get_Object_or_None, queryset_factory
 
@@ -88,8 +84,7 @@ class DjangoObjectType(ObjectType):
             registry = get_global_registry()
 
         assert isinstance(registry, Registry), (
-            "The attribute registry in {} needs to be an instance of "
-            'Registry, received "{}".'
+            "The attribute registry in {} needs to be an instance of " 'Registry, received "{}".'
         ).format(cls.__name__, registry)
 
         if not DJANGO_FILTER_INSTALLED and (filter_fields or filterset_class):
@@ -98,9 +93,7 @@ class DjangoObjectType(ObjectType):
             )
 
         django_fields = yank_fields_from_attrs(
-            construct_fields(
-                model, registry, only_fields, include_fields, exclude_fields
-            ),
+            construct_fields(model, registry, only_fields, include_fields, exclude_fields),
             _as=Field,
         )
 
@@ -169,8 +162,7 @@ class DjangoInputObjectType(InputObjectType):
             registry = get_global_registry()
 
         assert isinstance(registry, Registry), (
-            "The attribute registry in {} needs to be an instance of "
-            'Registry, received "{}".'
+            "The attribute registry in {} needs to be an instance of " 'Registry, received "{}".'
         ).format(cls.__name__, registry)
 
         assert input_for.lower not in ("create", "delete", "update"), (
@@ -197,9 +189,7 @@ class DjangoInputObjectType(InputObjectType):
         )
 
         for base in reversed(cls.__mro__):
-            django_input_fields.update(
-                yank_fields_from_attrs(base.__dict__, _as=InputField)
-            )
+            django_input_fields.update(yank_fields_from_attrs(base.__dict__, _as=InputField))
 
         if container is None:
             container = type(cls.__name__, (InputObjectTypeContainer, cls), {})
@@ -251,7 +241,6 @@ class DjangoListObjectType(ObjectType):
         filterset_class=None,
         **options,
     ):
-
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -325,9 +314,7 @@ class DjangoListObjectType(ObjectType):
             ]
         )
 
-        super(DjangoListObjectType, cls).__init_subclass_with_meta__(
-            _meta=_meta, **options
-        )
+        super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
     @classmethod
     def RetrieveField(cls, *args, **kwargs):
@@ -367,15 +354,12 @@ class DjangoSerializerType(ObjectType):
         filterset_class=None,
         **options,
     ):
-
         if not serializer_class:
             raise Exception("serializer_class is required on all ModelSerializerType")
 
         model = serializer_class.Meta.model
 
-        description = description or "ModelSerializerType for {} model".format(
-            model.__name__
-        )
+        description = description or "ModelSerializerType for {} model".format(model.__name__)
 
         input_field_name = input_field_name or "new_{}".format(model._meta.model_name)
         output_field_name = output_field_name or model._meta.model_name
@@ -545,9 +529,7 @@ class DjangoSerializerType(ObjectType):
                     ErrorType(
                         field="id",
                         messages=[
-                            "A {} obj with id {} do not exist".format(
-                                cls._meta.model.__name__, pk
-                            )
+                            "A {} obj with id {} do not exist".format(cls._meta.model.__name__, pk)
                         ],
                     )
                 ]
@@ -583,9 +565,7 @@ class DjangoSerializerType(ObjectType):
                     ErrorType(
                         field="id",
                         messages=[
-                            "A {} obj with id: {} do not exist".format(
-                                cls._meta.model.__name__, pk
-                            )
+                            "A {} obj with id: {} do not exist".format(cls._meta.model.__name__, pk)
                         ],
                     )
                 ]
@@ -599,8 +579,7 @@ class DjangoSerializerType(ObjectType):
 
         else:
             errors = [
-                ErrorType(field=key, messages=value)
-                for key, value in serialized_obj.errors.items()
+                ErrorType(field=key, messages=value) for key, value in serialized_obj.errors.items()
             ]
             return False, errors
 
@@ -615,7 +594,6 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def list(cls, manager, filterset_class, filtering_args, root, info, **kwargs):
-
         qs = queryset_factory(cls._meta.queryset or manager, root, info, **kwargs)
 
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
@@ -635,9 +613,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def ListField(cls, *args, **kwargs):
-        return DjangoListObjectField(
-            cls._meta.output_list_type, resolver=cls.list, **kwargs
-        )
+        return DjangoListObjectField(cls._meta.output_list_type, resolver=cls.list, **kwargs)
 
     @classmethod
     def CreateField(cls, *args, **kwargs):

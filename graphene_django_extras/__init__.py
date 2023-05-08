@@ -3,18 +3,18 @@ from graphene.pyutils.version import get_version
 
 from .directives import all_directives
 from .fields import (
-    DjangoObjectField,
     DjangoFilterListField,
     DjangoFilterPaginateListField,
     DjangoListObjectField,
+    DjangoObjectField,
 )
 from .middleware import ExtraGraphQLDirectiveMiddleware
 from .mutation import DjangoSerializerMutation
 from .paginations import LimitOffsetGraphqlPagination, PageGraphqlPagination
 from .types import (
-    DjangoObjectType,
     DjangoInputObjectType,
     DjangoListObjectType,
+    DjangoObjectType,
     DjangoSerializerType,
 )
 

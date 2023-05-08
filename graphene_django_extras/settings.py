@@ -3,7 +3,6 @@ from django.conf import settings
 from django.test.signals import setting_changed
 from rest_framework.settings import APISettings
 
-
 DEFAULTS = {
     # Pagination
     "DEFAULT_PAGINATION_CLASS": None,  # 'graphene_django_extras.paginations.LimitOffsetGraphqlPagination'

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 
-from graphql import GraphQLArgument, GraphQLNonNull, GraphQLInt
+from graphql import GraphQLArgument, GraphQLInt, GraphQLNonNull
 
 from .base import BaseExtraGraphQLDirective
 
@@ -24,11 +24,7 @@ class ShuffleGraphQLDirective(BaseExtraGraphQLDirective):
 class SampleGraphQLDirective(BaseExtraGraphQLDirective):
     @staticmethod
     def get_args():
-        return {
-            "k": GraphQLArgument(
-                GraphQLNonNull(GraphQLInt), description="Value to default to"
-            )
-        }
+        return {"k": GraphQLArgument(GraphQLNonNull(GraphQLInt), description="Value to default to")}
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):

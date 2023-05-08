@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import time as t
-from datetime import date, datetime, timedelta, time
+from datetime import date, datetime, time, timedelta
 
 import six
 from dateutil import parser, relativedelta
 from django.utils import timezone
 from graphql import GraphQLArgument, GraphQLString
 
-from .base import BaseExtraGraphQLDirective
 from ..base_types import CustomDateFormat
+from .base import BaseExtraGraphQLDirective
 
 __all__ = ("DateGraphQLDirective",)
 
@@ -138,12 +138,9 @@ def _format_relativedelta(rdelta, full=False, two_days=False, original_dt=None):
 
 
 def _format_time_ago(dt, now=None, full=False, ago_in=False, two_days=False):
-
     if not isinstance(dt, timedelta):
         if now is None:
-            now = timezone.localtime(
-                timezone=timezone.get_fixed_timezone(-int(t.timezone / 60))
-            )
+            now = timezone.localtime(timezone=timezone.get_fixed_timezone(-int(t.timezone / 60)))
 
         original_dt = dt
         dt = _parse(dt)
@@ -204,9 +201,7 @@ def _format_dt(dt, format="default"):
                 else:
                     if temp_format != "":
                         if temp_format in FORMATS_MAP:
-                            translate_format_list.append(
-                                FORMATS_MAP.get(temp_format, "")
-                            )
+                            translate_format_list.append(FORMATS_MAP.get(temp_format, ""))
                         else:
                             return None
                     if str_in_dict_keys(char, FORMATS_MAP):
@@ -241,9 +236,7 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
-        format_argument = [
-            arg for arg in directive.arguments if arg.name.value == "format"
-        ]
+        format_argument = [arg for arg in directive.arguments if arg.name.value == "format"]
         format_argument = format_argument[0] if len(format_argument) > 0 else None
 
         custom_format = format_argument.value.value if format_argument else "default"

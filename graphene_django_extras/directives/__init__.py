@@ -2,24 +2,24 @@
 from graphql.type.directives import specified_directives as default_directives
 
 from .date import DateGraphQLDirective
-from .list import ShuffleGraphQLDirective, SampleGraphQLDirective
-from .numbers import FloorGraphQLDirective, CeilGraphQLDirective
+from .list import SampleGraphQLDirective, ShuffleGraphQLDirective
+from .numbers import CeilGraphQLDirective, FloorGraphQLDirective
 from .string import (
-    DefaultGraphQLDirective,
     Base64GraphQLDirective,
-    NumberGraphQLDirective,
-    CurrencyGraphQLDirective,
-    LowercaseGraphQLDirective,
-    UppercaseGraphQLDirective,
-    CapitalizeGraphQLDirective,
     CamelCaseGraphQLDirective,
-    SnakeCaseGraphQLDirective,
-    KebabCaseGraphQLDirective,
-    SwapCaseGraphQLDirective,
-    StripGraphQLDirective,
-    TitleCaseGraphQLDirective,
+    CapitalizeGraphQLDirective,
     CenterGraphQLDirective,
+    CurrencyGraphQLDirective,
+    DefaultGraphQLDirective,
+    KebabCaseGraphQLDirective,
+    LowercaseGraphQLDirective,
+    NumberGraphQLDirective,
     ReplaceGraphQLDirective,
+    SnakeCaseGraphQLDirective,
+    StripGraphQLDirective,
+    SwapCaseGraphQLDirective,
+    TitleCaseGraphQLDirective,
+    UppercaseGraphQLDirective,
 )
 
 all_directives = (

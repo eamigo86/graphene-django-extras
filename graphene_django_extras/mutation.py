@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from graphene import Boolean, List, Field, ID, Argument, ObjectType
+from graphene import ID, Argument, Boolean, Field, List, ObjectType
 from graphene.types.base import BaseOptions
 from graphene.utils.deprecated import warn_deprecation
 from graphene.utils.props import props
@@ -9,7 +9,7 @@ from graphene_django.types import ErrorType
 
 from .base_types import factory_type
 from .registry import get_global_registry
-from .types import DjangoObjectType, DjangoInputObjectType
+from .types import DjangoInputObjectType, DjangoObjectType
 from .utils import get_Object_or_None
 
 
@@ -49,17 +49,12 @@ class DjangoSerializerMutation(ObjectType):
         nested_fields=(),
         **options,
     ):
-
         if not serializer_class:
-            raise Exception(
-                "serializer_class is required on all DjangoSerializerMutation"
-            )
+            raise Exception("serializer_class is required on all DjangoSerializerMutation")
 
         model = serializer_class.Meta.model
 
-        description = description or "SerializerMutation for {} model".format(
-            model.__name__
-        )
+        description = description or "SerializerMutation for {} model".format(model.__name__)
 
         input_field_name = input_field_name or "new_{}".format(model._meta.model_name)
         output_field_name = output_field_name or model._meta.model_name
@@ -211,9 +206,7 @@ class DjangoSerializerMutation(ObjectType):
                     ErrorType(
                         field="id",
                         messages=[
-                            "A {} obj with id {} do not exist".format(
-                                cls._meta.model.__name__, pk
-                            )
+                            "A {} obj with id {} do not exist".format(cls._meta.model.__name__, pk)
                         ],
                     )
                 ]
@@ -249,9 +242,7 @@ class DjangoSerializerMutation(ObjectType):
                     ErrorType(
                         field="id",
                         messages=[
-                            "A {} obj with id: {} do not exist".format(
-                                cls._meta.model.__name__, pk
-                            )
+                            "A {} obj with id: {} do not exist".format(cls._meta.model.__name__, pk)
                         ],
                     )
                 ]
@@ -265,17 +256,14 @@ class DjangoSerializerMutation(ObjectType):
         """
         for key in serialized_obj.initial_data:
             if "Enum" in type(serialized_obj.initial_data[key]).__name__:
-                serialized_obj.initial_data[key] = serialized_obj.initial_data[
-                    key
-                ].value
+                serialized_obj.initial_data[key] = serialized_obj.initial_data[key].value
         if serialized_obj.is_valid():
             obj = serialized_obj.save()
             return True, obj
 
         else:
             errors = [
-                ErrorType(field=key, messages=value)
-                for key, value in serialized_obj.errors.items()
+                ErrorType(field=key, messages=value) for key, value in serialized_obj.errors.items()
             ]
             return False, errors
 

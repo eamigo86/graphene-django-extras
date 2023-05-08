@@ -4,8 +4,8 @@ from math import fabs
 from graphene import Int, NonNull, String
 
 from graphene_django_extras.paginations.utils import (
-    _get_count,
     GenericPaginationField,
+    _get_count,
     _nonzero_int,
 )
 from graphene_django_extras.settings import graphql_api_settings
@@ -32,9 +32,7 @@ class BaseDjangoGraphqlPagination(object):
         )
 
     def to_dict(self):
-        raise NotImplementedError(
-            "to_dict() function must be implemented into child classes."
-        )
+        raise NotImplementedError("to_dict() function must be implemented into child classes.")
 
     def paginate_queryset(self, qs, **kwargs):
         raise NotImplementedError(
@@ -54,7 +52,6 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         offset_query_param="offset",
         ordering_param="ordering",
     ):
-
         # A numeric value indicating the limit to use if one is not provided by the client in a query parameter.
         self.default_limit = default_limit
 
@@ -137,7 +134,6 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         ordering="",
         ordering_param="ordering",
     ):
-
         # Client can control the page using this query parameter.
         self.page_query_param = "page"
 
@@ -160,9 +156,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         self.ordering_param = ordering_param
 
         self.page_size_query_description = (
-            "Number of results to return per page. Default 'page_size': {}".format(
-                self.page_size
-            )
+            "Number of results to return per page. Default 'page_size': {}".format(self.page_size)
         )
 
     def to_dict(self):
@@ -189,11 +183,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
         if self.page_size_query_param:
             paginator_dict.update(
-                {
-                    self.page_size_query_param: Int(
-                        description=self.page_size_query_description
-                    )
-                }
+                {self.page_size_query_param: Int(description=self.page_size_query_description)}
             )
 
         return paginator_dict
@@ -222,11 +212,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
             """
             return None
 
-        offset = (
-            max(0, int(count + page_size * page))
-            if page < 0
-            else page_size * (page - 1)
-        )
+        offset = max(0, int(count + page_size * page)) if page < 0 else page_size * (page - 1)
 
         order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
@@ -246,7 +232,6 @@ class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
     page_size = graphql_api_settings.DEFAULT_PAGE_SIZE
 
     def __init__(self, ordering="-created", cursor_query_param="cursor"):
-
         self.page_size_query_param = "page_size" if not self.page_size else None
         self.cursor_query_param = cursor_query_param
         self.ordering = ordering
@@ -260,11 +245,7 @@ class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def to_graphql_fields(self):
-        return {
-            self.cursor_query_param: NonNull(
-                String, description=self.cursor_query_description
-            )
-        }
+        return {self.cursor_query_param: NonNull(String, description=self.cursor_query_description)}
 
     def paginate_queryset(self, qs, **kwargs):
         raise NotImplementedError(

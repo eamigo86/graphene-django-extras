@@ -26,9 +26,7 @@ class GenericPaginationField(graphene.Field):
             }
         )
 
-        super(GenericPaginationField, self).__init__(
-            graphene.List(_type), *args, **kwargs
-        )
+        super(GenericPaginationField, self).__init__(graphene.List(_type), *args, **kwargs)
 
     @property
     def model(self):
@@ -40,9 +38,7 @@ class GenericPaginationField(graphene.Field):
         return None
 
     def wrap_resolve(self, parent_resolver):
-        return partial(
-            self.list_resolver, self.type.of_type._meta.model._default_manager
-        )
+        return partial(self.list_resolver, self.type.of_type._meta.model._default_manager)
 
 
 def _positive_int(integer_string, strict=False, cutoff=None):

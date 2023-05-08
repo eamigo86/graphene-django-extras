@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from graphql.type.directives import GraphQLIncludeDirective
-from graphql.type.directives import GraphQLSkipDirective
+from graphql.type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 
 from .registry import get_global_registry
 
@@ -23,8 +22,6 @@ class ExtraGraphQLDirectiveMiddleware(object):
                 GraphQLSkipDirective.name,
             ):
                 directive_class = registry.get_directive(directive.name.value)
-                new_value = directive_class.resolve(
-                    new_value, directive, root, info, **kwargs
-                )
+                new_value = directive_class.resolve(new_value, directive, root, info, **kwargs)
 
         return new_value

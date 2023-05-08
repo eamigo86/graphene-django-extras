@@ -5,7 +5,7 @@ import binascii
 import datetime
 
 import graphene
-from graphene.types.datetime import Date, Time, DateTime
+from graphene.types.datetime import Date, DateTime, Time
 from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
 
@@ -154,9 +154,9 @@ class CustomTime(Time):
         if isinstance(time, datetime.datetime):
             time = time.time()
 
-        assert isinstance(
-            time, datetime.time
-        ), 'Received not compatible time "{}"'.format(repr(time))
+        assert isinstance(time, datetime.time), 'Received not compatible time "{}"'.format(
+            repr(time)
+        )
         return time.isoformat()
 
 
@@ -168,9 +168,9 @@ class CustomDate(Date):
 
         if isinstance(date, datetime.datetime):
             date = date.date()
-        assert isinstance(
-            date, datetime.date
-        ), 'Received not compatible date "{}"'.format(repr(date))
+        assert isinstance(date, datetime.date), 'Received not compatible date "{}"'.format(
+            repr(date)
+        )
         return date.isoformat()
 
 
