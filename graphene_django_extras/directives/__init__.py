@@ -50,4 +50,4 @@ all_directives = (
 )
 
 
-all_directives = [d() for d in all_directives] + default_directives
+all_directives = [d() for d in all_directives] + [*default_directives]

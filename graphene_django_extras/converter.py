@@ -9,7 +9,7 @@ from django.contrib.contenttypes.fields import (
     GenericRel,
 )
 from django.db import models
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from graphene import (
     Field,
     ID,
@@ -45,14 +45,14 @@ COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 
 
 def assert_valid_name(name):
-    """ Helper to assert that provided names are valid. """
+    """Helper to assert that provided names are valid."""
     assert COMPILED_NAME_PATTERN.match(
         name
     ), 'Names must match /{}/ but "{}" does not.'.format(NAME_PATTERN, name)
 
 
 def convert_choice_name(name):
-    name = to_const(force_text(name))
+    name = to_const(force_str(name))
     try:
         assert_valid_name(name)
     except AssertionError:

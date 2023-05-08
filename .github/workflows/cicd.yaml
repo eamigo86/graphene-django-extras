@@ -10,30 +10,33 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: 3.6
-            django: 2.2
-            toxenv: py36-django22
-          - python: 3.6
-            django: 3.0
-            toxenv: py36-django30
           - python: 3.7
-            django: 2.2
-            toxenv: py37-django22
-          - python: 3.7
-            django: 3.0
-            toxenv: py37-django30
+            django: 3.2
+            toxenv: py37-django32
           - python: 3.8
-            django: 2.2
-            toxenv: py38-django22
+            django: 3.2
+            toxenv: py38-django32
+          - python: 3.9
+            django: 3.2
+            toxenv: py39-django32
           - python: 3.8
-            django: 3.0
-            toxenv: py38-django30
+            django: 4.0
+            toxenv: py38-django40
           - python: 3.9
-            django: 2.2
-            toxenv: py39-django22
+            django: 4.0
+            toxenv: py39-django40
+          - python: '3.10'
+            django: 4.0
+            toxenv: py310-django40
+          - python: 3.8
+            django: 4.1
+            toxenv: py38-django41
           - python: 3.9
-            django: 3.0
-            toxenv: py39-django30
+            django: 4.1
+            toxenv: py39-django41
+          - python: '3.10'
+            django: 4.1
+            toxenv: py310-django41
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -63,7 +66,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: 3.6
+          - python: 3.9
             toxenv: quality
     steps:
       - uses: actions/checkout@v2
@@ -85,7 +88,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: 3.6
+          - python: 3.9
             toxenv: security
     steps:
       - uses: actions/checkout@v2
