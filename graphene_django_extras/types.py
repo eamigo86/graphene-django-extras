@@ -256,6 +256,9 @@ class DjangoListObjectType(ObjectType):
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
 
+        if not registry:
+            registry = get_global_registry()
+
         if not DJANGO_FILTER_INSTALLED and filter_fields:
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
@@ -300,6 +303,7 @@ class DjangoListObjectType(ObjectType):
 
         _meta = DjangoObjectOptions(cls)
         _meta.model = model
+        _meta.registry = registry
         _meta.queryset = queryset
         _meta.baseType = baseType
         _meta.results_field_name = results_field_name
