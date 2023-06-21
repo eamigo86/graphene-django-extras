@@ -10,7 +10,7 @@ from django.utils.encoding import force_str
 from graphene import ID, UUID, Boolean, Dynamic, Enum, Field, Float, Int, List, NonNull, String
 from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case
-from graphene_django.compat import ArrayField, HStoreField, JSONField, RangeField
+from graphene_django.compat import ArrayField, HStoreField, RangeField
 from graphene_django.utils.str_converters import to_const
 
 from .base_types import (
@@ -445,7 +445,7 @@ def convert_postgres_array_to_list(field, registry=None, input_flag=None, nested
 
 
 @convert_django_field.register(HStoreField)
-@convert_django_field.register(JSONField)
+@convert_django_field.register(models.JSONField)
 def convert_postgres_field_to_string(field, registry=None, input_flag=None, nested_field=False):
     return JSONString(
         description=field.help_text or field.verbose_name,
