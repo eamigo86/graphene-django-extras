@@ -35,13 +35,17 @@ class DefaultGraphQLDirective(BaseExtraGraphQLDirective):
     @staticmethod
     def get_args():
         return {
-            "to": GraphQLArgument(GraphQLNonNull(GraphQLString), description="Value to default to")
+            "to": GraphQLArgument(
+                GraphQLNonNull(GraphQLString), description="Value to default to"
+            )
         }
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
         if not value:
-            to_argument = [arg for arg in directive.arguments if arg.name.value == "to"][0]
+            to_argument = [
+                arg for arg in directive.arguments if arg.name.value == "to"
+            ][0]
             return to_argument.value.value
 
         return value
@@ -82,7 +86,9 @@ class NumberGraphQLDirective(BaseExtraGraphQLDirective):
     @staticmethod
     def get_args():
         return {
-            "as": GraphQLArgument(GraphQLNonNull(GraphQLString), description="Value to default to")
+            "as": GraphQLArgument(
+                GraphQLNonNull(GraphQLString), description="Value to default to"
+            )
         }
 
     @staticmethod
@@ -95,7 +101,9 @@ class CurrencyGraphQLDirective(BaseExtraGraphQLDirective):
     @staticmethod
     def get_args():
         return {
-            "symbol": GraphQLArgument(GraphQLString, description="Currency symbol (default: $)")
+            "symbol": GraphQLArgument(
+                GraphQLString, description="Currency symbol (default: $)"
+            )
         }
 
     @staticmethod
@@ -204,8 +212,12 @@ class StripGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
-        chars_argument = [arg for arg in directive.arguments if arg.name.value == "chars"]
-        chars_argument = chars_argument[0].value.value if len(chars_argument) > 0 else " "
+        chars_argument = [
+            arg for arg in directive.arguments if arg.name.value == "chars"
+        ]
+        chars_argument = (
+            chars_argument[0].value.value if len(chars_argument) > 0 else " "
+        )
 
         value = value if isinstance(value, six.string_types) else str(value)
         return value.strip(chars_argument)
@@ -242,11 +254,19 @@ class CenterGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
-        width_argument = [arg for arg in directive.arguments if arg.name.value == "width"]
-        width_argument = width_argument[0].value.value if len(width_argument) > 0 else len(value)
+        width_argument = [
+            arg for arg in directive.arguments if arg.name.value == "width"
+        ]
+        width_argument = (
+            width_argument[0].value.value if len(width_argument) > 0 else len(value)
+        )
 
-        fillchar_argument = [arg for arg in directive.arguments if arg.name.value == "fillchar"]
-        fillchar_argument = fillchar_argument[0].value.value if len(fillchar_argument) > 0 else " "
+        fillchar_argument = [
+            arg for arg in directive.arguments if arg.name.value == "fillchar"
+        ]
+        fillchar_argument = (
+            fillchar_argument[0].value.value if len(fillchar_argument) > 0 else " "
+        )
 
         value = value if isinstance(value, six.string_types) else str(value)
         return value.center(int(width_argument), fillchar_argument)
@@ -269,7 +289,9 @@ class ReplaceGraphQLDirective(BaseExtraGraphQLDirective):
                 GraphQLNonNull(GraphQLString),
                 description="Value of new character to replace",
             ),
-            "count": GraphQLArgument(GraphQLInt, description="Value to returned str lenght"),
+            "count": GraphQLArgument(
+                GraphQLInt, description="Value to returned str lenght"
+            ),
         }
 
     @staticmethod
@@ -280,8 +302,12 @@ class ReplaceGraphQLDirective(BaseExtraGraphQLDirective):
         new_argument = [arg for arg in directive.arguments if arg.name.value == "new"]
         new_argument = new_argument[0].value.value if len(new_argument) > 0 else None
 
-        count_argument = [arg for arg in directive.arguments if arg.name.value == "count"]
-        count_argument = count_argument[0].value.value if len(count_argument) > 0 else -1
+        count_argument = [
+            arg for arg in directive.arguments if arg.name.value == "count"
+        ]
+        count_argument = (
+            count_argument[0].value.value if len(count_argument) > 0 else -1
+        )
 
         value = value if isinstance(value, six.string_types) else str(value)
         return value.replace(old_argument, new_argument, int(count_argument))

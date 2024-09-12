@@ -105,7 +105,9 @@ class ExtraGraphQLView(GraphQLView, APIView):
             response = {}
 
             if execution_result.errors:
-                response["errors"] = [self.format_error(e) for e in execution_result.errors]
+                response["errors"] = [
+                    self.format_error(e) for e in execution_result.errors
+                ]
 
             if execution_result.invalid:
                 status_code = 400

@@ -28,7 +28,9 @@ def get_args():
         nargs="*",
         help="Patch version bump. Empty flag will auto bump current version.",
     )
-    parser.add_argument("--dry-run", type=str, default="yes", choices=["yes", "no"], help="Dry run")
+    parser.add_argument(
+        "--dry-run", type=str, default="yes", choices=["yes", "no"], help="Dry run"
+    )
 
     return parser.parse_args()
 
@@ -129,4 +131,6 @@ if __name__ == "__main__":
             NV = f'version = "{NEW_VERSION}"'
             content = content.replace(CV, NV)
             file.write(content)
-            print(f"Successfully updated package version from {CURRENT_VERSION} to {NEW_VERSION}")
+            print(
+                f"Successfully updated package version from {CURRENT_VERSION} to {NEW_VERSION}"
+            )

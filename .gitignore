@@ -20,3 +20,5 @@ __pycache__
 .pytest*/
 
 .DS_Store
+
+.venv/

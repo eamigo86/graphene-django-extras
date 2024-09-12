@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from django_filters.filterset import FILTER_FOR_DBFIELD_DEFAULTS, BaseFilterSet, FilterSet
+from django_filters.filterset import (
+    FILTER_FOR_DBFIELD_DEFAULTS,
+    BaseFilterSet,
+    FilterSet,
+)
 from graphene_django.filter.utils import replace_csv_filters
 
 

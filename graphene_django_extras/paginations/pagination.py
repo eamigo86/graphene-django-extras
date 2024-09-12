@@ -32,7 +32,9 @@ class BaseDjangoGraphqlPagination(object):
         )
 
     def to_dict(self):
-        raise NotImplementedError("to_dict() function must be implemented into child classes.")
+        raise NotImplementedError(
+            "to_dict() function must be implemented into child classes."
+        )
 
     def paginate_queryset(self, qs, **kwargs):
         raise NotImplementedError(
@@ -156,7 +158,9 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         self.ordering_param = ordering_param
 
         self.page_size_query_description = (
-            "Number of results to return per page. Default 'page_size': {}".format(self.page_size)
+            "Number of results to return per page. Default 'page_size': {}".format(
+                self.page_size
+            )
         )
 
     def to_dict(self):
@@ -183,7 +187,11 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
         if self.page_size_query_param:
             paginator_dict.update(
-                {self.page_size_query_param: Int(description=self.page_size_query_description)}
+                {
+                    self.page_size_query_param: Int(
+                        description=self.page_size_query_description
+                    )
+                }
             )
 
         return paginator_dict
@@ -212,7 +220,11 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
             """
             return None
 
-        offset = max(0, int(count + page_size * page)) if page < 0 else page_size * (page - 1)
+        offset = (
+            max(0, int(count + page_size * page))
+            if page < 0
+            else page_size * (page - 1)
+        )
 
         order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
@@ -245,7 +257,11 @@ class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def to_graphql_fields(self):
-        return {self.cursor_query_param: NonNull(String, description=self.cursor_query_description)}
+        return {
+            self.cursor_query_param: NonNull(
+                String, description=self.cursor_query_description
+            )
+        }
 
     def paginate_queryset(self, qs, **kwargs):
         raise NotImplementedError(
