@@ -18,3 +18,5 @@ __pycache__
 .coverage*
 .tox/
 .pytest*/
+
+.DS_Store
