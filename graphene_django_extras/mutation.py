@@ -49,6 +49,8 @@ class DjangoSerializerMutation(ObjectType):
         nested_fields=(),
         **options,
     ):
+        non_required_fields = options["non_required_fields"]
+        del options["non_required_fields"]
         if not serializer_class:
             raise Exception("serializer_class is required on all DjangoSerializerMutation")
 
@@ -85,6 +87,7 @@ class DjangoSerializerMutation(ObjectType):
             "nested_fields": nested_fields,
             "registry": registry,
             "skip_registry": False,
+            "non_required_fields": non_required_fields
         }
 
         output_type = registry.get_type_for_model(model)
