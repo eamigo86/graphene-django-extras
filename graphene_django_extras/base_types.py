@@ -3,12 +3,13 @@ from __future__ import absolute_import
 
 import binascii
 import datetime
+from ast import literal_eval
 
 import graphene
-from graphene.types.datetime import Date, DateTime, Time
+from graphene.types.datetime import Date, Time, DateTime
 from graphene.utils.str_converters import to_camel_case
 from graphql.language import ast
-
+import logging
 
 def factory_type(operation, _type, *args, **kwargs):
     if operation == "output":
@@ -30,6 +31,7 @@ def factory_type(operation, _type, *args, **kwargs):
                 description = "Auto generated Type for {} model".format(
                     kwargs.get("model").__name__
                 )
+                non_required_fields=kwargs.get("non_required_fields")
 
         return GenericType
 
@@ -39,7 +41,8 @@ def factory_type(operation, _type, *args, **kwargs):
             class Meta:
                 model = kwargs.get("model")
                 name = kwargs.get("name") or to_camel_case(
-                    "{}_{}_Generic_Type".format(kwargs.get("model").__name__, args[0])
+                    "{}_{}_Generic_Type".format(
+                        kwargs.get("model").__name__, args[0])
                 )
                 only_fields = kwargs.get("only_fields")
                 exclude_fields = kwargs.get("exclude_fields")
@@ -50,6 +53,7 @@ def factory_type(operation, _type, *args, **kwargs):
                 description = "Auto generated InputType for {} model".format(
                     kwargs.get("model").__name__
                 )
+                non_required_fields=kwargs.get("non_required_fields")
 
         return GenericInputType
 
@@ -154,9 +158,9 @@ class CustomTime(Time):
         if isinstance(time, datetime.datetime):
             time = time.time()
 
-        assert isinstance(time, datetime.time), 'Received not compatible time "{}"'.format(
-            repr(time)
-        )
+        assert isinstance(
+            time, datetime.time
+        ), 'Received not compatible time "{}"'.format(repr(time))
         return time.isoformat()
 
 
@@ -168,19 +172,44 @@ class CustomDate(Date):
 
         if isinstance(date, datetime.datetime):
             date = date.date()
-        assert isinstance(date, datetime.date), 'Received not compatible date "{}"'.format(
-            repr(date)
-        )
+        assert isinstance(
+            date, datetime.date
+        ), 'Received not compatible date "{}"'.format(repr(date))
         return date.isoformat()
 
 
-class CustomDateTime(DateTime):
+class CustomDateTime(graphene.Scalar):
+    """
+    This method is wrote to accept epoch and datetime formats
+    """
     @staticmethod
     def serialize(dt):
-        if isinstance(dt, CustomDateFormat):
-            return dt.date_str
+        return int(dt.timestamp() * 1000.)
 
-        assert isinstance(
-            dt, (datetime.datetime, datetime.date)
-        ), 'Received not compatible datetime "{}"'.format(repr(dt))
-        return dt.isoformat()
+    @staticmethod
+    def parse_value(value):
+        if isinstance(value, str):
+            value = int(value)
+        return datetime.datetime.fromtimestamp(value / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f')
+
+
+class CustomDict(graphene.Scalar):
+
+    @staticmethod
+    def serialize(dt):
+        return dt
+
+    @staticmethod
+    def parse_literal(node):
+        if node.fields:
+            eval_node = literal_eval(node.value)
+            if isinstance(eval_node, dict):
+                return eval_node
+            else:
+                raise ValueError("For instance '{'key':'value'}'")
+        logging.info("INFO ::: JSON/HStore value passed empty")
+        return None
+
+    @staticmethod
+    def parse_value(value):
+        return value
