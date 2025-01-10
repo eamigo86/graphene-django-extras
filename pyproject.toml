@@ -41,11 +41,11 @@ classifiers = [
 keywords = ["api", "graphql", "protocol", "graphene", "django"]
 
 [tool.poetry.dependencies]
-python = "^3.7 || ^3.8 || ^3.9 || ^3.10"
-django-filter = "^22.1"
+python = "^3.8 || ^3.9 || ^3.10 || ^3.11 || ^3.12"
+django-filter = "^24.3"
 djangorestframework = "^3"
 python-dateutil = "^2.8.0"
-graphene-django = "^3.0"
+graphene-django = "^3.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"

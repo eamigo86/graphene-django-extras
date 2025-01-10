@@ -24,7 +24,9 @@ class ParentTest:
         self.assertEqual(self.response.status_code, self.expected_status_code)
 
     def test_should_return_expected_payload(self):
-        self.assertEqual(self.response.json(), self.expected_return_payload, self.response.content)
+        self.assertEqual(
+            self.response.json(), self.expected_return_payload, self.response.content
+        )
 
 
 class DjangoListObjectFieldTest(ParentTest, TestCase):
@@ -32,7 +34,9 @@ class DjangoListObjectFieldTest(ParentTest, TestCase):
     expected_return_payload = {"data": {"allUsers": {"results": [{"id": "1"}]}}}
 
     def test_field(self):
-        self.assertEqual(self.data["data"]["allUsers"]["results"][0]["id"], str(self.user.id))
+        self.assertEqual(
+            self.data["data"]["allUsers"]["results"][0]["id"], str(self.user.id)
+        )
 
 
 class DjangoFilterPaginateListFieldTest(ParentTest, TestCase):
@@ -58,7 +62,9 @@ class DjangoFilterListFieldTest(ParentTest, TestCase):
 
 
 class DjangoListObjectFieldWithFilterSetTest(ParentTest, TestCase):
-    expected_return_payload = {"data": {"allUsers3": {"results": [{"username": "graphql"}]}}}
+    expected_return_payload = {
+        "data": {"allUsers3": {"results": [{"username": "graphql"}]}}
+    }
 
     @property
     def query(self):
@@ -78,7 +84,9 @@ class DjangoListObjectFieldWithFilterSetTest(ParentTest, TestCase):
         self.assertIn("allUsers3", data["data"])
         self.assertIn("results", data["data"]["allUsers3"])
         self.assertTrue(data["data"]["allUsers3"]["results"])
-        self.assertEqual(data["data"]["allUsers3"]["results"][0]["username"], self.user.username)
+        self.assertEqual(
+            data["data"]["allUsers3"]["results"][0]["username"], self.user.username
+        )
 
     def test_filter_charfield_iexact(self):
         query = queries.ALL_USERS3_WITH_FILTER % {
@@ -91,14 +99,18 @@ class DjangoListObjectFieldWithFilterSetTest(ParentTest, TestCase):
         self.assertIn("allUsers3", data["data"])
         self.assertIn("results", data["data"]["allUsers3"])
         self.assertTrue(data["data"]["allUsers3"]["results"])
-        self.assertEqual(data["data"]["allUsers3"]["results"][0]["username"], self.user.username)
+        self.assertEqual(
+            data["data"]["allUsers3"]["results"][0]["username"], self.user.username
+        )
 
 
 class DjangoSerializerTypeTest(ParentTest, TestCase):
     expected_return_payload = {
         "data": {
             "users": {
-                "results": [{"id": "1", "username": "graphql", "email": "eamigop86@gmail.com"}],
+                "results": [
+                    {"id": "1", "username": "graphql", "email": "eamigop86@gmail.com"}
+                ],
                 "totalCount": 1,
             }
         }
@@ -129,7 +141,9 @@ class DjangoCustomResolverTest(ParentTest, TestCase):
     query = queries.ALL_USERS4
 
     def setUp(self):
-        self.staff_user = factories.UserFactory(username=uuid.uuid4().hex, is_staff=True)
+        self.staff_user = factories.UserFactory(
+            username=uuid.uuid4().hex, is_staff=True
+        )
         super().setUp()
 
     @property

@@ -22,6 +22,8 @@ class ExtraGraphQLDirectiveMiddleware(object):
                 GraphQLSkipDirective.name,
             ):
                 directive_class = registry.get_directive(directive.name.value)
-                new_value = directive_class.resolve(new_value, directive, root, info, **kwargs)
+                new_value = directive_class.resolve(
+                    new_value, directive, root, info, **kwargs
+                )
 
         return new_value

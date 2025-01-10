@@ -4,10 +4,26 @@ from collections import OrderedDict
 from functools import singledispatch
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel, GenericRelation
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey,
+    GenericRel,
+    GenericRelation,
+)
 from django.db import models
 from django.utils.encoding import force_str
-from graphene import ID, UUID, Boolean, Dynamic, Enum, Field, Float, Int, List, NonNull, String
+from graphene import (
+    ID,
+    UUID,
+    Boolean,
+    Dynamic,
+    Enum,
+    Field,
+    Float,
+    Int,
+    List,
+    NonNull,
+    String,
+)
 from graphene.types.json import JSONString
 from graphene.utils.str_converters import to_camel_case
 from graphene_django.compat import ArrayField, HStoreField, JSONField, RangeField
@@ -30,9 +46,9 @@ COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 
 def assert_valid_name(name):
     """Helper to assert that provided names are valid."""
-    assert COMPILED_NAME_PATTERN.match(name), 'Names must match /{}/ but "{}" does not.'.format(
-        NAME_PATTERN, name
-    )
+    assert COMPILED_NAME_PATTERN.match(
+        name
+    ), 'Names must match /{}/ but "{}" does not.'.format(NAME_PATTERN, name)
 
 
 def convert_choice_name(name):
@@ -59,7 +75,9 @@ def get_choices(choices):
             yield name, value, description
 
 
-def convert_django_field_with_choices(field, registry=None, input_flag=None, nested_field=False):
+def convert_django_field_with_choices(
+    field, registry=None, input_flag=None, nested_field=False
+):
     choices = getattr(field, "choices", None)
     if choices:
         meta = field.model._meta
@@ -109,14 +127,18 @@ def construct_fields(
 
     if settings.DEBUG:
         if input_flag == "create":
-            _model_fields = sorted(_model_fields, key=lambda f: (not is_required(f[1]), f[0]))
+            _model_fields = sorted(
+                _model_fields, key=lambda f: (not is_required(f[1]), f[0])
+            )
         elif not input_flag:
             _model_fields = sorted(_model_fields, key=lambda f: f[0])
 
     fields = OrderedDict()
 
     if input_flag == "delete":
-        converted = convert_django_field_with_choices(dict(_model_fields)["id"], registry)
+        converted = convert_django_field_with_choices(
+            dict(_model_fields)["id"], registry
+        )
         fields["id"] = converted
     else:
         for name, field in _model_fields:
@@ -126,7 +148,9 @@ def construct_fields(
             nested_field = name in nested_fields
             is_not_in_only = only_fields and name not in only_fields
             # is_already_created = name in options.fields
-            is_excluded = exclude_fields and name in exclude_fields  # or is_already_created
+            is_excluded = (
+                exclude_fields and name in exclude_fields
+            )  # or is_already_created
             # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.related_query_name
             is_no_backref = str(name).endswith("+")
             # if is_not_in_only or is_excluded or is_no_backref:
@@ -144,7 +168,9 @@ def construct_fields(
             ):
                 continue
 
-            converted = convert_django_field_with_choices(field, registry, input_flag, nested_field)
+            converted = convert_django_field_with_choices(
+                field, registry, input_flag, nested_field
+            )
             fields[name] = converted
     return fields
 
@@ -152,7 +178,9 @@ def construct_fields(
 @singledispatch
 def convert_django_field(field, registry=None, input_flag=None, nested_field=False):
     raise Exception(
-        "Don't know how to convert the Django field {} ({})".format(field, field.__class__)
+        "Don't know how to convert the Django field {} ({})".format(
+            field, field.__class__
+        )
     )
 
 
@@ -212,7 +240,9 @@ def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field
 
 
 @convert_django_field.register(models.NullBooleanField)
-def convert_field_to_nullboolean(field, registry=None, input_flag=None, nested_field=False):
+def convert_field_to_nullboolean(
+    field, registry=None, input_flag=None, nested_field=False
+):
     return Boolean(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -246,7 +276,9 @@ def convert_date_to_string(field, registry=None, input_flag=None, nested_field=F
 
 
 @convert_django_field.register(models.DateTimeField)
-def convert_datetime_to_string(field, registry=None, input_flag=None, nested_field=False):
+def convert_datetime_to_string(
+    field, registry=None, input_flag=None, nested_field=False
+):
     return CustomDateTime(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -279,7 +311,9 @@ def convert_onetoone_field_to_djangomodel(
 
 
 @convert_django_field.register(models.ManyToManyField)
-def convert_field_to_list_or_connection(field, registry=None, input_flag=None, nested_field=False):
+def convert_field_to_list_or_connection(
+    field, registry=None, input_flag=None, nested_field=False
+):
     model = get_related_model(field)
 
     def dynamic_type():
@@ -315,7 +349,9 @@ def convert_field_to_list_or_connection(field, registry=None, input_flag=None, n
 @convert_django_field.register(GenericRel)
 @convert_django_field.register(models.ManyToManyRel)
 @convert_django_field.register(models.ManyToOneRel)
-def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, nested_field=False):
+def convert_many_rel_to_djangomodel(
+    field, registry=None, input_flag=None, nested_field=False
+):
     model = field.related_model
 
     def dynamic_type():
@@ -343,12 +379,16 @@ def convert_many_rel_to_djangomodel(field, registry=None, input_flag=None, neste
 
 @convert_django_field.register(models.OneToOneField)
 @convert_django_field.register(models.ForeignKey)
-def convert_field_to_djangomodel(field, registry=None, input_flag=None, nested_field=False):
+def convert_field_to_djangomodel(
+    field, registry=None, input_flag=None, nested_field=False
+):
     model = get_related_model(field)
 
     def dynamic_type():
         # Avoid create field for auto generate OneToOneField product of an inheritance
-        if isinstance(field, models.OneToOneField) and issubclass(field.model, field.related_model):
+        if isinstance(field, models.OneToOneField) and issubclass(
+            field.model, field.related_model
+        ):
             return
         if input_flag and not nested_field:
             return ID(
@@ -433,7 +473,9 @@ def convert_generic_relation_to_object_list(
 
 
 @convert_django_field.register(ArrayField)
-def convert_postgres_array_to_list(field, registry=None, input_flag=None, nested_field=False):
+def convert_postgres_array_to_list(
+    field, registry=None, input_flag=None, nested_field=False
+):
     base_type = convert_django_field(field.base_field)
     if not isinstance(base_type, (List, NonNull)):
         base_type = type(base_type)
@@ -446,7 +488,9 @@ def convert_postgres_array_to_list(field, registry=None, input_flag=None, nested
 
 @convert_django_field.register(HStoreField)
 @convert_django_field.register(JSONField)
-def convert_postgres_field_to_string(field, registry=None, input_flag=None, nested_field=False):
+def convert_postgres_field_to_string(
+    field, registry=None, input_flag=None, nested_field=False
+):
     return JSONString(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -454,7 +498,9 @@ def convert_postgres_field_to_string(field, registry=None, input_flag=None, nest
 
 
 @convert_django_field.register(RangeField)
-def convert_postgres_range_to_string(field, registry=None, input_flag=None, nested_field=False):
+def convert_postgres_range_to_string(
+    field, registry=None, input_flag=None, nested_field=False
+):
     inner_type = convert_django_field(field.base_field)
     if not isinstance(inner_type, (List, NonNull)):
         inner_type = type(inner_type)

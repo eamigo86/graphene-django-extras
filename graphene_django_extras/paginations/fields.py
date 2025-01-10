@@ -16,7 +16,9 @@ class AbstractPaginationField(Field):
         return self.type.of_type._meta.node._meta.model
 
     def wrap_resolve(self, parent_resolver):
-        return partial(self.list_resolver, self.type.of_type._meta.model._default_manager)
+        return partial(
+            self.list_resolver, self.type.of_type._meta.model._default_manager
+        )
 
 
 # *********************************************** #
@@ -47,7 +49,9 @@ class LimitOffsetPaginationField(AbstractPaginationField):
         kwargs[limit_query_param] = Int(
             default_value=self.default_limit,
             description="Number of results to return per page. Actual "
-            "'default_limit': {}, and 'max_limit': {}".format(self.default_limit, self.max_limit),
+            "'default_limit': {}, and 'max_limit': {}".format(
+                self.default_limit, self.max_limit
+            ),
         )
 
         kwargs[offset_query_param] = Int(
@@ -120,7 +124,9 @@ class PagePaginationField(AbstractPaginationField):
         self.ordering_param = ordering_param
 
         self.page_size_query_description = (
-            "Number of results to return per page. Actual 'page_size': {}".format(self.page_size)
+            "Number of results to return per page. Actual 'page_size': {}".format(
+                self.page_size
+            )
         )
 
         kwargs[self.page_query_param] = Int(
@@ -171,7 +177,9 @@ class PagePaginationField(AbstractPaginationField):
             "declaration to specify a custom page size value through a query parameters"
         )
 
-        offset = int(count - fabs(page_size * page)) if page < 0 else page_size * (page - 1)
+        offset = (
+            int(count - fabs(page_size * page)) if page < 0 else page_size * (page - 1)
+        )
 
         order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
@@ -186,7 +194,9 @@ class PagePaginationField(AbstractPaginationField):
 
 
 class CursorPaginationField(AbstractPaginationField):
-    def __init__(self, _type, ordering="-created", cursor_query_param="cursor", *args, **kwargs):
+    def __init__(
+        self, _type, ordering="-created", cursor_query_param="cursor", *args, **kwargs
+    ):
         kwargs.setdefault("args", {})
 
         self.page_size = graphql_api_settings.DEFAULT_PAGE_SIZE
@@ -196,7 +206,9 @@ class CursorPaginationField(AbstractPaginationField):
         self.cursor_query_description = "The pagination cursor value."
         self.page_size_query_description = "Number of results to return per page."
 
-        kwargs[self.cursor_query_param] = NonNull(String, description=self.cursor_query_description)
+        kwargs[self.cursor_query_param] = NonNull(
+            String, description=self.cursor_query_description
+        )
 
         if self.page_size_query_param:
             if not self.page_size:
@@ -212,5 +224,7 @@ class CursorPaginationField(AbstractPaginationField):
 
     def list_resolver(self, manager, root, info, **kwargs):
         raise NotImplementedError(
-            "{} list_resolver() are not implemented yet.".format(self.__class__.__name__)
+            "{} list_resolver() are not implemented yet.".format(
+                self.__class__.__name__
+            )
         )
