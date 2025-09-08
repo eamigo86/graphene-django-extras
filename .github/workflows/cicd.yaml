@@ -20,7 +20,7 @@ on:
         - pypi
 
 permissions:
-  contents: write
+  contents: write # Para crear releases y tags
   packages: write
   pull-requests: read
 
@@ -30,16 +30,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ '3.10', '3.11', '3.12' ]
-        django-version: [ '3.2', '4.0', '4.2', '5.0', '5.1' ]
-        exclude:
-        # Django 5.x require Python 3.10+
+        include:
         - python-version: '3.10'
-          django-version: '3.2'
+          django-version: '4.0'
+          toxenv: 'py310-django40'
+        - python-version: '3.10'
+          django-version: '4.2'
+          toxenv: 'py310-django42'
+        - python-version: '3.10'
+          django-version: '5.0'
+          toxenv: 'py310-django50'
+        - python-version: '3.10'
+          django-version: '5.1'
+          toxenv: 'py310-django51'
         - python-version: '3.11'
-          django-version: '3.2'
+          django-version: '4.0'
+          toxenv: 'py311-django40'
+        - python-version: '3.11'
+          django-version: '4.2'
+          toxenv: 'py311-django42'
+        - python-version: '3.11'
+          django-version: '5.0'
+          toxenv: 'py311-django50'
+        - python-version: '3.11'
+          django-version: '5.1'
+          toxenv: 'py311-django51'
         - python-version: '3.12'
-          django-version: '3.2'
+          django-version: '4.2'
+          toxenv: 'py312-django42'
+        - python-version: '3.12'
+          django-version: '5.0'
+          toxenv: 'py312-django50'
+        - python-version: '3.12'
+          django-version: '5.1'
+          toxenv: 'py312-django51'
 
     steps:
     - name: Checkout code
@@ -67,8 +91,7 @@ jobs:
     - name: Run tests
       env:
         DJANGO: ${{ matrix.django-version }}
-        TOXENV: py${{ matrix.python-version }}-django${{ matrix.django-version }}
-      run: tox
+      run: tox -e ${{ matrix.toxenv }}
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -172,7 +195,7 @@ jobs:
         VERSION=$(poetry version --short)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-        # Determine if it is prerelease (contains alpha, beta, rc, dev)
+        # Determinar si es prerelease (contiene alpha, beta, rc, dev)
         if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
           echo "is_prerelease=true" >> $GITHUB_OUTPUT
         else
@@ -195,7 +218,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Needed for tags
+        fetch-depth: 0 # Necesario para tags
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -253,7 +276,7 @@ jobs:
         TAG_NAME="${{ steps.check_tag.outputs.tag_name }}"
         VERSION="${{ needs.get-version.outputs.version }}"
 
-        # Create annotated tag
+        # Crear tag anotado
         git tag -a "$TAG_NAME" -m "Release version $VERSION"
         git push origin "$TAG_NAME"
 
@@ -297,7 +320,7 @@ jobs:
         VERSION="${{ needs.get-version.outputs.version }}"
         TAG_NAME="v$VERSION"
 
-        # Get the previous tag
+        # Obtener el tag anterior
         PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sed -n '2p')
 
         if [ -z "$PREVIOUS_TAG" ]; then
@@ -308,12 +331,12 @@ jobs:
           CHANGELOG=$(git log $PREVIOUS_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
         fi
 
-        # Create formatted changelog
+        # Crear changelog formateado
         if [ -z "$CHANGELOG" ]; then
           CHANGELOG="- Initial release"
         fi
 
-        # Save changelog to temporary file
+        # Guardar changelog en archivo temporal
         cat << EOF > changelog.md
         ## What's Changed
 
@@ -322,7 +345,7 @@ jobs:
         ## Installation
 
         \`\`\`bash
-        pip install graphene-django-extras==$VERSION
+        pip install your-package-name==$VERSION
         \`\`\`
 
         **Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$TAG_NAME
@@ -348,7 +371,7 @@ jobs:
       run: |
         echo "✅ Release v${{ needs.get-version.outputs.version }} created successfully!"
         echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.get-version.outputs.version }}"
-        echo "📦 PyPI: https://pypi.org/project/graphene-django-extras/${{ needs.get-version.outputs.version }}/"
+        echo "📦 PyPI: https://pypi.org/project/your-package-name/${{ needs.get-version.outputs.version }}/"
 
   notify-success:
     needs: [ publish, create-release ]
