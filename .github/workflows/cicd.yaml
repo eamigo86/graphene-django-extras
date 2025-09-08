@@ -10,135 +10,126 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: '3.10'
-            django: 3.2
-            toxenv: py310-django32
-          - python: '3.10'
-            django: 4.0
-            toxenv: py310-django40
-          - python: '3.10'
-            django: 4.2
-            toxenv: py310-django42
-          - python: '3.10'
-            django: 5.0
-            toxenv: py310-django50
-          - python: '3.10'
-            django: 5.1
-            toxenv: py310-django51
+        - python: '3.10'
+          django: 3.2
+          toxenv: py310-django32
+        - python: '3.10'
+          django: 4.0
+          toxenv: py310-django40
+        - python: '3.10'
+          django: 4.2
+          toxenv: py310-django42
+        - python: '3.10'
+          django: 5.0
+          toxenv: py310-django50
+        - python: '3.10'
+          django: 5.1
+          toxenv: py310-django51
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        name: Set up Python ${{ matrix.python }} ${{ matrix.django }}
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install pip packages
-        run: |
-          pip install pip --upgrade
-          pip install codecov poetry tox
-      - name: "Run tox - testenv: ${{ matrix.toxenv }}"
-        env:
-          DJANGO: ${{ matrix.django }}
-          TOXENV: ${{ matrix.toxenv }}
-        run: tox
-      - name: Run notification script
-        env:
-          GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          GITHUB_JOB_STATUS: ${{ job.status }}
-          GITHUB_RUN_URL: ${{ github.event.repository.url }}/actions/runs/${{ github.run_id }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-        run: ./scripts/notification.sh
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      name: Set up Python ${{ matrix.python }} ${{ matrix.django }}
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install pip packages
+      run: |
+        pip install pip --upgrade
+        pip install codecov poetry tox
+    - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+      env:
+        DJANGO: ${{ matrix.django }}
+        TOXENV: ${{ matrix.toxenv }}
+      run: tox
+    - name: Run notification script
+      env:
+        GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        GITHUB_JOB_STATUS: ${{ job.status }}
+        GITHUB_RUN_URL: ${{ github.event.repository.url }}/actions/runs/${{ github.run_id }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      run: ./scripts/notification.sh
 
   quality:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - python: '3.10'
-            toxenv: quality
+        - python: '3.10'
+          toxenv: quality
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        name: Set up Python ${{ matrix.python }}
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install pip packages
-        run: |
-          pip install pip --upgrade
-          pip install poetry tox
-      - name: "Run tox - testenv: ${{ matrix.toxenv }}"
-        env:
-          TOXENV: ${{ matrix.toxenv }}
-        run: tox
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      name: Set up Python ${{ matrix.python }}
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install pip packages
+      run: |
+        pip install pip --upgrade
+        pip install poetry tox
+    - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+      env:
+        TOXENV: ${{ matrix.toxenv }}
+      run: tox
 
   security:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - python: '3.10'
-            toxenv: security
+        - python: '3.10'
+          toxenv: security
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        name: Set up Python ${{ matrix.python }}
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install pip packages
-        run: |
-          pip install pip --upgrade
-          pip install poetry tox
-      - name: "Run tox - testenv: ${{ matrix.toxenv }}"
-        env:
-          TOXENV: ${{ matrix.toxenv }}
-        run: tox
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      name: Set up Python ${{ matrix.python }}
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install pip packages
+      run: |
+        pip install pip --upgrade
+        pip install poetry tox
+    - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+      env:
+        TOXENV: ${{ matrix.toxenv }}
+      run: tox
 
-  # # AUTHOR: Lukasz Dynowski
-  # # TODO: Uncomment this code only if we agreed for Continuous Delivery.
-  # # TODO: Update PYPI envars to production values!
-  # publish:
-  #   needs:
-  #     - test
-  #     - security
-  #     - quality
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - python: 3.6
-  #           toxenv: build
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-python@v1
-  #       name: Set up Python ${{ matrix.python }}
-  #       with:
-  #         python-version: ${{ matrix.python }}
-  #     - name: Install pip packages
-  #       run: |
-  #         pip install pip --upgrade
-  #         pip install poetry tox
-  #     - name: Bump package version
-  #       run: ./scripts/bump.py --dry-run no
-  #     - name: "Build package - testenv: ${{ matrix.toxenv }}"
-  #       env:
-  #         TOXENV: ${{ matrix.toxenv }}
-  #       run: tox
-  #     - name: "Publish - testenv: ${{ matrix.toxenv }}"
-  #       env:
-  #         PYPI_ACCESS_TOKEN: ${{ secrets.PYPI_ACCESS_TOKEN }}
-  #         # Values production 'https://pypi.org/', testing 'https://test.pypi.org/legacy/'
-  #         PYPI_REPOSITORY_URL: https://test.pypi.org/legacy/
-  #         # Values production 'pypi', testing 'testpypi'
-  #         PYPI_REPOSITORY: testpypi
-  #         PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-  #       run: |
-  #         poetry config repositories.$PYPI_REPOSITORY $PYPI_REPOSITORY_URL
-  #         poetry config pypi-token.$PYPI_REPOSITORY $PYPI_ACCESS_TOKEN
-  #         poetry publish -r $PYPI_REPOSITORY -u $PYPI_USERNAME
-  #     - name: Create bump commit
-  #       uses: EndBug/add-and-commit@latest
-  #       with:
-  #         author_name: github_actions
-  #         author_email: github_actions
-  #         message: PR Auto bumping package version
-  #         add: pyproject.toml
+  publish:
+    needs: [ test, security, quality ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install pip packages
+      run: |
+        pip install --upgrade pip
+        pip install poetry tox
+    - name: Bump package version
+      run: ./scripts/bump.py --dry-run no
+    - name: Build package
+      run: tox -e build
+
+    # 📦 Publish
+    - name: Publish package
+      env:
+        PYPI_TOKEN: ${{ secrets.PYPI_ACCESS_TOKEN }}
+      run: |
+        if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+          echo "Publishing to PyPI (Production)..."
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry publish --build -r pypi
+        else
+          echo "Publishing to TestPyPI..."
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry config pypi-token.testpypi $PYPI_TOKEN
+          poetry publish --build -r testpypi
+        fi
+
+    - name: Create bump commit
+      uses: EndBug/add-and-commit@latest
+      with:
+        author_name: github_actions
+        author_email: github_actions
+        message: PR Auto bumping package version
+        add: pyproject.toml
