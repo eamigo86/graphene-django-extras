@@ -19,110 +19,349 @@ on:
         - testpypi
         - pypi
 
+permissions:
+  contents: write
+  packages: write
+  pull-requests: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        include:
-        - python: '3.10'
-          django: 3.2
-          toxenv: py310-django32
-        - python: '3.10'
-          django: 4.0
-          toxenv: py310-django40
-        - python: '3.10'
-          django: 4.2
-          toxenv: py310-django42
-        - python: '3.10'
-          django: 5.0
-          toxenv: py310-django50
-        - python: '3.10'
-          django: 5.1
-          toxenv: py310-django51
+        python-version: [ '3.10', '3.11', '3.12' ]
+        django-version: [ '3.2', '4.0', '4.2', '5.0', '5.1' ]
+        exclude:
+        # Django 5.x require Python 3.10+
+        - python-version: '3.10'
+          django-version: '3.2'
+        - python-version: '3.11'
+          django-version: '3.2'
+        - python-version: '3.12'
+          django-version: '3.2'
+
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python }}
-    - name: Install pip packages
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
       run: |
-        pip install --upgrade pip
-        pip install codecov poetry tox
-    - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+        python -m pip install --upgrade pip
+        pip install poetry tox tox-gh-actions
+
+    - name: Run tests
       env:
-        DJANGO: ${{ matrix.django }}
-        TOXENV: ${{ matrix.toxenv }}
+        DJANGO: ${{ matrix.django-version }}
+        TOXENV: py${{ matrix.python-version }}-django${{ matrix.django-version }}
       run: tox
 
-  quality:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-        - python: '3.10'
-          toxenv: quality
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: failure()
       with:
-        python-version: ${{ matrix.python }}
-    - run: pip install --upgrade pip poetry tox
-    - name: "Run tox - quality"
-      env:
-        TOXENV: ${{ matrix.toxenv }}
-      run: tox
+        name: test-results-${{ matrix.python-version }}-django${{ matrix.django-version }}
+        path: .tox/*/log/
 
-  security:
+  lint-and-security:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-        - python: '3.10'
-          toxenv: security
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python }}
-    - run: pip install --upgrade pip poetry tox
-    - name: "Run tox - security"
-      env:
-        TOXENV: ${{ matrix.toxenv }}
-      run: tox
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-lint-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-lint-
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry tox
+
+    - name: Run code quality checks
+      run: tox -e quality
+
+    - name: Run security checks
+      run: tox -e security
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-coverage-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-coverage-
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry coverage[toml] pytest
+        poetry install
+
+    - name: Run tests with coverage
+      run: |
+        coverage run -m pytest
+        coverage xml
+        coverage report
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+        verbose: true
+
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      is_prerelease: ${{ steps.get_version.outputs.is_prerelease }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install poetry
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+
+    - name: Get version from pyproject.toml
+      id: get_version
+      run: |
+        VERSION=$(poetry version --short)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+        # Determine if it is prerelease (contains alpha, beta, rc, dev)
+        if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
+          echo "is_prerelease=true" >> $GITHUB_OUTPUT
+        else
+          echo "is_prerelease=false" >> $GITHUB_OUTPUT
+        fi
+
+        echo "Detected version: $VERSION"
+        echo "Is prerelease: $(if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then echo true; else echo false; fi)"
 
   publish:
-    needs:
-    - test
-    - security
-    - quality
+    needs: [ test, lint-and-security, coverage, get-version ]
     runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'workflow_dispatch')
+    environment:
+      name: ${{ (github.ref == 'refs/heads/master' && github.event_name == 'push') && 'production' || 'staging' }}
+
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - name: Checkout code
+      uses: actions/checkout@v4
       with:
-        python-version: '3.10'
-    - name: Install pip packages
+        fetch-depth: 0 # Needed for tags
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
       run: |
-        pip install pip --upgrade
-        pip install poetry tox
-    - name: Bump package version
-      run: ./scripts/bump.py --dry-run no
-    - name: Build package
-      run: tox -e build
-    - name: Publish to PyPI / TestPyPI
-      env:
-        PYPI_ACCESS_TOKEN: ${{ secrets.PYPI_ACCESS_TOKEN }}
+        python -m pip install --upgrade pip
+        pip install poetry
+
+    - name: Configure Git
       run: |
-        if [ "${GITHUB_REF##*/}" = "master" ]; then
-          echo "Publishing to PyPI..."
-          poetry config pypi-token.pypi $PYPI_ACCESS_TOKEN
-          poetry publish -r pypi
-        elif [ "${GITHUB_REF##*/}" = "develop" ]; then
-          echo "Publishing to TestPyPI..."
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry config pypi-token.testpypi $PYPI_ACCESS_TOKEN
-          poetry publish -r testpypi
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Determine target repository
+      id: target_repo
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          REPO="${{ github.event.inputs.repository }}"
+        elif [ "${{ github.ref }}" == "refs/heads/master" ] && [ "${{ github.event_name }}" == "push" ]; then
+          REPO="pypi"
         else
-          echo "Not on master or develop, skipping publish."
+          REPO="testpypi"
+        fi
+
+        echo "repository=$REPO" >> $GITHUB_OUTPUT
+        echo "Publishing to: $REPO"
+
+    - name: Build package
+      run: poetry build
+
+    - name: Check if tag exists
+      id: check_tag
+      if: steps.target_repo.outputs.repository == 'pypi'
+      run: |
+        VERSION="${{ needs.get-version.outputs.version }}"
+        TAG_NAME="v$VERSION"
+
+        if git rev-parse --verify "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
+          echo "tag_exists=true" >> $GITHUB_OUTPUT
+          echo "Tag $TAG_NAME already exists"
+        else
+          echo "tag_exists=false" >> $GITHUB_OUTPUT
+          echo "Tag $TAG_NAME does not exist"
+        fi
+
+        echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+    - name: Create Git tag
+      id: create_tag
+      if: steps.target_repo.outputs.repository == 'pypi' && steps.check_tag.outputs.tag_exists == 'false'
+      run: |
+        TAG_NAME="${{ steps.check_tag.outputs.tag_name }}"
+        VERSION="${{ needs.get-version.outputs.version }}"
+
+        # Create annotated tag
+        git tag -a "$TAG_NAME" -m "Release version $VERSION"
+        git push origin "$TAG_NAME"
+
+        echo "tag_created=true" >> $GITHUB_OUTPUT
+        echo "Created and pushed tag: $TAG_NAME"
+
+    - name: Publish to PyPI
+      if: steps.target_repo.outputs.repository == 'pypi'
+      env:
+        POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        poetry config pypi-token.pypi $POETRY_PYPI_TOKEN_PYPI
+        poetry publish --verbose
+
+    - name: Publish to TestPyPI
+      if: steps.target_repo.outputs.repository == 'testpypi'
+      env:
+        POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.TESTPYPI_TOKEN }}
+      run: |
+        poetry config repositories.testpypi https://test.pypi.org/legacy/
+        poetry config pypi-token.testpypi $POETRY_PYPI_TOKEN_TESTPYPI
+        poetry publish -r testpypi --verbose
+
+  create-release:
+    needs: [ publish, get-version ]
+    runs-on: ubuntu-latest
+    if: |
+      needs.publish.result == 'success' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+       (github.event_name == 'workflow_dispatch' && github.event.inputs.repository == 'pypi'))
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        VERSION="${{ needs.get-version.outputs.version }}"
+        TAG_NAME="v$VERSION"
+
+        # Get the previous tag
+        PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sed -n '2p')
+
+        if [ -z "$PREVIOUS_TAG" ]; then
+          echo "No previous tag found, generating changelog from first commit"
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+        else
+          echo "Generating changelog from $PREVIOUS_TAG to $TAG_NAME"
+          CHANGELOG=$(git log $PREVIOUS_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+        fi
+
+        # Create formatted changelog
+        if [ -z "$CHANGELOG" ]; then
+          CHANGELOG="- Initial release"
+        fi
+
+        # Save changelog to temporary file
+        cat << EOF > changelog.md
+        ## What's Changed
+
+        $CHANGELOG
+
+        ## Installation
+
+        \`\`\`bash
+        pip install graphene-django-extras==$VERSION
+        \`\`\`
+
+        **Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$TAG_NAME
+        EOF
+
+        echo "changelog_file=changelog.md" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ needs.get-version.outputs.version }}
+        name: Release v${{ needs.get-version.outputs.version }}
+        body_path: changelog.md
+        draft: false
+        prerelease: ${{ needs.get-version.outputs.is_prerelease == 'true' }}
+        files: |
+          dist/*
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update release with assets
+      run: |
+        echo "✅ Release v${{ needs.get-version.outputs.version }} created successfully!"
+        echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.get-version.outputs.version }}"
+        echo "📦 PyPI: https://pypi.org/project/graphene-django-extras/${{ needs.get-version.outputs.version }}/"
+
+  notify-success:
+    needs: [ publish, create-release ]
+    runs-on: ubuntu-latest
+    if: always() && needs.publish.result == 'success'
+    steps:
+    - name: Success notification
+      run: |
+        echo "🎉 Pipeline completed successfully!"
+        echo "✅ Tests passed"
+        echo "✅ Quality checks passed"
+        echo "✅ Security checks passed"
+        echo "✅ Package published"
+        if [ "${{ needs.create-release.result }}" == "success" ]; then
+          echo "✅ GitHub Release created"
         fi
