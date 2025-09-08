@@ -512,6 +512,12 @@ You can use this shortcuts too:
 Change Log:
 -----------
 *******
+v1.0.1:
+*******
+1. Relaxed django-filter constraint for Django 5 compatibility.
+2. Made DjangoListField.type compatible with graphene-django 3.
+
+*******
 v1.0.0:
 *******
 1. Added support to Django 4.x

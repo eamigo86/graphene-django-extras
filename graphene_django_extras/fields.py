@@ -58,6 +58,17 @@ class DjangoListField(DLF):
 
         super(DLF, self).__init__(List(NonNull(_type)), *args, **kwargs)
 
+    @property
+    def type(self):
+        """Return base Graphene Field type, bypassing core DLF's strict checks.
+
+        graphene-django>=3 enforces that the underlying type is the core
+        DjangoObjectType. Since graphene-django-extras defines its own
+        DjangoObjectType, we intentionally bypass that assertion by delegating to
+        the base graphene.Field implementation.
+        """
+        return Field.type.__get__(self, self.__class__)
+
 
 class DjangoFilterListField(Field):
     def __init__(
