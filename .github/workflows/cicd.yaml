@@ -1,9 +1,24 @@
 name: Continuous Integration & Delivery
+
 on:
+  push:
+    branches:
+    - master
+    - develop
   pull_request:
-    branches: [ master ]
+    branches:
+    - master
   workflow_dispatch:
-    branches: [ master, actions ]
+    inputs:
+      repository:
+        description: "Choose repository to publish"
+        required: true
+        default: "testpypi"
+        type: choice
+        options:
+        - testpypi
+        - pypi
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -28,26 +43,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
-      name: Set up Python ${{ matrix.python }} ${{ matrix.django }}
       with:
         python-version: ${{ matrix.python }}
     - name: Install pip packages
       run: |
-        pip install pip --upgrade
+        pip install --upgrade pip
         pip install codecov poetry tox
     - name: "Run tox - testenv: ${{ matrix.toxenv }}"
       env:
         DJANGO: ${{ matrix.django }}
         TOXENV: ${{ matrix.toxenv }}
       run: tox
-    - name: Run notification script
-      env:
-        GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        GITHUB_JOB_STATUS: ${{ job.status }}
-        GITHUB_RUN_URL: ${{ github.event.repository.url }}/actions/runs/${{ github.run_id }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-      run: ./scripts/notification.sh
 
   quality:
     runs-on: ubuntu-latest
@@ -59,14 +65,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
-      name: Set up Python ${{ matrix.python }}
       with:
         python-version: ${{ matrix.python }}
-    - name: Install pip packages
-      run: |
-        pip install pip --upgrade
-        pip install poetry tox
-    - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+    - run: pip install --upgrade pip poetry tox
+    - name: "Run tox - quality"
       env:
         TOXENV: ${{ matrix.toxenv }}
       run: tox
@@ -81,55 +83,46 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
-      name: Set up Python ${{ matrix.python }}
       with:
         python-version: ${{ matrix.python }}
-    - name: Install pip packages
-      run: |
-        pip install pip --upgrade
-        pip install poetry tox
-    - name: "Run tox - testenv: ${{ matrix.toxenv }}"
+    - run: pip install --upgrade pip poetry tox
+    - name: "Run tox - security"
       env:
         TOXENV: ${{ matrix.toxenv }}
       run: tox
 
   publish:
-    needs: [ test, security, quality ]
+    needs:
+    - test
+    - security
+    - quality
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v1
       with:
-        python-version: "3.10"
+        python-version: '3.10'
     - name: Install pip packages
       run: |
-        pip install --upgrade pip
+        pip install pip --upgrade
         pip install poetry tox
     - name: Bump package version
       run: ./scripts/bump.py --dry-run no
     - name: Build package
       run: tox -e build
-
-    # 📦 Publish
-    - name: Publish package
+    - name: Publish to PyPI / TestPyPI
       env:
-        PYPI_TOKEN: ${{ secrets.PYPI_ACCESS_TOKEN }}
+        PYPI_ACCESS_TOKEN: ${{ secrets.PYPI_ACCESS_TOKEN }}
       run: |
-        if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
-          echo "Publishing to PyPI (Production)..."
-          poetry config pypi-token.pypi $PYPI_TOKEN
-          poetry publish --build -r pypi
-        else
+        if [ "${GITHUB_REF##*/}" = "master" ]; then
+          echo "Publishing to PyPI..."
+          poetry config pypi-token.pypi $PYPI_ACCESS_TOKEN
+          poetry publish -r pypi
+        elif [ "${GITHUB_REF##*/}" = "develop" ]; then
           echo "Publishing to TestPyPI..."
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry config pypi-token.testpypi $PYPI_TOKEN
-          poetry publish --build -r testpypi
+          poetry config pypi-token.testpypi $PYPI_ACCESS_TOKEN
+          poetry publish -r testpypi
+        else
+          echo "Not on master or develop, skipping publish."
         fi
-
-    - name: Create bump commit
-      uses: EndBug/add-and-commit@latest
-      with:
-        author_name: github_actions
-        author_email: github_actions
-        message: PR Auto bumping package version
-        add: pyproject.toml
