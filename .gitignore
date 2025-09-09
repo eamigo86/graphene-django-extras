@@ -1,24 +1,184 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
 build/
-graphene_django_extras.egg-info/
+develop-eggs/
 dist/
-.gitignore
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# MkDocs documentation
+site/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# IDEs
 .idea/
 .vscode/
-.mypy_cache
-*.py[co]
-*.egg-info
-*.sqlite3
-__pycache__
-*.sw[po]
+*.swp
+*.swo
+*~
 
-# testing files
-*db.sqlite3
-
-# Specific Files & Folders
-.coverage*
-.tox/
-.pytest*/
-
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-.venv/
+# Security reports
+bandit-report.json
+
+# Poetry virtual environments
+# Note: poetry.lock should be committed to ensure reproducible builds
+
+# Temporary files
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# Database files
+*.sqlite3
+*.db
+
+# Project-specific
+.flake8
+
+# Editor and system files
+*.sublime-project
+*.sublime-workspace
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# Coverage HTML reports
+htmlcov/
+
+# Documentation builds
+docs/site/
+docs/_build/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# MacOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
