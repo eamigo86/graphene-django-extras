@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""GraphQL directives for data transformation and formatting."""
 from graphql.type.directives import specified_directives as default_directives
 
 from .date import DateGraphQLDirective

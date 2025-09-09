@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Django field to GraphQL type converters."""
 import re
 from collections import OrderedDict
 from functools import singledispatch
@@ -11,6 +12,7 @@ from django.contrib.contenttypes.fields import (
 )
 from django.db import models
 from django.utils.encoding import force_str
+
 from graphene import (
     ID,
     UUID,
@@ -45,13 +47,14 @@ COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 
 
 def assert_valid_name(name):
-    """Helper to assert that provided names are valid."""
+    """Assert that provided name is valid for GraphQL."""
     assert COMPILED_NAME_PATTERN.match(
         name
     ), 'Names must match /{}/ but "{}" does not.'.format(NAME_PATTERN, name)
 
 
 def convert_choice_name(name):
+    """Convert Django choice name to valid GraphQL enum name."""
     name = to_const(force_str(name))
     try:
         assert_valid_name(name)
@@ -61,6 +64,7 @@ def convert_choice_name(name):
 
 
 def get_choices(choices):
+    """Extract choices from Django field choices recursively."""
     converted_names = []
     for value, help_text in choices:
         if isinstance(help_text, (tuple, list)):
@@ -78,6 +82,7 @@ def get_choices(choices):
 def convert_django_field_with_choices(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django field with choices to GraphQL enum or list field."""
     choices = getattr(field, "choices", None)
     if choices:
         meta = field.model._meta
@@ -123,6 +128,7 @@ def construct_fields(
     input_flag=None,
     nested_fields=(),
 ):
+    """Construct GraphQL fields from Django model fields."""
     _model_fields = get_model_fields(model)
 
     if settings.DEBUG:
@@ -177,6 +183,7 @@ def construct_fields(
 
 @singledispatch
 def convert_django_field(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django field to GraphQL field type using singledispatch."""
     raise Exception(
         "Don't know how to convert the Django field {} ({})".format(
             field, field.__class__
@@ -192,6 +199,7 @@ def convert_django_field(field, registry=None, input_flag=None, nested_field=Fal
 @convert_django_field.register(models.GenericIPAddressField)
 @convert_django_field.register(models.FileField)
 def convert_field_to_string(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django string fields to GraphQL String type."""
     return String(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -200,6 +208,7 @@ def convert_field_to_string(field, registry=None, input_flag=None, nested_field=
 
 @convert_django_field.register(models.AutoField)
 def convert_field_to_id(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django AutoField to GraphQL ID type."""
     if input_flag:
         return ID(
             description=field.help_text or "Django object unique identification field",
@@ -213,6 +222,7 @@ def convert_field_to_id(field, registry=None, input_flag=None, nested_field=Fals
 
 @convert_django_field.register(models.UUIDField)
 def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django UUIDField to GraphQL UUID type."""
     return UUID(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -225,6 +235,7 @@ def convert_field_to_uuid(field, registry=None, input_flag=None, nested_field=Fa
 @convert_django_field.register(models.BigIntegerField)
 @convert_django_field.register(models.IntegerField)
 def convert_field_to_int(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django integer fields to GraphQL Int type."""
     return Int(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -233,6 +244,7 @@ def convert_field_to_int(field, registry=None, input_flag=None, nested_field=Fal
 
 @convert_django_field.register(models.BooleanField)
 def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django BooleanField to GraphQL Boolean type."""
     required = is_required(field) and input_flag == "create"
     if required:
         return NonNull(Boolean, description=field.help_text or field.verbose_name)
@@ -243,6 +255,7 @@ def convert_field_to_boolean(field, registry=None, input_flag=None, nested_field
 def convert_field_to_nullboolean(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django NullBooleanField to GraphQL Boolean type."""
     return Boolean(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -251,6 +264,7 @@ def convert_field_to_nullboolean(
 
 @convert_django_field.register(models.BinaryField)
 def convert_binary_to_string(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django BinaryField to custom Binary scalar type."""
     return Binary(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -261,6 +275,7 @@ def convert_binary_to_string(field, registry=None, input_flag=None, nested_field
 @convert_django_field.register(models.FloatField)
 @convert_django_field.register(models.DurationField)
 def convert_field_to_float(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django decimal/float/duration fields to GraphQL Float type."""
     return Float(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -269,6 +284,7 @@ def convert_field_to_float(field, registry=None, input_flag=None, nested_field=F
 
 @convert_django_field.register(models.DateField)
 def convert_date_to_string(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django DateField to custom CustomDate scalar type."""
     return CustomDate(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -279,6 +295,7 @@ def convert_date_to_string(field, registry=None, input_flag=None, nested_field=F
 def convert_datetime_to_string(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django DateTimeField to custom CustomDateTime scalar type."""
     return CustomDateTime(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -287,6 +304,7 @@ def convert_datetime_to_string(
 
 @convert_django_field.register(models.TimeField)
 def convert_time_to_string(field, registry=None, input_flag=None, nested_field=False):
+    """Convert Django TimeField to custom CustomTime scalar type."""
     return CustomTime(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -297,6 +315,7 @@ def convert_time_to_string(field, registry=None, input_flag=None, nested_field=F
 def convert_onetoone_field_to_djangomodel(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django OneToOneRel field to GraphQL field."""
     model = field.related_model
 
     def dynamic_type():
@@ -314,6 +333,7 @@ def convert_onetoone_field_to_djangomodel(
 def convert_field_to_list_or_connection(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django ManyToManyField to GraphQL list or connection field."""
     model = get_related_model(field)
 
     def dynamic_type():
@@ -352,6 +372,7 @@ def convert_field_to_list_or_connection(
 def convert_many_rel_to_djangomodel(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django many-to-many relation fields to GraphQL list fields."""
     model = field.related_model
 
     def dynamic_type():
@@ -382,6 +403,7 @@ def convert_many_rel_to_djangomodel(
 def convert_field_to_djangomodel(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django ForeignKey/OneToOneField to GraphQL field."""
     model = get_related_model(field)
 
     def dynamic_type():
@@ -413,6 +435,8 @@ def convert_field_to_djangomodel(
 def convert_generic_foreign_key_to_object(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django GenericForeignKey to GraphQL object type."""
+
     def dynamic_type():
         key = "{}_{}".format(field.name, field.model.__name__.lower())
         if input_flag is not None:
@@ -458,6 +482,7 @@ def convert_generic_foreign_key_to_object(
 def convert_generic_relation_to_object_list(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert Django GenericRelation to GraphQL list field."""
     model = field.related_model
 
     def dynamic_type():
@@ -476,6 +501,7 @@ def convert_generic_relation_to_object_list(
 def convert_postgres_array_to_list(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert PostgreSQL ArrayField to GraphQL List type."""
     base_type = convert_django_field(field.base_field)
     if not isinstance(base_type, (List, NonNull)):
         base_type = type(base_type)
@@ -491,6 +517,7 @@ def convert_postgres_array_to_list(
 def convert_postgres_field_to_string(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert PostgreSQL HStore/JSON fields to GraphQL JSONString type."""
     return JSONString(
         description=field.help_text or field.verbose_name,
         required=is_required(field) and input_flag == "create",
@@ -501,6 +528,7 @@ def convert_postgres_field_to_string(
 def convert_postgres_range_to_string(
     field, registry=None, input_flag=None, nested_field=False
 ):
+    """Convert PostgreSQL RangeField to GraphQL List type."""
     inner_type = convert_django_field(field.base_field)
     if not isinstance(inner_type, (List, NonNull)):
         inner_type = type(inner_type)

@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+"""GraphQL middleware for processing custom directives."""
 from graphql.type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 
 from .registry import get_global_registry
 
 
 class ExtraGraphQLDirectiveMiddleware(object):
+    """Middleware that processes custom GraphQL directives during execution."""
+
     def resolve(self, next, root, info, **kwargs):
+        """Process field resolution with directive handling."""
         result = next(root, info, **kwargs)
         return self.__process_value(result, root, info, **kwargs)
 

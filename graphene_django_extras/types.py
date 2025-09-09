@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+"""GraphQL type definitions for Django models and serializers."""
 from collections import OrderedDict
 
 from django.db.models import QuerySet
 from django.utils.functional import SimpleLazyObject
+
 from graphene import ID, Argument, Boolean, Field, InputField, Int, List, ObjectType
 from graphene.types.base import BaseOptions
 from graphene.types.inputobjecttype import InputObjectType, InputObjectTypeContainer
@@ -66,6 +68,8 @@ class DjangoSerializerOptions(BaseOptions):
 
 
 class DjangoObjectType(ObjectType):
+    """A Django model GraphQL type with enhanced features."""
+
     @classmethod
     def __init_subclass_with_meta__(
         cls,
@@ -80,6 +84,7 @@ class DjangoObjectType(ObjectType):
         filterset_class=None,
         **options,
     ):
+        """Initialize subclass with meta options for Django model GraphQL type."""
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -119,10 +124,12 @@ class DjangoObjectType(ObjectType):
             registry.register(cls)
 
     def resolve_id(self, info):
+        """Resolve the ID field for the object."""
         return self.pk
 
     @classmethod
     def is_type_of(cls, root, info):
+        """Check if the root object is of this type."""
         if isinstance(root, SimpleLazyObject):
             root._setup()
             root = root._wrapped
@@ -134,10 +141,12 @@ class DjangoObjectType(ObjectType):
 
     @classmethod
     def get_queryset(cls, queryset, info):
+        """Get the queryset for this type."""
         return queryset
 
     @classmethod
     def get_node(cls, info, id):
+        """Get a single node by ID."""
         try:
             return cls._meta.model.objects.get(pk=id)
         except cls._meta.model.DoesNotExist:
@@ -145,6 +154,8 @@ class DjangoObjectType(ObjectType):
 
 
 class DjangoInputObjectType(InputObjectType):
+    """A Django model GraphQL input type."""
+
     @classmethod
     def __init_subclass_with_meta__(
         cls,
@@ -161,6 +172,7 @@ class DjangoInputObjectType(InputObjectType):
         nested_fields=(),
         **options,
     ):
+        """Initialize subclass with meta options for Django input type."""
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -226,15 +238,20 @@ class DjangoInputObjectType(InputObjectType):
 
     @classmethod
     def get_type(cls):
-        """
+        """Get the type when the unmounted type is mounted.
+
         This function is called when the unmounted type (InputObjectType instance)
-        is mounted (as a Field, InputField or Argument)
+        is mounted (as a Field, InputField or Argument).
         """
         return cls
 
 
 class DjangoListObjectType(ObjectType):
+    """A GraphQL type for paginated Django model lists."""
+
     class Meta:
+        """Meta configuration for DjangoListObjectType."""
+
         abstract = True
 
     @classmethod
@@ -251,6 +268,7 @@ class DjangoListObjectType(ObjectType):
         filterset_class=None,
         **options,
     ):
+        """Initialize subclass with meta options for Django list type."""
         assert is_valid_django_model(model), (
             'You need to pass a valid Django Model in {}.Meta, received "{}".'
         ).format(cls.__name__, model)
@@ -309,6 +327,7 @@ class DjangoListObjectType(ObjectType):
         _meta.filter_fields = filter_fields
         _meta.exclude_fields = exclude_fields
         _meta.only_fields = only_fields
+        _meta.pagination = pagination
         _meta.filterset_class = filterset_class
         _meta.fields = OrderedDict(
             [
@@ -330,22 +349,24 @@ class DjangoListObjectType(ObjectType):
 
     @classmethod
     def RetrieveField(cls, *args, **kwargs):
+        """Create a field for retrieving a single object."""
         return DjangoObjectField(cls._meta.baseType, **kwargs)
 
     @classmethod
     def BaseType(cls):
+        """Get the base GraphQL type for this list type."""
         return cls._meta.baseType
 
 
 class DjangoSerializerType(ObjectType):
-    """
-    DjangoSerializerType definition
-    """
+    """DjangoSerializerType definition."""
 
     ok = Boolean(description="Boolean field that return mutation result request.")
     errors = List(ErrorType, description="Errors list for the field")
 
     class Meta:
+        """Meta configuration for DjangoSerializerType."""
+
         abstract = True
 
     @classmethod
@@ -366,6 +387,7 @@ class DjangoSerializerType(ObjectType):
         filterset_class=None,
         **options,
     ):
+        """Initialize subclass with meta options for Django serializer type."""
         if not serializer_class:
             raise Exception("serializer_class is required on all ModelSerializerType")
 
@@ -468,42 +490,49 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def list_object_type(cls):
+        """Get the list object type for this serializer type."""
         return cls._meta.output_list_type
 
     @classmethod
     def object_type(cls):
+        """Get the output object type for this serializer type."""
         return cls._meta.output_type
 
     @classmethod
     def get_errors(cls, errors):
+        """Create error response object from validation errors."""
         errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
 
         return cls(**errors_dict)
 
     @classmethod
     def perform_mutate(cls, obj, info):
+        """Create successful mutation response with the given object."""
         resp = {cls._meta.output_field_name: obj, "ok": True, "errors": None}
 
         return cls(**resp)
 
     @classmethod
     def get_serializer_kwargs(cls, root, info, **kwargs):
+        """Get additional keyword arguments for serializer initialization."""
         return {}
 
     @classmethod
     def manage_nested_fields(cls, data, root, info):
+        """Process and save nested field data."""
         nested_objs = {}
-        if cls._meta.nested_fields and type(cls._meta.nested_fields) == dict:
+        if cls._meta.nested_fields and isinstance(cls._meta.nested_fields, dict):
             for field in cls._meta.nested_fields:
                 sub_data = data.pop(field, None)
                 if sub_data:
                     serialized_data = cls._meta.nested_fields[field](
-                        data=sub_data, many=True if type(sub_data) == list else False
+                        data=sub_data,
+                        many=True if isinstance(sub_data, list) else False,
                     )
                     ok, result = cls.save(serialized_data, root, info)
                     if not ok:
                         return cls.get_errors(result)
-                    if type(sub_data) == list:
+                    if isinstance(sub_data, list):
                         nested_objs.update({field: result})
                     else:
                         data.update({field: result.id})
@@ -511,6 +540,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def create(cls, root, info, **kwargs):
+        """Create a new object using the serializer."""
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
@@ -530,6 +560,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def delete(cls, root, info, **kwargs):
+        """Delete an object by ID."""
         pk = kwargs.get("id")
 
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
@@ -553,6 +584,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def update(cls, root, info, **kwargs):
+        """Update an existing object using the serializer."""
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
@@ -591,6 +623,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
+        """Save the serialized object and return success status and object/errors."""
         if serialized_obj.is_valid():
             obj = serialized_obj.save()
             return True, obj
@@ -604,6 +637,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def retrieve(cls, manager, root, info, **kwargs):
+        """Retrieve a single object by ID using the manager."""
         pk = kwargs.pop("id", None)
 
         try:
@@ -613,6 +647,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def list(cls, manager, filterset_class, filtering_args, root, info, **kwargs):
+        """List objects with filtering and pagination support."""
         qs = queryset_factory(cls._meta.queryset or manager, root, info, **kwargs)
 
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
@@ -628,16 +663,19 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def RetrieveField(cls, *args, **kwargs):
+        """Create a field for retrieving a single object."""
         return DjangoObjectField(cls._meta.output_type, resolver=cls.retrieve, **kwargs)
 
     @classmethod
     def ListField(cls, *args, **kwargs):
+        """Create a field for listing objects."""
         return DjangoListObjectField(
             cls._meta.output_list_type, resolver=cls.list, **kwargs
         )
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
+        """Create a field for creating objects."""
         return Field(
             cls._meta.mutation_output,
             args=cls._meta.arguments["create"],
@@ -647,6 +685,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def DeleteField(cls, *args, **kwargs):
+        """Create a field for deleting objects."""
         return Field(
             cls._meta.mutation_output,
             args=cls._meta.arguments["delete"],
@@ -656,6 +695,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def UpdateField(cls, *args, **kwargs):
+        """Create a field for updating objects."""
         return Field(
             cls._meta.mutation_output,
             args=cls._meta.arguments["update"],
@@ -665,6 +705,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def QueryFields(cls, *args, **kwargs):
+        """Get retrieve and list fields for GraphQL queries."""
         retrieve_field = cls.RetrieveField(*args, **kwargs)
         list_field = cls.ListField(*args, **kwargs)
 
@@ -672,6 +713,7 @@ class DjangoSerializerType(ObjectType):
 
     @classmethod
     def MutationFields(cls, *args, **kwargs):
+        """Get create, delete, and update fields for GraphQL mutations."""
         create_field = cls.CreateField(*args, **kwargs)
         delete_field = cls.DeleteField(*args, **kwargs)
         update_field = cls.UpdateField(*args, **kwargs)

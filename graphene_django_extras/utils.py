@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+"""Utility functions for Django-GraphQL integration."""
 import inspect
 import re
 from collections import OrderedDict
 
-import six
 from django import VERSION as DJANGO_VERSION
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
@@ -17,6 +17,8 @@ from django.db.models import (
     QuerySet,
 )
 from django.db.models.base import ModelBase
+
+import six
 from graphene.utils.str_converters import to_snake_case
 from graphene_django.utils import is_valid_django_model
 from graphql import GraphQLList, GraphQLNonNull
@@ -24,6 +26,7 @@ from graphql.language.ast import FragmentSpreadNode, InlineFragmentNode
 
 
 def get_reverse_fields(model):
+    """Get reverse relation fields from Django model."""
     reverse_fields = {
         f.name: f for f in model._meta.get_fields() if f.auto_created and not f.concrete
     }
@@ -62,11 +65,13 @@ def _resolve_model(obj):
 
 
 def to_kebab_case(name):
+    """Convert name to kebab-case format."""
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1-\2", name.title().replace(" ", ""))
     return re.sub("([a-z0-9])([A-Z])", r"\1-\2", s1).lower()
 
 
 def get_related_model(field):
+    """Get the related model from a Django relation field."""
     # Backward compatibility patch for Django versions lower than 1.9.x
     if DJANGO_VERSION < (1, 9):
         return _resolve_model(field.rel.to)
@@ -74,6 +79,7 @@ def get_related_model(field):
 
 
 def get_model_fields(model):
+    """Get all fields from a Django model including reverse fields."""
     # Backward compatibility patch for Django versions lower than 1.11.x
     if DJANGO_VERSION >= (1, 11):
         private_fields = model._meta.private_fields
@@ -102,12 +108,15 @@ def get_model_fields(model):
 
 
 def get_obj(app_label, model_name, object_id):
-    """
-    Function used to get a object
-    :param app_label: A valid Django Model or a string with format: <app_label>.<model_name>
-    :param model_name: Key into kwargs that contains de data: new_person
-    :param object_id:
-    :return: instance
+    """Get a Django object by app label, model name, and object ID.
+
+    Args:
+        app_label: Django app label
+        model_name: Model name
+        object_id: Object ID
+
+    Returns:
+        Model instance or None
     """
     try:
         model = apps.get_model("{}.{}".format(app_label, model_name))
@@ -131,16 +140,17 @@ def get_obj(app_label, model_name, object_id):
 
 
 def create_obj(django_model, new_obj_key=None, *args, **kwargs):
-    """
-    Function used by my on traditional Mutations to create objs
-    :param django_model: A valid Django Model or a string with format:
-    <app_label>.<model_name>
-    :param new_obj_key: Key into kwargs that contains de data: new_person
-    :param args:
-    :param kwargs: Dict with model attributes values
-    :return: instance of model after saved it
-    """
+    """Create a Django model instance.
 
+    Args:
+        django_model: Django Model class or string format <app_label>.<model_name>
+        new_obj_key: Key in kwargs containing the data
+        args: Additional arguments
+        kwargs: Dict with model attribute values
+
+    Returns:
+        Created model instance
+    """
     try:
         if isinstance(django_model, six.string_types):
             django_model = apps.get_model(django_model)
@@ -166,10 +176,7 @@ def create_obj(django_model, new_obj_key=None, *args, **kwargs):
 
 
 def clean_dict(d):
-    """
-    Remove all empty fields in a nested dict
-    """
-
+    """Remove all empty fields in a nested dict."""
     if not isinstance(d, (dict, list)):
         return d
     if isinstance(d, list):
@@ -180,12 +187,14 @@ def clean_dict(d):
 
 
 def get_type(_type):
+    """Get the base type from GraphQL type wrappers."""
     if isinstance(_type, (GraphQLList, GraphQLNonNull)):
         return get_type(_type.of_type)
     return _type
 
 
 def get_fields(info):
+    """Extract field names from GraphQL query info."""
     fragments = info.fragments
     field_nodes = info.field_nodes[0].selection_set.selections
 
@@ -200,6 +209,7 @@ def get_fields(info):
 
 
 def is_required(field):
+    """Check if a Django field is required."""
     try:
         blank = getattr(field, "blank", getattr(field, "field", None))
         default = getattr(field, "default", getattr(field, "field", None))
@@ -222,11 +232,9 @@ def is_required(field):
 
 
 def _get_queryset(klass):
-    """
-    Returns a QuerySet from a Model, Manager, or QuerySet. Created to make
-    get_object_or_404 and get_list_or_404 more DRY.
+    """Return a QuerySet from a Model, Manager, or QuerySet.
 
-    Raises a ValueError if klass is not a Model, Manager, or QuerySet.
+    Raises ValueError if klass is not a valid type.
     """
     if isinstance(klass, QuerySet):
         return klass
@@ -260,15 +268,13 @@ def _get_custom_resolver(info):
 
 
 def get_Object_or_None(klass, *args, **kwargs):
-    """
-    Uses get() to return an object, or None if the object does not exist.
+    """Use get() to return an object, or None if the object does not exist.
 
     klass may be a Model, Manager, or QuerySet object. All other passed
     arguments and keyword arguments are used in the get() query.
 
     Note: Like with get(), an MultipleObjectsReturned will be raised
     if more than one object is found.
-    Ex: get_Object_or_None(User, db, id=1)
     """
     queryset = _get_queryset(klass)
     try:
@@ -283,6 +289,7 @@ def get_Object_or_None(klass, *args, **kwargs):
 
 
 def get_extra_filters(root, model):
+    """Get extra filters for model relationships."""
     extra_filters = {}
     for field in model._meta.get_fields():
         if field.is_relation and field.related_model == root._meta.model:
@@ -292,6 +299,7 @@ def get_extra_filters(root, model):
 
 
 def get_related_fields(model):
+    """Get related fields from Django model."""
     return {
         field.name: field
         for field in model._meta.get_fields()
@@ -300,6 +308,7 @@ def get_related_fields(model):
 
 
 def find_field(field, fields_dict):
+    """Find field in fields dictionary."""
     temp = fields_dict.get(
         field.name.value, fields_dict.get(to_snake_case(field.name.value), None)
     )
@@ -310,6 +319,7 @@ def find_field(field, fields_dict):
 def recursive_params(
     selection_set, fragments, available_related_fields, select_related, prefetch_related
 ):
+    """Recursively process GraphQL selection set for query optimization."""
     for field in selection_set.selections:
         if isinstance(field, FragmentSpreadNode) and fragments:
             a, b = recursive_params(
@@ -360,6 +370,7 @@ def recursive_params(
 
 
 def queryset_factory(manager, root, info, **kwargs):
+    """Create optimized queryset with select_related and prefetch_related."""
     select_related = set()
     prefetch_related = set()
     available_related_fields = get_related_fields(manager.model)
@@ -401,6 +412,7 @@ def queryset_factory(manager, root, info, **kwargs):
 
 
 def parse_validation_exc(validation_exc):
+    """Parse Django validation exception into structured error list."""
     errors_list = []
     for key, value in validation_exc.error_dict.items():
         for exc in value:

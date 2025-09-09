@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""String manipulation GraphQL directives."""
 import base64
 
 import six
@@ -28,12 +29,11 @@ __all__ = (
 
 
 class DefaultGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Default to given value if None or ""
-    """
+    """Default to given value if None or empty string."""
 
     @staticmethod
     def get_args():
+        """Get arguments for the default directive."""
         return {
             "to": GraphQLArgument(
                 GraphQLNonNull(GraphQLString), description="Value to default to"
@@ -42,6 +42,7 @@ class DefaultGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the default directive value."""
         if not value:
             to_argument = [
                 arg for arg in directive.arguments if arg.name.value == "to"
@@ -52,8 +53,11 @@ class DefaultGraphQLDirective(BaseExtraGraphQLDirective):
 
 
 class Base64GraphQLDirective(BaseExtraGraphQLDirective):
+    """Base64 encode or decode string values."""
+
     @staticmethod
     def get_args():
+        """Get arguments for the base64 directive."""
         return {
             "op": GraphQLArgument(
                 GraphQLString, description='Action to perform: "encode" or "decode"'
@@ -62,6 +66,7 @@ class Base64GraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the base64 directive."""
         if not value:
             return None
 
@@ -79,12 +84,11 @@ class Base64GraphQLDirective(BaseExtraGraphQLDirective):
 
 
 class NumberGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    String formatting like a specify Python number formatting
-    """
+    """String formatting like a specified Python number formatting."""
 
     @staticmethod
     def get_args():
+        """Get arguments for the number directive."""
         return {
             "as": GraphQLArgument(
                 GraphQLNonNull(GraphQLString), description="Value to default to"
@@ -93,13 +97,17 @@ class NumberGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the number formatting directive."""
         as_argument = [arg for arg in directive.arguments if arg.name.value == "as"][0]
         return format(float(value or 0), as_argument.value.value)
 
 
 class CurrencyGraphQLDirective(BaseExtraGraphQLDirective):
+    """Format numeric values as currency."""
+
     @staticmethod
     def get_args():
+        """Get arguments for the currency directive."""
         return {
             "symbol": GraphQLArgument(
                 GraphQLString, description="Currency symbol (default: $)"
@@ -108,6 +116,7 @@ class CurrencyGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the currency formatting directive."""
         symbol_argument = next(
             (arg for arg in directive.arguments if arg.name.value == "symbol"), None
         )
@@ -117,85 +126,78 @@ class CurrencyGraphQLDirective(BaseExtraGraphQLDirective):
 
 
 class LowercaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Lowercases result.
-    """
+    """Convert string to lowercase."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the lowercase directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return value.lower()
 
 
 class UppercaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Uppercases result.
-    """
+    """Convert string to uppercase."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the uppercase directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return value.upper()
 
 
 class CapitalizeGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Return a copy of the string with its first character capitalized and the rest lowercased.
-    """
+    """Return a copy of the string with its first character capitalized and the rest lowercased."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the capitalize directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return value.capitalize()
 
 
 class CamelCaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    CamelCase result.
-    """
+    """Convert string to camelCase."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the camelCase directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return to_camel_case(value)
 
 
 class SnakeCaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    SnakeCase result.
-    """
+    """Convert string to snake_case."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the snake_case directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return to_snake_case(value.title().replace(" ", ""))
 
 
 class KebabCaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    KebabCase result.
-    """
+    """Convert string to kebab-case."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the kebab-case directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return to_kebab_case(value)
 
 
 class SwapCaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Return a copy of the string with uppercase characters converted to lowercase and vice versa.
-    """
+    """Return a copy of the string with uppercase characters converted to lowercase and vice versa."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the swapcase directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return value.swapcase()
 
 
 class StripGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Return a copy of the string with the leading and trailing characters removed.
+    """Return a copy of the string with the leading and trailing characters removed.
+
     The chars argument is a string specifying the set of characters to be removed.
     If omitted or None, the chars argument defaults to removing whitespace.
     The chars argument is not a prefix or suffix; rather, all combinations of its values are stripped.
@@ -203,6 +205,7 @@ class StripGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def get_args():
+        """Get arguments for the strip directive."""
         return {
             "chars": GraphQLArgument(
                 GraphQLString,
@@ -212,6 +215,7 @@ class StripGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the strip directive."""
         chars_argument = [
             arg for arg in directive.arguments if arg.name.value == "chars"
         ]
@@ -224,25 +228,25 @@ class StripGraphQLDirective(BaseExtraGraphQLDirective):
 
 
 class TitleCaseGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Return a titlecased version of the string where words start with an
-    uppercase character and the remaining characters are lowercase.
-    """
+    """Return a titlecased version of the string where words start with an uppercase character and the remaining characters are lowercase."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the title case directive."""
         value = value if isinstance(value, six.string_types) else str(value)
         return value.title()
 
 
 class CenterGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Return centered in a string of length width. Padding is done using the specified fillchar
+    """Return centered in a string of length width.
+
+    Padding is done using the specified fillchar.
     The original string is returned if width is less than or equal to len(s).
     """
 
     @staticmethod
     def get_args():
+        """Get arguments for the center directive."""
         return {
             "width": GraphQLArgument(
                 GraphQLNonNull(GraphQLInt), description="Value to returned str lenght"
@@ -254,6 +258,7 @@ class CenterGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the center directive."""
         width_argument = [
             arg for arg in directive.arguments if arg.name.value == "width"
         ]
@@ -273,13 +278,14 @@ class CenterGraphQLDirective(BaseExtraGraphQLDirective):
 
 
 class ReplaceGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Return a copy of the string with all occurrences of substring old replaced by new.
+    """Return a copy of the string with all occurrences of substring old replaced by new.
+
     If the optional argument count is given, only the first count occurrences are replaced.
     """
 
     @staticmethod
     def get_args():
+        """Get arguments for the replace directive."""
         return {
             "old": GraphQLArgument(
                 GraphQLNonNull(GraphQLString),
@@ -296,6 +302,7 @@ class ReplaceGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the replace directive."""
         old_argument = [arg for arg in directive.arguments if arg.name.value == "old"]
         old_argument = old_argument[0].value.value if len(old_argument) > 0 else None
 

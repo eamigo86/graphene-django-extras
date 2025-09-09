@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Number manipulation GraphQL directives."""
 import math
 
 from graphql import GraphQLString
@@ -9,22 +10,20 @@ __all__ = ("FloorGraphQLDirective", "CeilGraphQLDirective")
 
 
 class FloorGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Floors value. Supports both String and Float fields.
-    """
+    """Floor value for both String and Float fields."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the floor directive."""
         new_value = math.floor(float(value))
         return str(new_value) if info.return_type == GraphQLString else new_value
 
 
 class CeilGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Ceils value. Supports both String and Float fields.
-    """
+    """Ceil value for both String and Float fields."""
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the ceil directive."""
         new_value = math.ceil(float(value))
         return str(new_value) if info.return_type == GraphQLString else new_value

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Base types and utilities for graphene-django-extras."""
 from __future__ import absolute_import
 
 import binascii
@@ -11,6 +12,7 @@ from graphql.language import ast
 
 
 def factory_type(operation, _type, *args, **kwargs):
+    """Create a factory type based on the operation (output, input, or list)."""
     if operation == "output":
 
         class GenericType(_type):
@@ -79,12 +81,16 @@ def factory_type(operation, _type, *args, **kwargs):
 
 
 class DjangoListObjectBase(object):
+    """Base class for Django list objects."""
+
     def __init__(self, results, count, results_field_name="results"):
+        """Initialize the Django list object."""
         self.results = results
         self.count = count
         self.results_field_name = results_field_name
 
     def to_dict(self):
+        """Convert the object to a dictionary."""
         return {
             self.results_field_name: [e.to_dict() for e in self.results],
             "count": self.count,
@@ -92,6 +98,7 @@ class DjangoListObjectBase(object):
 
 
 def resolver(attr_name, root, instance, info):
+    """Resolve generic foreign key attributes."""
     if attr_name == "app_label":
         return instance._meta.app_label
     elif attr_name == "id":
@@ -101,21 +108,29 @@ def resolver(attr_name, root, instance, info):
 
 
 class GenericForeignKeyType(graphene.ObjectType):
+    """GraphQL type for Django GenericForeignKey fields."""
+
     app_label = graphene.String()
     id = graphene.ID()
     model_name = graphene.String()
 
     class Meta:
+        """Meta configuration for GenericForeignKeyType."""
+
         description = " Auto generated Type for a model's GenericForeignKey field "
         default_resolver = resolver
 
 
 class GenericForeignKeyInputType(graphene.InputObjectType):
+    """GraphQL input type for Django GenericForeignKey fields."""
+
     app_label = graphene.Argument(graphene.String, required=True)
     id = graphene.Argument(graphene.ID, required=True)
     model_name = graphene.Argument(graphene.String, required=True)
 
     class Meta:
+        """Meta configuration for GenericForeignKeyInputType."""
+
         description = " Auto generated InputType for a model's GenericForeignKey field "
 
 
@@ -123,12 +138,11 @@ class GenericForeignKeyInputType(graphene.InputObjectType):
 # ************** CUSTOM BASE TYPES *************** #
 # ************************************************ #
 class Binary(graphene.Scalar):
-    """
-    BinaryArray is used to convert a Django BinaryField to the string form
-    """
+    """BinaryArray is used to convert a Django BinaryField to the string form."""
 
     @staticmethod
     def binary_to_string(value):
+        """Convert binary data to string representation."""
         return binascii.hexlify(value).decode("utf-8")
 
     serialize = binary_to_string
@@ -136,18 +150,25 @@ class Binary(graphene.Scalar):
 
     @classmethod
     def parse_literal(cls, node):
+        """Parse literal node from GraphQL AST."""
         if isinstance(node, ast.StringValue):
             return cls.binary_to_string(node.value)
 
 
 class CustomDateFormat(object):
+    """Custom date format wrapper."""
+
     def __init__(self, date):
+        """Initialize custom date format."""
         self.date_str = date
 
 
 class CustomTime(Time):
+    """Custom time scalar type with support for custom date formats."""
+
     @staticmethod
     def serialize(time):
+        """Serialize time value to string."""
         if isinstance(time, CustomDateFormat):
             return time.date_str
 
@@ -161,8 +182,11 @@ class CustomTime(Time):
 
 
 class CustomDate(Date):
+    """Custom date scalar type with support for custom date formats."""
+
     @staticmethod
     def serialize(date):
+        """Serialize date value to string."""
         if isinstance(date, CustomDateFormat):
             return date.date_str
 
@@ -175,8 +199,11 @@ class CustomDate(Date):
 
 
 class CustomDateTime(DateTime):
+    """Custom datetime scalar type with support for custom date formats."""
+
     @staticmethod
     def serialize(dt):
+        """Serialize datetime value to string."""
         if isinstance(dt, CustomDateFormat):
             return dt.date_str
 

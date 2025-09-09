@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""Pagination field implementations for GraphQL queries.
+
+This module provides various pagination field classes that handle different
+pagination strategies including limit/offset, page-based, and cursor-based pagination.
+"""
 from functools import partial
 from math import fabs
 
@@ -11,11 +16,15 @@ __all__ = ("LimitOffsetPaginationField", "PagePaginationField", "CursorPaginatio
 
 
 class AbstractPaginationField(Field):
+    """Abstract base class for all pagination field implementations."""
+
     @property
     def model(self):
+        """Get the Django model associated with this pagination field."""
         return self.type.of_type._meta.node._meta.model
 
     def wrap_resolve(self, parent_resolver):
+        """Wrap the resolver with pagination logic."""
         return partial(
             self.list_resolver, self.type.of_type._meta.model._default_manager
         )
@@ -25,6 +34,8 @@ class AbstractPaginationField(Field):
 # ************* PAGINATION FIELDS *************** #
 # *********************************************** #
 class LimitOffsetPaginationField(AbstractPaginationField):
+    """Pagination field that implements limit/offset-based pagination."""
+
     def __init__(
         self,
         _type,
@@ -37,6 +48,7 @@ class LimitOffsetPaginationField(AbstractPaginationField):
         *args,
         **kwargs,
     ):
+        """Initialize limit/offset pagination field with configuration parameters."""
         kwargs.setdefault("args", {})
 
         self.limit_query_param = limit_query_param
@@ -46,7 +58,7 @@ class LimitOffsetPaginationField(AbstractPaginationField):
         self.default_limit = default_limit
         self.ordering = ordering
 
-        kwargs[limit_query_param] = Int(
+        kwargs["args"][limit_query_param] = Int(
             default_value=self.default_limit,
             description="Number of results to return per page. Actual "
             "'default_limit': {}, and 'max_limit': {}".format(
@@ -54,12 +66,12 @@ class LimitOffsetPaginationField(AbstractPaginationField):
             ),
         )
 
-        kwargs[offset_query_param] = Int(
+        kwargs["args"][offset_query_param] = Int(
             default_value=0,
             description="The initial index from which to return the results.",
         )
 
-        kwargs[ordering_param] = String(
+        kwargs["args"][ordering_param] = String(
             default_value="",
             description="A string or comma delimited string values that indicate the "
             "default ordering when obtaining lists of objects.",
@@ -68,11 +80,17 @@ class LimitOffsetPaginationField(AbstractPaginationField):
         super(LimitOffsetPaginationField, self).__init__(List(_type), *args, **kwargs)
 
     def list_resolver(self, manager, root, info, **kwargs):
+        """Resolve paginated list using limit/offset pagination strategy."""
         qs = manager.get_queryset()
         count = _get_count(qs)
         limit = _nonzero_int(
-            kwargs.get(self.limit_query_param, None), strict=True, cutoff=self.max_limit
+            kwargs.get(self.limit_query_param, self.default_limit),
+            strict=True,
+            cutoff=self.max_limit,
         )
+        # Ensure limit is not None
+        if limit is None:
+            limit = self.default_limit or 20
 
         order = kwargs.pop(self.ordering_param, None) or self.ordering
         if order:
@@ -85,13 +103,27 @@ class LimitOffsetPaginationField(AbstractPaginationField):
 
         if limit < 0:
             offset = kwargs.pop(self.offset_query_param, None) or count
-            return qs[offset - fabs(limit) : offset]
+            results = qs[offset - fabs(limit) : offset]
+            return {
+                "results": results,
+                "totalCount": count,
+            }
 
         offset = kwargs.pop(self.offset_query_param, 0)
-        return qs[offset : offset + limit]
+
+        # Get the paginated results
+        results = qs[offset : offset + limit]
+
+        # Return the expected structure with results and totalCount
+        return {
+            "results": results,
+            "totalCount": count,
+        }
 
 
 class PagePaginationField(AbstractPaginationField):
+    """Pagination field that implements page number-based pagination."""
+
     def __init__(
         self,
         _type,
@@ -103,6 +135,7 @@ class PagePaginationField(AbstractPaginationField):
         *args,
         **kwargs,
     ):
+        """Initialize page-based pagination field with configuration parameters."""
         kwargs.setdefault("args", {})
 
         # Client can control the page using this query parameter.
@@ -129,12 +162,12 @@ class PagePaginationField(AbstractPaginationField):
             )
         )
 
-        kwargs[self.page_query_param] = Int(
+        kwargs["args"][self.page_query_param] = Int(
             default_value=1,
             description="A page number within the result paginated set. Default: 1",
         )
 
-        kwargs[self.ordering_param] = String(
+        kwargs["args"][self.ordering_param] = String(
             default_value="",
             description="A string or coma separate strings values that indicating the "
             "default ordering when obtaining lists of objects.",
@@ -142,17 +175,18 @@ class PagePaginationField(AbstractPaginationField):
 
         if self.page_size_query_param:
             if not page_size:
-                kwargs[self.page_size_query_param] = NonNull(
+                kwargs["args"][self.page_size_query_param] = NonNull(
                     Int, description=self.page_size_query_description
                 )
             else:
-                kwargs[self.page_size_query_param] = Int(
+                kwargs["args"][self.page_size_query_param] = Int(
                     description=self.page_size_query_description
                 )
 
         super(PagePaginationField, self).__init__(List(_type), *args, **kwargs)
 
     def list_resolver(self, manager, root, info, **kwargs):
+        """Resolve paginated list using page number-based pagination strategy."""
         qs = manager.get_queryset()
         count = _get_count(qs)
         page = kwargs.pop(self.page_query_param, 1)
@@ -194,9 +228,12 @@ class PagePaginationField(AbstractPaginationField):
 
 
 class CursorPaginationField(AbstractPaginationField):
+    """Pagination field that implements cursor-based pagination."""
+
     def __init__(
         self, _type, ordering="-created", cursor_query_param="cursor", *args, **kwargs
     ):
+        """Initialize cursor-based pagination field with configuration parameters."""
         kwargs.setdefault("args", {})
 
         self.page_size = graphql_api_settings.DEFAULT_PAGE_SIZE
@@ -206,23 +243,38 @@ class CursorPaginationField(AbstractPaginationField):
         self.cursor_query_description = "The pagination cursor value."
         self.page_size_query_description = "Number of results to return per page."
 
-        kwargs[self.cursor_query_param] = NonNull(
-            String, description=self.cursor_query_description
+        # Standard GraphQL cursor pagination arguments
+        kwargs["args"]["first"] = Int(
+            description="Returns the first n elements from the list."
+        )
+        kwargs["args"]["last"] = Int(
+            description="Returns the last n elements from the list."
+        )
+        kwargs["args"]["after"] = String(
+            description="Returns the elements in the list that come after the specified cursor."
+        )
+        kwargs["args"]["before"] = String(
+            description="Returns the elements in the list that come before the specified cursor."
+        )
+
+        kwargs["args"][self.cursor_query_param] = String(
+            description=self.cursor_query_description
         )
 
         if self.page_size_query_param:
             if not self.page_size:
-                kwargs[self.page_size_query_param] = NonNull(
+                kwargs["args"][self.page_size_query_param] = NonNull(
                     Int, description=self.page_size_query_description
                 )
             else:
-                kwargs[self.page_size_query_param] = Int(
+                kwargs["args"][self.page_size_query_param] = Int(
                     description=self.page_size_query_description
                 )
 
         super(CursorPaginationField, self).__init__(List(_type), *args, **kwargs)
 
     def list_resolver(self, manager, root, info, **kwargs):
+        """Resolve paginated list using cursor-based pagination strategy."""
         raise NotImplementedError(
             "{} list_resolver() are not implemented yet.".format(
                 self.__class__.__name__

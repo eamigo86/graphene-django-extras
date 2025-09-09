@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Custom GraphQL fields for Django models with filtering and pagination support."""
 import operator
 from functools import partial
 
@@ -24,7 +25,10 @@ from .utils import find_field, get_extra_filters, get_related_fields, queryset_f
 # *********** FIELD FOR SINGLE OBJECT *********** #
 # *********************************************** #
 class DjangoObjectField(Field):
+    """GraphQL field for a single Django model object."""
+
     def __init__(self, _type, *args, **kwargs):
+        """Initialize the Django object field."""
         kwargs["id"] = ID(
             required=True, description="Django object unique identification field"
         )
@@ -33,10 +37,12 @@ class DjangoObjectField(Field):
 
     @property
     def model(self):
+        """Get the Django model associated with this field."""
         return self.type._meta.node._meta.model
 
     @staticmethod
     def object_resolver(manager, root, info, **kwargs):
+        """Resolve a single object by its ID."""
         id = kwargs.pop("id", None)
 
         try:
@@ -45,6 +51,7 @@ class DjangoObjectField(Field):
             return None
 
     def wrap_resolve(self, parent_resolver):
+        """Wrap the resolver with the object resolver."""
         return partial(self.object_resolver, self.type._meta.model._default_manager)
 
 
@@ -52,7 +59,10 @@ class DjangoObjectField(Field):
 # *************** FIELDS FOR LIST *************** #
 # *********************************************** #
 class DjangoListField(DLF):
+    """GraphQL field for a list of Django model objects."""
+
     def __init__(self, _type, *args, **kwargs):
+        """Initialize the Django list field."""
         if isinstance(_type, NonNull):
             _type = _type.of_type
 
@@ -71,6 +81,8 @@ class DjangoListField(DLF):
 
 
 class DjangoFilterListField(Field):
+    """GraphQL field for a filtered list of Django model objects."""
+
     def __init__(
         self,
         _type,
@@ -80,6 +92,7 @@ class DjangoFilterListField(Field):
         *args,
         **kwargs,
     ):
+        """Initialize the Django filter list field."""
         if DJANGO_FILTER_INSTALLED:
             _fields = _type._meta.filter_fields
             _model = _type._meta.model
@@ -119,10 +132,12 @@ class DjangoFilterListField(Field):
 
     @property
     def model(self):
+        """Get the Django model associated with this field."""
         return self.type.of_type._meta.node._meta.model
 
     @staticmethod
     def list_resolver(manager, filterset_class, filtering_args, root, info, **kwargs):
+        """Resolve a filtered list of objects."""
         qs = None
         field = None
 
@@ -161,6 +176,7 @@ class DjangoFilterListField(Field):
         return maybe_queryset(qs)
 
     def wrap_resolve(self, parent_resolver):
+        """Wrap the resolver with the list resolver."""
         current_type = self.type
         while isinstance(current_type, Structure):
             current_type = current_type.of_type
@@ -173,6 +189,8 @@ class DjangoFilterListField(Field):
 
 
 class DjangoFilterPaginateListField(Field):
+    """GraphQL field for a filtered and paginated list of Django model objects."""
+
     def __init__(
         self,
         _type,
@@ -183,6 +201,7 @@ class DjangoFilterPaginateListField(Field):
         *args,
         **kwargs,
     ):
+        """Initialize the Django filter paginate list field."""
         _fields = _type._meta.filter_fields
         _model = _type._meta.model
 
@@ -236,14 +255,17 @@ class DjangoFilterPaginateListField(Field):
 
     @property
     def model(self):
+        """Get the Django model associated with this field."""
         return self.type.of_type._meta.node._meta.model
 
     def get_queryset(self, manager, root, info, **kwargs):
+        """Get the base queryset for this field."""
         return queryset_factory(manager, root, info, **kwargs)
 
     def list_resolver(
         self, manager, filterset_class, filtering_args, root, info, **kwargs
     ):
+        """Resolve a filtered and paginated list of objects."""
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
         qs = self.get_queryset(manager, root, info, **kwargs)
         qs = filterset_class(data=filter_kwargs, queryset=qs, request=info.context).qs
@@ -258,6 +280,7 @@ class DjangoFilterPaginateListField(Field):
         return maybe_queryset(qs)
 
     def wrap_resolve(self, parent_resolver):
+        """Wrap the resolver with the list resolver."""
         current_type = self.type
         while isinstance(current_type, Structure):
             current_type = current_type.of_type
@@ -270,6 +293,8 @@ class DjangoFilterPaginateListField(Field):
 
 
 class DjangoListObjectField(Field):
+    """GraphQL field for Django list objects with count and results."""
+
     def __init__(
         self,
         _type,
@@ -279,6 +304,7 @@ class DjangoListObjectField(Field):
         *args,
         **kwargs,
     ):
+        """Initialize the Django list object field."""
         if DJANGO_FILTER_INSTALLED:
             _fields = _type._meta.filter_fields
             _model = _type._meta.model
@@ -311,11 +337,13 @@ class DjangoListObjectField(Field):
 
     @property
     def model(self):
+        """Get the Django model associated with this field."""
         return self.type._meta.model
 
     def list_resolver(
         self, manager, filterset_class, filtering_args, root, info, **kwargs
     ):
+        """Resolve a list object with count and results."""
         qs = queryset_factory(manager, root, info, **kwargs)
 
         filter_kwargs = {k: v for k, v in kwargs.items() if k in filtering_args}
@@ -330,6 +358,7 @@ class DjangoListObjectField(Field):
         )
 
     def wrap_resolve(self, parent_resolver):
+        """Wrap the resolver with the list resolver."""
         return partial(
             self.list_resolver,
             self.type._meta.model._default_manager,

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Lookup constants for Django FilterSet operations."""
 __all__ = (
     "ALL_LOOKUPS",
     "BASIC_LOOKUPS",

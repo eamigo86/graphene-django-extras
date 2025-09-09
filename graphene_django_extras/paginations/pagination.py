@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""Pagination classes for GraphQL queries.
+
+This module provides various pagination implementations that can be used
+with GraphQL fields to paginate query results.
+"""
 from math import fabs
 
 from graphene import Int, NonNull, String
@@ -21,28 +26,36 @@ __all__ = (
 # ************ PAGINATION ClASSES *************** #
 # *********************************************** #
 class BaseDjangoGraphqlPagination(object):
+    """Base class for all Django GraphQL pagination implementations."""
+
     __name__ = None
 
     def get_pagination_field(self, type):
+        """Get a pagination field for the given GraphQL type."""
         return GenericPaginationField(type, paginator_instance=self)
 
     def to_graphql_fields(self):
+        """Convert pagination parameters to GraphQL field arguments."""
         raise NotImplementedError(
             "to_graphql_field() function must be implemented into child classes."
         )
 
     def to_dict(self):
+        """Convert pagination configuration to dictionary."""
         raise NotImplementedError(
             "to_dict() function must be implemented into child classes."
         )
 
     def paginate_queryset(self, qs, **kwargs):
+        """Paginate the given queryset with the provided parameters."""
         raise NotImplementedError(
             "paginate_queryset() function must be implemented into child classes."
         )
 
 
 class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
+    """Pagination implementation using limit and offset parameters."""
+
     __name__ = "LimitOffsetPaginator"
 
     def __init__(
@@ -54,6 +67,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         offset_query_param="offset",
         ordering_param="ordering",
     ):
+        """Initialize limit/offset pagination with configuration parameters."""
         # A numeric value indicating the limit to use if one is not provided by the client in a query parameter.
         self.default_limit = default_limit
 
@@ -74,6 +88,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         self.ordering_param = ordering_param
 
     def to_dict(self):
+        """Convert limit/offset pagination configuration to dictionary."""
         return {
             "limit_query_param": self.limit_query_param,
             "default_limit": self.default_limit,
@@ -84,6 +99,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def to_graphql_fields(self):
+        """Convert limit/offset parameters to GraphQL field arguments."""
         return {
             self.limit_query_param: Int(
                 default_value=self.default_limit,
@@ -102,6 +118,7 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def paginate_queryset(self, qs, **kwargs):
+        """Paginate queryset using limit and offset parameters."""
         limit = _nonzero_int(
             kwargs.get(self.limit_query_param, None), strict=True, cutoff=self.max_limit
         )
@@ -126,6 +143,8 @@ class LimitOffsetGraphqlPagination(BaseDjangoGraphqlPagination):
 
 
 class PageGraphqlPagination(BaseDjangoGraphqlPagination):
+    """Pagination implementation using page number and page size parameters."""
+
     __name__ = "PagePaginator"
 
     def __init__(
@@ -136,6 +155,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         ordering="",
         ordering_param="ordering",
     ):
+        """Initialize page-based pagination with configuration parameters."""
         # Client can control the page using this query parameter.
         self.page_query_param = "page"
 
@@ -164,6 +184,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         )
 
     def to_dict(self):
+        """Convert page pagination configuration to dictionary."""
         return {
             "page_size_query_param": self.page_size_query_param,
             "page_size": self.page_size,
@@ -174,6 +195,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def to_graphql_fields(self):
+        """Convert page pagination parameters to GraphQL field arguments."""
         paginator_dict = {
             self.page_query_param: Int(
                 default_value=1,
@@ -197,6 +219,7 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
         return paginator_dict
 
     def paginate_queryset(self, qs, **kwargs):
+        """Paginate queryset using page number and page size parameters."""
         count = _get_count(qs)
         page = kwargs.pop(self.page_query_param, 1)
         if self.page_size_query_param:
@@ -239,16 +262,20 @@ class PageGraphqlPagination(BaseDjangoGraphqlPagination):
 
 
 class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
+    """Pagination implementation using cursor-based pagination."""
+
     __name__ = "CursorPaginator"
     cursor_query_description = "The pagination cursor value."
     page_size = graphql_api_settings.DEFAULT_PAGE_SIZE
 
     def __init__(self, ordering="-created", cursor_query_param="cursor"):
+        """Initialize cursor-based pagination with configuration parameters."""
         self.page_size_query_param = "page_size" if not self.page_size else None
         self.cursor_query_param = cursor_query_param
         self.ordering = ordering
 
     def to_dict(self):
+        """Convert cursor pagination configuration to dictionary."""
         return {
             "page_size_query_param": self.page_size_query_param,
             "cursor_query_param": self.cursor_query_param,
@@ -257,6 +284,7 @@ class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def to_graphql_fields(self):
+        """Convert cursor pagination parameters to GraphQL field arguments."""
         return {
             self.cursor_query_param: NonNull(
                 String, description=self.cursor_query_description
@@ -264,6 +292,7 @@ class CursorGraphqlPagination(BaseDjangoGraphqlPagination):
         }
 
     def paginate_queryset(self, qs, **kwargs):
+        """Paginate queryset using cursor-based pagination parameters."""
         raise NotImplementedError(
             "paginate_queryset() on CursorGraphqlPagination are not implemented yet."
         )

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""GraphQL Django Extras - Additional tools and utilities for graphene-django."""
 from graphene.pyutils.version import get_version
 
 from .directives import all_directives

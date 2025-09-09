@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+"""Date formatting GraphQL directive."""
 import time as t
 from datetime import date, datetime, time, timedelta
 
+from django.utils import timezone
+
 import six
 from dateutil import parser, relativedelta
-from django.utils import timezone
 from graphql import GraphQLArgument, GraphQLString
 
 from ..base_types import CustomDateFormat
@@ -70,9 +72,7 @@ def _combine_date_time(d, t):
 
 
 def _parse(partial_dt):
-    """
-    parse a partial datetime object to a complete datetime object
-    """
+    """Parse a partial datetime object to a complete datetime object."""
     dt = None
     try:
         if isinstance(partial_dt, datetime):
@@ -226,12 +226,11 @@ def _format_dt(dt, format="default"):
 
 
 class DateGraphQLDirective(BaseExtraGraphQLDirective):
-    """
-    Format the date from resolving the field by dateutil module.
-    """
+    """Format the date from resolving the field by dateutil module."""
 
     @staticmethod
     def get_args():
+        """Get arguments for the date directive."""
         return {
             "format": GraphQLArgument(
                 GraphQLString, description="A format given by dateutil module"
@@ -240,6 +239,7 @@ class DateGraphQLDirective(BaseExtraGraphQLDirective):
 
     @staticmethod
     def resolve(value, directive, root, info, **kwargs):
+        """Resolve the date formatting directive."""
         format_argument = [
             arg for arg in directive.arguments if arg.name.value == "format"
         ]

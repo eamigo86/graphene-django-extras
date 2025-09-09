@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Django Serializer-based GraphQL mutations."""
 from collections import OrderedDict
 
 from graphene import ID, Argument, Boolean, Field, List, ObjectType
@@ -14,6 +15,8 @@ from .utils import get_Object_or_None
 
 
 class SerializerMutationOptions(BaseOptions):
+    """Options class for SerializerMutation configuration."""
+
     fields = None
     input_fields = None
     interfaces = ()
@@ -26,14 +29,14 @@ class SerializerMutationOptions(BaseOptions):
 
 
 class DjangoSerializerMutation(ObjectType):
-    """
-    Serializer Mutation Type Definition
-    """
+    """Serializer Mutation Type Definition."""
 
     ok = Boolean(description="Boolean field that return mutation result request.")
     errors = List(ErrorType, description="Errors list for the field")
 
     class Meta:
+        """Meta configuration for DjangoSerializerMutation."""
+
         abstract = True
 
     @classmethod
@@ -49,6 +52,7 @@ class DjangoSerializerMutation(ObjectType):
         nested_fields=(),
         **options,
     ):
+        """Initialize subclass with meta configuration."""
         if not serializer_class:
             raise Exception(
                 "serializer_class is required on all DjangoSerializerMutation"
@@ -143,34 +147,39 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def get_errors(cls, errors):
+        """Create error response with provided errors."""
         errors_dict = {cls._meta.output_field_name: None, "ok": False, "errors": errors}
 
         return cls(**errors_dict)
 
     @classmethod
     def perform_mutate(cls, obj, info):
+        """Perform successful mutation with given object."""
         resp = {cls._meta.output_field_name: obj, "ok": True, "errors": None}
 
         return cls(**resp)
 
     @classmethod
     def get_serializer_kwargs(cls, root, info, **kwargs):
+        """Get additional kwargs for serializer initialization."""
         return {}
 
     @classmethod
     def manage_nested_fields(cls, data, root, info):
+        """Process nested field data for the mutation."""
         nested_objs = {}
-        if cls._meta.nested_fields and type(cls._meta.nested_fields) == dict:
+        if cls._meta.nested_fields and isinstance(cls._meta.nested_fields, dict):
             for field in cls._meta.nested_fields:
                 sub_data = data.pop(field, None)
                 if sub_data:
                     serialized_data = cls._meta.nested_fields[field](
-                        data=sub_data, many=True if type(sub_data) == list else False
+                        data=sub_data,
+                        many=True if isinstance(sub_data, list) else False,
                     )
                     ok, result = cls.save(serialized_data, root, info)
                     if not ok:
                         return cls.get_errors(result)
-                    if type(sub_data) == list:
+                    if isinstance(sub_data, list):
                         nested_objs.update({field: result})
                     else:
                         data.update({field: result.id})
@@ -178,6 +187,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def create(cls, root, info, **kwargs):
+        """Create a new object using the provided data."""
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
@@ -197,6 +207,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def delete(cls, root, info, **kwargs):
+        """Delete an object by its ID."""
         pk = kwargs.get("id")
 
         old_obj = get_Object_or_None(cls._meta.model, pk=pk)
@@ -220,6 +231,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def update(cls, root, info, **kwargs):
+        """Update an existing object with provided data."""
         data = kwargs.get(cls._meta.input_field_name)
         request_type = info.context.META.get("CONTENT_TYPE", "")
         if "multipart/form-data" in request_type:
@@ -258,7 +270,8 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def save(cls, serialized_obj, root, info, **kwargs):
-        """
+        """Save serialized object after validation.
+
         graphene-django v3 now returns the full Enum object, instead of its value.
         We need to get its value before validating the submitted data.
         """
@@ -280,6 +293,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def CreateField(cls, *args, **kwargs):
+        """Create a GraphQL field for create mutations."""
         return Field(
             cls._meta.output,
             args=cls._meta.arguments["create"],
@@ -289,6 +303,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def DeleteField(cls, *args, **kwargs):
+        """Create a GraphQL field for delete mutations."""
         return Field(
             cls._meta.output,
             args=cls._meta.arguments["delete"],
@@ -298,6 +313,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def UpdateField(cls, *args, **kwargs):
+        """Create a GraphQL field for update mutations."""
         return Field(
             cls._meta.output,
             args=cls._meta.arguments["update"],
@@ -307,6 +323,7 @@ class DjangoSerializerMutation(ObjectType):
 
     @classmethod
     def MutationFields(cls, *args, **kwargs):
+        """Get all mutation fields (create, delete, update)."""
         create_field = cls.CreateField(*args, **kwargs)
         delete_field = cls.DeleteField(*args, **kwargs)
         update_field = cls.UpdateField(*args, **kwargs)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""GraphQL filters package for graphene-django-extras."""
 from .lookups import (
     ALL_LOOKUPS,
     BASIC_LOOKUPS,
