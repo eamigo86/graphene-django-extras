@@ -1,5 +1,6 @@
-import django_filters as filters
 from django.contrib.auth import models as auth_models
+
+import django_filters as filters
 
 
 class UserFilterSet(filters.FilterSet):

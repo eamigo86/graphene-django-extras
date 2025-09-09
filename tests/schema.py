@@ -1,8 +1,9 @@
 import datetime
 
-import graphene
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
+
+import graphene
 
 from graphene_django_extras import all_directives
 from graphene_django_extras.base_types import CustomDate, CustomDateTime, CustomTime

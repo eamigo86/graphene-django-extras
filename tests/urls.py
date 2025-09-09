@@ -1,6 +1,7 @@
 import django
 from django.contrib import admin
 from django.views.decorators.csrf import csrf_exempt
+
 from graphene_django.views import GraphQLView
 
 if django.VERSION >= (2, 0):
