@@ -1,0 +1,108 @@
+site_name: Graphene-Django-Extras
+site_description: Extra functionalities for graphene-django to facilitate GraphQL use without Relay
+site_author: Ernesto Perez Amigo
+site_url: https://eamigo86.github.io/graphene-django-extras/
+
+repo_name: eamigo86/graphene-django-extras
+repo_url: https://github.com/eamigo86/graphene-django-extras
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: light blue
+      accent: light blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: light blue
+      accent: light blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.tabs.link
+    - content.code.copy
+    - content.action.edit
+    - content.action.view
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+plugins:
+  - search:
+      lang: en
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+    - Migration Guide: migration.md
+  - User Guide:
+    - Fields: usage/fields.md
+    - Types: usage/types.md
+    - Mutations: usage/mutations.md
+    - Pagination: usage/pagination.md
+    - Filtering: usage/filtering.md
+    - Examples: usage/examples.md
+  - Directives: directives.md
+  - API Reference:
+    - Fields: api/fields.md
+    - Types: api/types.md
+    - Mutations: api/mutations.md
+    - Paginations: api/paginations.md
+    - Directives: api/directives.md
+    - Utils: api/utils.md
+  - Development:
+    - Contributing: contributing.md
+    - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/eamigo86/graphene-django-extras
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/graphene-django-extras/
+
+copyright: Copyright &copy; 2025 Ernesto Perez Amigo
