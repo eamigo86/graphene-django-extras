@@ -20,7 +20,7 @@ on:
         - pypi
 
 permissions:
-  contents: write # Para crear releases y tags
+  contents: write
   packages: write
   pull-requests: read
 
@@ -195,7 +195,6 @@ jobs:
         VERSION=$(poetry version --short)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-        # Determinar si es prerelease (contiene alpha, beta, rc, dev)
         if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
           echo "is_prerelease=true" >> $GITHUB_OUTPUT
         else
@@ -218,7 +217,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Necesario para tags
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -276,7 +275,6 @@ jobs:
         TAG_NAME="${{ steps.check_tag.outputs.tag_name }}"
         VERSION="${{ needs.get-version.outputs.version }}"
 
-        # Crear tag anotado
         git tag -a "$TAG_NAME" -m "Release version $VERSION"
         git push origin "$TAG_NAME"
 
@@ -320,7 +318,6 @@ jobs:
         VERSION="${{ needs.get-version.outputs.version }}"
         TAG_NAME="v$VERSION"
 
-        # Obtener el tag anterior
         PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sed -n '2p')
 
         if [ -z "$PREVIOUS_TAG" ]; then
@@ -331,12 +328,10 @@ jobs:
           CHANGELOG=$(git log $PREVIOUS_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
         fi
 
-        # Crear changelog formateado
         if [ -z "$CHANGELOG" ]; then
           CHANGELOG="- Initial release"
         fi
 
-        # Guardar changelog en archivo temporal
         cat << EOF > changelog.md
         ## What's Changed
 
