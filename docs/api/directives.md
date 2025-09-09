@@ -24,7 +24,7 @@ Define the arguments that the directive accepts.
 def get_args():
     return {
         "format": GraphQLArgument(
-            GraphQLString, 
+            GraphQLString,
             description="Format string"
         )
     }
@@ -507,15 +507,15 @@ class TruncateGraphQLDirective(BaseExtraGraphQLDirective):
             (arg for arg in directive.arguments if arg.name.value == "suffix"),
             None
         )
-        
+
         length = int(length_arg.value.value) if length_arg else 100
         suffix = suffix_arg.value.value if suffix_arg else "..."
-        
+
         # Process value
         str_value = str(value)
         if len(str_value) <= length:
             return str_value
-        
+
         return str_value[:length - len(suffix)] + suffix
 ```
 
@@ -601,10 +601,10 @@ class ValidatedDirective(BaseExtraGraphQLDirective):
     def resolve(value, directive, root, info, **kwargs):
         if value is None:
             return None
-        
+
         if not isinstance(value, (str, int, float)):
             raise ValueError("Directive only accepts string/number values")
-        
+
         return process_value(value)
 ```
 
@@ -622,10 +622,10 @@ class CachedDirective(BaseExtraGraphQLDirective):
     def resolve(value, directive, root, info, **kwargs):
         cache_key = f"directive_{hash(str(value))}"
         cached_result = cache.get(cache_key)
-        
+
         if cached_result is not None:
             return cached_result
-        
+
         result = expensive_processing(value)
         cache.set(cache_key, result, 300)  # 5 minutes
         return result
@@ -638,7 +638,7 @@ class CachedDirective(BaseExtraGraphQLDirective):
 query {
   field @strip @uppercase @truncate(length: 50)
   # 1. Strip whitespace
-  # 2. Convert to uppercase  
+  # 2. Convert to uppercase
   # 3. Truncate to 50 characters
 }
 ```
@@ -667,10 +667,10 @@ class SecureDirective(BaseExtraGraphQLDirective):
         user = info.context.user
         if not user.is_authenticated:
             return value  # Don't process for unauthenticated users
-        
+
         # Sanitize input
         safe_value = escape_html(str(value))
-        
+
         return process_value(safe_value)
 ```
 
@@ -686,7 +686,7 @@ def test_uppercase_directive():
         directives=all_directives
     )
     client = Client(schema)
-    
+
     query = '''
         query {
             user {
@@ -694,7 +694,7 @@ def test_uppercase_directive():
             }
         }
     '''
-    
+
     result = client.execute(query)
     assert result['data']['user']['name'] == 'JOHN DOE'
 ```

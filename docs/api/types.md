@@ -333,7 +333,7 @@ Customize the base queryset for the list.
 
     class Query(graphene.ObjectType):
         all_users = DjangoListObjectField(UserListType)
-        
+
         # Or use the shorthand method
         users = UserListType.ListField()
         user = UserListType.RetrieveField()
@@ -356,7 +356,7 @@ Customize the base queryset for the list.
         },
         {
           "id": "2",
-          "username": "jane_smith", 
+          "username": "jane_smith",
           "email": "jane@example.com"
         }
       ]
@@ -451,7 +451,7 @@ Create a retrieve field for single objects.
     class Query(graphene.ObjectType):
         # Generate both fields automatically
         user, users = UserSerializerType.QueryFields()
-        
+
         # Or create individual fields
         user_list = UserSerializerType.ListField()
         single_user = UserSerializerType.RetrieveField()
@@ -605,7 +605,7 @@ class UserType(DjangoObjectType):
         model = User
         # Don't expose sensitive fields
         exclude_fields = (
-            'password', 'user_permissions', 
+            'password', 'user_permissions',
             'groups', 'is_superuser'
         )
 

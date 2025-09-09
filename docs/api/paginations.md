@@ -510,7 +510,7 @@ class Query(graphene.ObjectType):
         PostType,
         pagination=LimitOffsetGraphqlPagination(default_limit=20)
     )
-    
+
     # Page-based pagination
     posts_page = DjangoFilterPaginateListField(
         PostType,
@@ -528,7 +528,7 @@ class OptimizedPagination(LimitOffsetGraphqlPagination):
         # Add select_related for better performance
         if hasattr(qs.model, 'author'):
             qs = qs.select_related('author')
-        
+
         return super().paginate_queryset(qs, **kwargs)
 ```
 
@@ -544,11 +544,11 @@ class CachedCountPagination(LimitOffsetGraphqlPagination):
         # Cache count queries for better performance
         cache_key = f"count_{qs.model._meta.label_lower}"
         count = cache.get(cache_key)
-        
+
         if count is None:
             count = qs.count()
             cache.set(cache_key, count, 300)  # 5 minutes
-        
+
         return super().paginate_queryset(qs, **kwargs)
 ```
 
@@ -575,7 +575,7 @@ class StrictLimitPagination(LimitOffsetGraphqlPagination):
         limit = kwargs.get(self.limit_query_param)
         if limit and limit > self.max_limit:
             raise ValueError(f"Limit cannot exceed {self.max_limit}")
-        
+
         return super().paginate_queryset(qs, **kwargs)
 ```
 

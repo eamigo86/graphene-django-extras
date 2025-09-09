@@ -301,12 +301,12 @@ from graphene_django_extras.utils import get_fields
 def resolve_user(self, info, **kwargs):
     requested_fields = list(get_fields(info))
     print(f"Requested fields: {requested_fields}")
-    
+
     # Optimize query based on requested fields
     queryset = User.objects.all()
     if 'profile' in requested_fields:
         queryset = queryset.select_related('profile')
-    
+
     return queryset
 ```
 
@@ -394,8 +394,8 @@ class UserType(DjangoObjectType):
     @classmethod
     def get_queryset(cls, queryset, info):
         return queryset_factory(
-            User.objects, 
-            None, 
+            User.objects,
+            None,
             info,
             select_related=['profile'],
             prefetch_related=['posts']
@@ -523,15 +523,15 @@ class CustomResolver:
     def resolve_users(self, info, **kwargs):
         # Get requested fields to optimize query
         requested_fields = list(get_fields(info))
-        
+
         queryset = User.objects.all()
-        
+
         # Optimize based on requested fields
         if 'profile' in requested_fields:
             queryset = queryset.select_related('profile')
         if 'posts' in requested_fields:
             queryset = queryset.prefetch_related('posts')
-            
+
         return queryset
 ```
 
@@ -544,11 +544,11 @@ def create_user_with_profile(user_data, profile_data):
     try:
         # Create user
         user = create_obj(User, **user_data)
-        
+
         # Create profile
         profile_data['user'] = user
         profile = create_obj('myapp.Profile', **profile_data)
-        
+
         return user
     except ValidationError as e:
         print(f"Validation error: {e}")
@@ -567,7 +567,7 @@ def analyze_model(model):
         'optional_fields': [],
         'relation_fields': []
     }
-    
+
     for name, field in get_model_fields(model):
         if hasattr(field, 'related_model'):
             analysis['relation_fields'].append(name)
@@ -575,7 +575,7 @@ def analyze_model(model):
             analysis['required_fields'].append(name)
         else:
             analysis['optional_fields'].append(name)
-    
+
     return analysis
 
 # Usage
@@ -602,16 +602,16 @@ class OptimizedQuery:
     def resolve_posts(self, info, **kwargs):
         # Use queryset factory for optimization
         base_qs = queryset_factory(Post.objects, None, info)
-        
+
         # Further optimize based on requested fields
         requested_fields = list(get_fields(info))
-        
+
         if any(field.startswith('author') for field in requested_fields):
             base_qs = base_qs.select_related('author')
-        
+
         if 'comments' in requested_fields:
             base_qs = base_qs.prefetch_related('comments')
-            
+
         return base_qs
 ```
 

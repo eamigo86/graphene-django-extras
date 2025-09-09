@@ -8,7 +8,7 @@ The filtering system in `graphene-django-extras` provides:
 
 - :material-filter: **Field-Based Filtering**: Filter by any model field
 - :material-tune-vertical: **Multiple Lookup Types**: Support for various comparison operations
-- :material-link: **Related Field Filtering**: Filter across relationships  
+- :material-link: **Related Field Filtering**: Filter across relationships
 - :material-code-tags: **Custom FilterSets**: Advanced filtering with django-filter
 - :material-lightning-bolt: **Automatic GraphQL Integration**: Seamless schema generation
 
@@ -185,17 +185,17 @@ For advanced filtering needs, use django-filter FilterSets:
     class UserFilterSet(FilterSet):
         # Custom filter for name search across multiple fields
         name = filters.CharFilter(method='filter_name', label='Name')
-        
+
         # Date range filter
         joined_after = filters.DateFilter(
-            field_name='date_joined', 
+            field_name='date_joined',
             lookup_expr='gte'
         )
         joined_before = filters.DateFilter(
-            field_name='date_joined', 
+            field_name='date_joined',
             lookup_expr='lte'
         )
-        
+
         # Custom choice filter
         user_type = filters.ChoiceFilter(
             choices=[('staff', 'Staff'), ('regular', 'Regular')],
@@ -213,7 +213,7 @@ For advanced filtering needs, use django-filter FilterSets:
         def filter_name(self, queryset, name, value):
             """Search across first_name and last_name."""
             return queryset.filter(
-                Q(first_name__icontains=value) | 
+                Q(first_name__icontains=value) |
                 Q(last_name__icontains=value)
             )
 
@@ -346,7 +346,7 @@ Use fields for more granular control:
     class Query(graphene.ObjectType):
         # Basic filtering field
         all_users = DjangoFilterListField(UserType)
-        
+
         # Filtering with custom filterset
         staff_users = DjangoFilterListField(
             UserType,
@@ -389,10 +389,10 @@ Use fields for more granular control:
             queryset=Category.objects.all(),
             conjoined=False  # OR logic instead of AND
         )
-        
+
         # Search across multiple text fields
         search = filters.CharFilter(method='filter_search')
-        
+
         # Filter by author's profile data
         author_location = filters.CharFilter(
             field_name='author__profile__location',
@@ -406,7 +406,7 @@ Use fields for more granular control:
         def filter_search(self, queryset, name, value):
             """Search across title and content."""
             return queryset.filter(
-                Q(title__icontains=value) | 
+                Q(title__icontains=value) |
                 Q(content__icontains=value)
             )
     ```
@@ -419,7 +419,7 @@ Use fields for more granular control:
     class ProductFilterSet(FilterSet):
         price_range = filters.RangeFilter(field_name='price')
         created_range = filters.DateFromToRangeFilter(field_name='created_at')
-        
+
         class Meta:
             model = Product
             fields = ['name', 'category']
@@ -533,7 +533,7 @@ Handle filtering errors gracefully:
             is_active=True
         )
         inactive_user = User.objects.create_user(
-            username='inactive_user', 
+            username='inactive_user',
             email='inactive@example.com',
             is_active=False
         )
@@ -553,7 +553,7 @@ Handle filtering errors gracefully:
 
         result = client.execute(query)
         users = result['data']['users']['results']
-        
+
         assert len(users) == 1
         assert users[0]['username'] == 'active_user'
         assert users[0]['isActive'] is True
@@ -590,7 +590,7 @@ Handle filtering errors gracefully:
 
         result = client.execute(query)
         posts = result['data']['posts']['results']
-        
+
         assert len(posts) == 1
         assert posts[0]['title'] == 'Django GraphQL'
         assert posts[0]['category']['name'] == 'Technology'

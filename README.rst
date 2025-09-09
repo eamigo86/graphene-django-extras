@@ -44,7 +44,7 @@ Documentation
 The complete documentation includes:
 
 - **Installation Guide** - Getting started
-- **Quick Start** - Basic setup and examples  
+- **Quick Start** - Basic setup and examples
 - **Usage Guide** - Detailed feature documentation
 - **Directives** - GraphQL directives for data formatting
 - **API Reference** - Complete API documentation
@@ -56,7 +56,7 @@ Key Features
 🔍 **Fields**
 ~~~~~~~~~~~~~
 - DjangoObjectField
-- DjangoFilterListField  
+- DjangoFilterListField
 - DjangoFilterPaginateListField
 - DjangoListObjectField *(Recommended)*
 

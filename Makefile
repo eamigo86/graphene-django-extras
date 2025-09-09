@@ -60,7 +60,7 @@ dev-setup: install ## Set up development environment
 
 dev-test: format lint type-check test ## Run development checks (format, lint, type-check, test)
 
-# CI/CD shortcuts  
+# CI/CD shortcuts
 ci-quality: quality ## Run CI quality checks
 ci-security: security ## Run CI security checks
 ci-test: test-all ## Run CI tests

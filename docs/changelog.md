@@ -303,7 +303,7 @@ See git history for detailed changes in versions 0.4.3 and earlier.
 We welcome contributions! Please see our [contributing guidelines](contributing.md) for details on how to:
 
 - Report bugs
-- Suggest features  
+- Suggest features
 - Submit pull requests
 - Improve documentation
 

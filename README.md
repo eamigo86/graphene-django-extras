@@ -44,7 +44,7 @@ class UserMutation(DjangoSerializerMutation):
 The complete documentation includes:
 
 - **[Installation Guide](https://eamigo86.github.io/graphene-django-extras/installation.html)** - Getting started
-- **[Quick Start](https://eamigo86.github.io/graphene-django-extras/quickstart.html)** - Basic setup and examples  
+- **[Quick Start](https://eamigo86.github.io/graphene-django-extras/quickstart.html)** - Basic setup and examples
 - **[Usage Guide](https://eamigo86.github.io/graphene-django-extras/usage/index.html)** - Detailed feature documentation
 - **[Directives](https://eamigo86.github.io/graphene-django-extras/directives.html)** - GraphQL directives for data formatting
 - **[API Reference](https://eamigo86.github.io/graphene-django-extras/api/index.html)** - Complete API documentation
@@ -54,7 +54,7 @@ The complete documentation includes:
 
 ### 🔍 **Fields**
 - DjangoObjectField
-- DjangoFilterListField  
+- DjangoFilterListField
 - DjangoFilterPaginateListField
 - DjangoListObjectField *(Recommended)*
 

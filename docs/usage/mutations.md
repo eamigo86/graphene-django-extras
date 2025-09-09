@@ -151,7 +151,7 @@ The mutation automatically handles file uploads when the request content type is
 # Your serializer
 class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField()
-    
+
     class Meta:
         model = Profile
         fields = ['avatar', 'bio']
@@ -187,7 +187,7 @@ Example error response:
           "messages": ["This field is required."]
         },
         {
-          "field": "username", 
+          "field": "username",
           "messages": ["A user with that username already exists."]
         }
       ],
@@ -230,10 +230,10 @@ Override methods to add custom logic:
             if serialized_obj.is_valid():
                 # Custom logic before saving
                 obj = serialized_obj.save()
-                
+
                 # Custom logic after saving
                 send_welcome_email(obj.email)
-                
+
                 return True, obj
             else:
                 errors = [
@@ -285,7 +285,7 @@ Here's a complete example showing all features:
 
     class UserSerializer(serializers.ModelSerializer):
         password = serializers.CharField(write_only=True)
-        
+
         class Meta:
             model = User
             fields = ['username', 'email', 'first_name', 'last_name', 'password']
@@ -389,29 +389,29 @@ While `DjangoSerializerMutation` covers most use cases, you can still create tra
         def mutate(self, info, username, email, password):
             # Validation
             errors = []
-            
+
             if User.objects.filter(username=username).exists():
                 errors.append(ErrorType(
                     field="username",
                     messages=["Username already exists"]
                 ))
-            
+
             if User.objects.filter(email=email).exists():
                 errors.append(ErrorType(
-                    field="email", 
+                    field="email",
                     messages=["Email already registered"]
                 ))
-                
+
             if errors:
                 return CreateUser(ok=False, errors=errors, user=None)
-            
+
             # Create user
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
-            
+
             return CreateUser(ok=True, user=user, errors=None)
     ```
 
@@ -439,10 +439,10 @@ class UserMutation(DjangoSerializerMutation):
     def create(cls, root, info, **kwargs):
         if not info.context.user.is_authenticated:
             raise GraphQLError("Authentication required")
-            
+
         if not info.context.user.has_perm('auth.add_user'):
             raise GraphQLError("Permission denied")
-            
+
         return super().create(root, info, **kwargs)
 ```
 
@@ -476,7 +476,7 @@ class UserMutation(DjangoSerializerMutation):
     @pytest.mark.django_db
     def test_create_user_mutation():
         client = Client(schema)
-        
+
         mutation = """
             mutation CreateUser($userData: UserInput!) {
                 createUser(newUser: $userData) {
@@ -493,7 +493,7 @@ class UserMutation(DjangoSerializerMutation):
                 }
             }
         """
-        
+
         variables = {
             "userData": {
                 "username": "testuser",
@@ -501,7 +501,7 @@ class UserMutation(DjangoSerializerMutation):
                 "password": "secretpass123"
             }
         }
-        
+
         result = client.execute(mutation, variables=variables)
         assert result['data']['createUser']['ok'] is True
         assert result['data']['createUser']['user']['username'] == 'testuser'
@@ -513,7 +513,7 @@ class UserMutation(DjangoSerializerMutation):
     @pytest.mark.django_db
     def test_create_user_validation_error():
         client = Client(schema)
-        
+
         mutation = """
             mutation CreateUser($userData: UserInput!) {
                 createUser(newUser: $userData) {
@@ -525,7 +525,7 @@ class UserMutation(DjangoSerializerMutation):
                 }
             }
         """
-        
+
         # Missing required email
         variables = {
             "userData": {
@@ -533,7 +533,7 @@ class UserMutation(DjangoSerializerMutation):
                 "password": "secretpass123"
             }
         }
-        
+
         result = client.execute(mutation, variables=variables)
         assert result['data']['createUser']['ok'] is False
         assert len(result['data']['createUser']['errors']) > 0

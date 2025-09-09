@@ -70,7 +70,7 @@ from .types import UserType
 
 class Query(graphene.ObjectType):
     users = DjangoFilterPaginateListField(
-        UserType, 
+        UserType,
         pagination=LimitOffsetGraphqlPagination(default_limit=20)
     )
 ```
@@ -135,11 +135,11 @@ from django.contrib.auth.models import User
 
 class UserFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(method='filter_by_name')
-    
+
     class Meta:
         model = User
         fields = ['username', 'email']
-    
+
     def filter_by_name(self, queryset, name, value):
         return queryset.filter(
             Q(first_name__icontains=value) | Q(last_name__icontains=value)
@@ -147,7 +147,7 @@ class UserFilter(django_filters.FilterSet):
 
 class Query(graphene.ObjectType):
     users = DjangoListObjectField(
-        UserListType, 
+        UserListType,
         filterset_class=UserFilter,
         description='Users with custom filtering'
     )
@@ -198,12 +198,12 @@ class UserType(DjangoObjectType):
 class Query(graphene.ObjectType):
     # ✅ Clear and descriptive
     active_users = DjangoListObjectField(
-        UserListType, 
+        UserListType,
         description='List of active users with pagination'
     )
-    
+
     user_by_id = DjangoObjectField(
-        UserType, 
+        UserType,
         description='Get a single user by ID'
     )
 ```
@@ -215,7 +215,7 @@ from graphene_django_extras import DjangoListObjectField
 
 class Query(graphene.ObjectType):
     users = DjangoListObjectField(UserListType)
-    
+
     def resolve_users(self, info, **kwargs):
         if not info.context.user.is_staff:
             raise PermissionError("Staff access required")

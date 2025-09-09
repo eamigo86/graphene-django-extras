@@ -251,12 +251,12 @@ Get all mutation fields (create, delete, update).
                 user = info.context.user
                 if not user.has_perm('auth.add_user'):
                     raise PermissionError("Insufficient permissions")
-                
+
                 obj = serialized_obj.save()
-                
+
                 # Post-save operations
                 send_welcome_email(obj.email)
-                
+
                 return True, obj
             else:
                 errors = [
@@ -458,10 +458,10 @@ class UserMutation(DjangoSerializerMutation):
         user = info.context.user
         if not user.is_authenticated:
             raise GraphQLError("Authentication required")
-        
+
         if not user.has_perm('auth.add_user'):
             raise GraphQLError("Permission denied")
-        
+
         return super().create(root, info, **kwargs)
 ```
 
@@ -502,7 +502,7 @@ class BatchUserMutation(DjangoSerializerMutation):
     def create(cls, root, info, **kwargs):
         users_data = kwargs.get('users_data', [])
         created_users = []
-        
+
         for user_data in users_data:
             serializer = cls._meta.serializer_class(data=user_data)
             if serializer.is_valid():
@@ -513,7 +513,7 @@ class BatchUserMutation(DjangoSerializerMutation):
                     ErrorType(field=f"user_{i}", messages=serializer.errors)
                     for i, user_data in enumerate(users_data)
                 ])
-        
+
         return cls.perform_mutate(created_users, info)
 ```
 

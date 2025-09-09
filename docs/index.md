@@ -46,7 +46,7 @@ This package adds some extra functionalities to graphene-django to facilitate th
 
 ```python title="Basic Usage"
 from graphene_django_extras import (
-    DjangoListObjectType, 
+    DjangoListObjectType,
     DjangoSerializerMutation,
     LimitOffsetGraphqlPagination
 )

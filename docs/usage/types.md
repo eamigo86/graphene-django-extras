@@ -17,7 +17,7 @@ class UserListType(DjangoListObjectType):
         description = "Type definition for user list"
         model = User
         pagination = LimitOffsetGraphqlPagination(
-            default_limit=25, 
+            default_limit=25,
             ordering="-date_joined"
         )
         filter_fields = {
@@ -42,14 +42,14 @@ class UserListType(DjangoListObjectType):
     class Meta:
         model = User
         description = "User list with advanced features"
-        
+
         # Pagination
         pagination = LimitOffsetGraphqlPagination(
             default_limit=20,
             max_limit=100,
             ordering=("-date_joined", "username")
         )
-        
+
         # Filtering
         filter_fields = {
             "username": ("exact", "icontains", "istartswith"),
@@ -58,10 +58,10 @@ class UserListType(DjangoListObjectType):
             "is_active": ("exact",),
             "groups": ("exact",),
         }
-        
+
         # Custom queryset
         queryset = User.objects.select_related('profile')
-        
+
         # Field restrictions
         fields = ("id", "username", "email", "first_name", "last_name")
         exclude = ("password",)
@@ -101,10 +101,10 @@ from graphene_django_extras import DjangoInputObjectType
 
 class UserCreateInput(DjangoInputObjectType):
     """Input for creating new users"""
-    
+
     # Add custom fields
     confirm_password = graphene.String(required=True)
-    
+
     class Meta:
         model = User
         fields = ("username", "email", "first_name", "last_name", "password")
@@ -112,7 +112,7 @@ class UserCreateInput(DjangoInputObjectType):
 
 class UserUpdateInput(DjangoInputObjectType):
     """Input for updating existing users"""
-    
+
     class Meta:
         model = User
         fields = ("email", "first_name", "last_name")
@@ -125,10 +125,10 @@ class UserUpdateInput(DjangoInputObjectType):
 class CreateUserMutation(graphene.Mutation):
     class Arguments:
         input = UserCreateInput(required=True)
-    
+
     user = graphene.Field(UserType)
     success = graphene.Boolean()
-    
+
     def mutate(self, info, input):
         # Access input fields
         username = input.username
@@ -151,7 +151,7 @@ class UserModelType(DjangoSerializerType):
         description = "User model type with auto-generated operations"
         serializer_class = UserSerializer
         pagination = LimitOffsetGraphqlPagination(
-            default_limit=25, 
+            default_limit=25,
             ordering="-date_joined"
         )
         filter_fields = {
@@ -204,11 +204,11 @@ from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name']
-        
+
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
 
@@ -274,10 +274,10 @@ class UserListType(DjangoListObjectType):
         model = User
         # Optimize database queries
         queryset = User.objects.select_related('profile').prefetch_related('groups')
-        
+
         # Limit exposed fields
         fields = ("id", "username", "email", "first_name", "last_name")
-        
+
         # Enable caching for expensive queries
         # (Configure in settings)
 ```
@@ -293,10 +293,10 @@ class UserModelType(DjangoSerializerType):
 # Use DjangoListObjectType for complex list logic
 class UserAnalyticsType(DjangoListObjectType):
     total_posts = graphene.Int()
-    
+
     class Meta:
         model = User
-    
+
     def resolve_total_posts(self, info):
         return self.posts.count()
 
@@ -304,7 +304,7 @@ class UserAnalyticsType(DjangoListObjectType):
 class UserRegistrationInput(DjangoInputObjectType):
     confirm_password = graphene.String(required=True)
     terms_accepted = graphene.Boolean(required=True)
-    
+
     class Meta:
         model = User
         fields = ("username", "email", "password")

@@ -49,7 +49,7 @@ class UserListType(DjangoListObjectType):
         description = "Type definition for user list"
         model = User
         pagination = LimitOffsetGraphqlPagination(
-            default_limit=25, 
+            default_limit=25,
             ordering="-username"  # Can be string, tuple, or list
         )
 ```
@@ -62,12 +62,12 @@ from .serializers import UserSerializer
 
 class UserModelType(DjangoSerializerType):
     """With this type definition, mutations are auto-generated"""
-    
+
     class Meta:
         description = "User model type definition"
         serializer_class = UserSerializer
         pagination = LimitOffsetGraphqlPagination(
-            default_limit=25, 
+            default_limit=25,
             ordering="-username"
         )
         filter_fields = {
@@ -120,7 +120,7 @@ from .inputs import UserInput
 
 class UserMutation(graphene.Mutation):
     """Traditional mutation - requires implementing mutate function"""
-    
+
     user = graphene.Field(UserType, required=False)
 
     class Arguments:
@@ -140,10 +140,10 @@ class UserMutation(graphene.Mutation):
 ```python title="schema.py"
 import graphene
 from graphene_django_extras import (
-    DjangoObjectField, 
-    DjangoListObjectField, 
+    DjangoObjectField,
+    DjangoListObjectField,
     DjangoFilterPaginateListField,
-    DjangoFilterListField, 
+    DjangoFilterListField,
     LimitOffsetGraphqlPagination
 )
 from .types import UserType, UserListType, UserModelType
@@ -153,7 +153,7 @@ class Query(graphene.ObjectType):
     # Different ways to define user list queries
     users = DjangoListObjectField(UserListType, description='All Users query')
     users_paginated = DjangoFilterPaginateListField(
-        UserType, 
+        UserType,
         pagination=LimitOffsetGraphqlPagination()
     )
     users_filtered = DjangoFilterListField(UserType)

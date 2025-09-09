@@ -19,7 +19,7 @@ Directives are applied in GraphQL queries using the `@directive_name` syntax:
 query {
   user {
     name @uppercase
-    email @lowercase  
+    email @lowercase
     joinDate @date(format: "MMMM DD, YYYY")
     balance @currency(symbol: "€")
   }
@@ -96,7 +96,7 @@ Provide fallback values for empty or null fields:
     query GetUser {
       user {
         firstName @default(to: "Anonymous")
-        lastName @default(to: "User")  
+        lastName @default(to: "User")
         bio @default(to: "No bio available")
       }
     }
@@ -149,7 +149,7 @@ Format numeric values with precision and style:
     query GetStats {
       product {
         price @number(as: ".2f")        # "123.45"
-        weight @number(as: ".3f")       # "12.500"  
+        weight @number(as: ".3f")       # "12.500"
         rating @number(as: ".1f")       # "4.2"
       }
     }
@@ -179,7 +179,7 @@ Format numbers as currency with customizable symbols:
       "data": {
         "product": {
           "priceUSD": "$1,234.56",
-          "priceEUR": "€1,234.56", 
+          "priceEUR": "€1,234.56",
           "priceGBP": "£1,234.56",
           "priceJPY": "¥1,234.56"
         }
@@ -348,7 +348,7 @@ Chain multiple directives for complex transformations:
       "data": {
         "user": {
           "firstName": "Anonymous",
-          "email": "user@example.com", 
+          "email": "user@example.com",
           "bio": "Welcome to my profile!"
         },
         "post": {
@@ -396,13 +396,13 @@ While `graphene-django-extras` provides many built-in directives, you can create
                 (arg for arg in directive.arguments if arg.name.value == "suffix"),
                 None
             )
-            
+
             length = int(length_arg.value.value) if length_arg else 100
             suffix = suffix_arg.value.value if suffix_arg else "..."
-            
+
             if len(str(value)) <= length:
                 return value
-            
+
             return str(value)[:length - len(suffix)] + suffix
     ```
 

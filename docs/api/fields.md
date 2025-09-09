@@ -390,13 +390,13 @@ from graphene_django_extras import (
 class Query(graphene.ObjectType):
     # Single object
     user = DjangoObjectField(UserType)
-    
+
     # Simple filtered list
     users = DjangoFilterListField(UserType)
-    
+
     # Filtered and paginated list
     users_paginated = DjangoFilterPaginateListField(UserType)
-    
+
     # List object with count
     all_users = DjangoListObjectField(UserListType)
 ```
@@ -414,7 +414,7 @@ class Query(graphene.ObjectType):
         filterset_class=UserFilterSet,
         description="Filtered list of staff users"
     )
-    
+
     # Custom paginated list
     paginated_users = DjangoFilterPaginateListField(
         UserType,
@@ -422,10 +422,10 @@ class Query(graphene.ObjectType):
         filterset_class=UserFilterSet,
         description="Custom paginated user list"
     )
-    
+
     # Custom resolver
     active_users = DjangoFilterListField(UserType)
-    
+
     def resolve_active_users(self, info, **kwargs):
         return User.objects.filter(is_active=True)
 ```
@@ -435,7 +435,7 @@ class Query(graphene.ObjectType):
 ```python
 class Query(graphene.ObjectType):
     user = DjangoObjectField(UserType)
-    
+
     def resolve_user(self, info, **kwargs):
         try:
             return User.objects.get(id=kwargs.get('id'))
@@ -461,7 +461,7 @@ class UserListType(DjangoListObjectType):
     class Meta:
         model = User
         pagination = LimitOffsetGraphqlPagination(default_limit=25)
-    
+
     @classmethod
     def get_queryset(cls, queryset, info):
         return queryset.select_related('profile').prefetch_related('posts')

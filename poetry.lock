@@ -2274,10 +2274,7 @@ files = [
     {file = "wcwidth-0.2.13.tar.gz", hash = "sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"},
 ]
 
-[extras]
-test = []
-
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "d302656efa5fa2c259e491ac19d4c03d15afc0771d165b1c729c1dc2dc537a94"
+content-hash = "42833fd610677120e290d01a38f75b334a663e7115b0cd744fc3e440fbf5babd"

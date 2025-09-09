@@ -72,8 +72,6 @@ pymdown-extensions = "^10.4.0"
 # Coverage
 coverage = {extras = ["toml"], version = "^7.3.0"}
 
-[tool.poetry.extras]
-test = ["pytest", "pytest-django", "pytest-cov", "factory_boy"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -140,7 +138,7 @@ output = "coverage.xml"
 exclude_dirs = ["tests", "migrations"]
 skips = [
     "B101",  # Skip assert_used test - asserts are OK in library code for validation
-    "B311",  # Skip random - not used for security purposes  
+    "B311",  # Skip random - not used for security purposes
     "B324",  # Skip MD5 - used for cache keys, not cryptographic security
 ]
 

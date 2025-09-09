@@ -7,7 +7,7 @@ Pagination is essential for managing large datasets in GraphQL APIs. `graphene-d
 `graphene-django-extras` offers three pagination implementations:
 
 - :material-format-list-numbered: **LimitOffsetGraphqlPagination**: Traditional limit/offset pagination
-- :material-book-open-page-variant: **PageGraphqlPagination**: Page-number based pagination  
+- :material-book-open-page-variant: **PageGraphqlPagination**: Page-number based pagination
 - :material-cursor-default: **CursorGraphqlPagination**: Cursor-based pagination (coming soon)
 
 ## LimitOffsetGraphqlPagination
@@ -102,7 +102,7 @@ LimitOffsetGraphqlPagination(
       users(limit: 10, offset: 20) {
         results {
           id
-          username  
+          username
           email
         }
         count
@@ -140,7 +140,7 @@ LimitOffsetGraphqlPagination(
           "email": "john@example.com"
         },
         {
-          "id": "2", 
+          "id": "2",
           "username": "jane_smith",
           "email": "jane@example.com"
         }
@@ -436,7 +436,7 @@ Create custom pagination for specific needs:
           {data?.users.results.map(user => (
             <div key={user.id}>{user.username}</div>
           ))}
-          
+
           <Pagination
             currentPage={page}
             totalPages={totalPages}
@@ -478,18 +478,18 @@ Create custom pagination for specific needs:
           {data?.users.results.map(user => (
             <div key={user.id}>{user.username}</div>
           ))}
-          
+
           <div>
-            <button 
+            <button
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
               Previous
             </button>
-            
+
             <span>Page {currentPage} of {totalPages}</span>
-            
-            <button 
+
+            <button
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
@@ -507,7 +507,7 @@ Create custom pagination for specific needs:
 
     1. **Set Reasonable Defaults**: Use sensible default page sizes (10-50 items)
     2. **Limit Maximum Size**: Prevent excessive data transfer with max limits
-    3. **Use Indexed Fields**: Order by indexed fields for better performance  
+    3. **Use Indexed Fields**: Order by indexed fields for better performance
     4. **Cache Counts**: Cache total counts for frequently accessed datasets
     5. **Consider Cursor Pagination**: For real-time data or very large datasets
     6. **Frontend State Management**: Maintain pagination state in your frontend
@@ -555,7 +555,7 @@ pagination = LimitOffsetGraphqlPagination(
         """
 
         result = client.execute(query, variables={'limit': 10, 'offset': 20})
-        
+
         assert len(result['data']['users']['results']) == 10
         assert result['data']['users']['count'] == 50
     ```
@@ -566,7 +566,7 @@ pagination = LimitOffsetGraphqlPagination(
     @pytest.mark.django_db
     def test_users_ordering():
         User.objects.create_user(username='charlie', email='c@example.com')
-        User.objects.create_user(username='alice', email='a@example.com') 
+        User.objects.create_user(username='alice', email='a@example.com')
         User.objects.create_user(username='bob', email='b@example.com')
 
         client = Client(schema)
@@ -582,7 +582,7 @@ pagination = LimitOffsetGraphqlPagination(
 
         result = client.execute(query, variables={'ordering': 'username'})
         usernames = [user['username'] for user in result['data']['users']['results']]
-        
+
         assert usernames == ['alice', 'bob', 'charlie']
     ```
 

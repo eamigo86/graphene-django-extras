@@ -96,7 +96,7 @@ Let's start with a blog application to demonstrate the features:
 
     class UserSerializer(serializers.ModelSerializer):
         password = serializers.CharField(write_only=True)
-        
+
         class Meta:
             model = User
             fields = ['username', 'email', 'first_name', 'last_name', 'password']
@@ -144,7 +144,7 @@ Let's start with a blog application to demonstrate the features:
     from django.contrib.auth.models import User
     from .models import Category, Tag, Post, Comment, UserProfile
     from .serializers import (
-        UserSerializer, CategorySerializer, TagSerializer, 
+        UserSerializer, CategorySerializer, TagSerializer,
         PostSerializer, CommentSerializer
     )
     from .filtersets import PostFilterSet, UserFilterSet
@@ -302,11 +302,11 @@ Let's start with a blog application to demonstrate the features:
     class UserFilterSet(FilterSet):
         # Custom name search across first_name and last_name
         name = filters.CharFilter(method='filter_name', label='Name')
-        
+
         # Date joined ranges
         joined_after = filters.DateFilter(field_name='date_joined', lookup_expr='gte')
         joined_before = filters.DateFilter(field_name='date_joined', lookup_expr='lte')
-        
+
         # User type filter
         user_type = filters.ChoiceFilter(
             choices=[('staff', 'Staff'), ('regular', 'Regular'), ('superuser', 'Superuser')],
@@ -338,25 +338,25 @@ Let's start with a blog application to demonstrate the features:
     class PostFilterSet(FilterSet):
         # Content search across title and content
         search = filters.CharFilter(method='filter_search', label='Search')
-        
+
         # Date ranges
         created_after = filters.DateFilter(field_name='created_at', lookup_expr='gte')
         created_before = filters.DateFilter(field_name='created_at', lookup_expr='lte')
         published_after = filters.DateFilter(field_name='published_at', lookup_expr='gte')
         published_before = filters.DateFilter(field_name='published_at', lookup_expr='lte')
-        
+
         # Multiple categories
         categories = filters.ModelMultipleChoiceFilter(
             field_name='category',
             queryset=Category.objects.all()
         )
-        
+
         # Multiple tags
         tags = filters.ModelMultipleChoiceFilter(
             field_name='tags',
             queryset=Tag.objects.all()
         )
-        
+
         # View count ranges
         min_views = filters.NumberFilter(field_name='view_count', lookup_expr='gte')
         max_views = filters.NumberFilter(field_name='view_count', lookup_expr='lte')
@@ -370,7 +370,7 @@ Let's start with a blog application to demonstrate the features:
 
         def filter_search(self, queryset, name, value):
             return queryset.filter(
-                Q(title__icontains=value) | 
+                Q(title__icontains=value) |
                 Q(content__icontains=value) |
                 Q(excerpt__icontains=value)
             )
@@ -381,7 +381,7 @@ Let's start with a blog application to demonstrate the features:
     ```python
     import graphene
     from graphene_django_extras import (
-        DjangoObjectField, DjangoFilterListField, 
+        DjangoObjectField, DjangoFilterListField,
         DjangoFilterPaginateListField, DjangoListObjectField,
         all_directives
     )
@@ -402,25 +402,25 @@ Let's start with a blog application to demonstrate the features:
         category = DjangoObjectField(CategoryType, description="Get a single category")
         tag = DjangoObjectField(TagType, description="Get a single tag")
         comment = DjangoObjectField(CommentType, description="Get a single comment")
-        
+
         # List queries with different approaches
         all_posts = DjangoListObjectField(PostListType, description="All posts with pagination")
         all_users = DjangoListObjectField(UserListType, description="All users with pagination")
         all_comments = DjangoListObjectField(CommentListType, description="All comments with pagination")
-        
+
         # Filter-only lists (no pagination)
         posts = DjangoFilterListField(PostType, description="Filter posts without pagination")
         users = DjangoFilterListField(UserType, description="Filter users without pagination")
         categories = DjangoFilterListField(CategoryType, description="All categories")
         tags = DjangoFilterListField(TagType, description="All tags")
-        
+
         # Filtered and paginated lists
         posts_paginated = DjangoFilterPaginateListField(
             PostType,
             pagination=LimitOffsetGraphqlPagination(default_limit=10),
             description="Posts with filtering and pagination"
         )
-        
+
         # Serializer-based queries
         user_serializer, users_serializer = UserSerializerType.QueryFields()
         post_serializer, posts_serializer = PostSerializerType.QueryFields()
@@ -428,21 +428,21 @@ Let's start with a blog application to demonstrate the features:
     class Mutation(graphene.ObjectType):
         # User mutations
         create_user, delete_user, update_user = UserMutation.MutationFields()
-        
+
         # Category mutations
         create_category, delete_category, update_category = CategoryMutation.MutationFields()
-        
-        # Tag mutations  
+
+        # Tag mutations
         create_tag, delete_tag, update_tag = TagMutation.MutationFields()
-        
+
         # Post mutations
         create_post, delete_post, update_post = PostMutation.MutationFields()
-        
+
         # Comment mutations
         create_comment, delete_comment, update_comment = CommentMutation.MutationFields()
 
     schema = graphene.Schema(
-        query=Query, 
+        query=Query,
         mutation=Mutation,
         directives=all_directives
     )
@@ -542,7 +542,7 @@ Now let's explore various query examples using our blog application:
               "color": "#e10098"
             },
             {
-              "id": "2", 
+              "id": "2",
               "name": "Django",
               "color": "#092e20"
             }
@@ -1002,7 +1002,7 @@ Now let's explore various query examples using our blog application:
             "createdAt": "2023-12-01"
           },
           {
-            "id": "2", 
+            "id": "2",
             "title": "Advanced Django Techniques",
             "viewCount": "892",
             "createdAt": "2023-11-28"
@@ -1126,9 +1126,9 @@ Now let's explore various query examples using our blog application:
             />
             <select
               value={filters.category}
-              onChange={(e) => setFilters(prev => ({ 
-                ...prev, 
-                category: e.target.value 
+              onChange={(e) => setFilters(prev => ({
+                ...prev,
+                category: e.target.value
               }))}
             >
               <option value="">All Categories</option>
@@ -1150,8 +1150,8 @@ Now let's explore various query examples using our blog application:
                 </div>
                 <div className="post-tags">
                   {post.tags.map(tag => (
-                    <span 
-                      key={tag.name} 
+                    <span
+                      key={tag.name}
                       style={{ color: tag.color }}
                     >
                       #{tag.name}
@@ -1164,18 +1164,18 @@ Now let's explore various query examples using our blog application:
 
           {/* Pagination */}
           <div className="pagination">
-            <button 
+            <button
               disabled={pagination.page === 0}
               onClick={() => handlePageChange(pagination.page - 1)}
             >
               Previous
             </button>
-            
+
             <span>
               Page {pagination.page + 1} of {totalPages}
             </span>
-            
-            <button 
+
+            <button
               disabled={pagination.page >= totalPages - 1}
               onClick={() => handlePageChange(pagination.page + 1)}
             >
@@ -1243,7 +1243,7 @@ Now let's explore various query examples using our blog application:
 
       const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
           const result = await createPost({
             variables: { postData: formData }
@@ -1336,8 +1336,8 @@ Now let's explore various query examples using our blog application:
             </select>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="submit-button"
           >
