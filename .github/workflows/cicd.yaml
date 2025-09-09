@@ -340,7 +340,7 @@ jobs:
         ## Installation
 
         \`\`\`bash
-        pip install your-package-name==$VERSION
+        pip install graphene-django-extras==$VERSION
         \`\`\`
 
         **Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$TAG_NAME
@@ -366,7 +366,7 @@ jobs:
       run: |
         echo "✅ Release v${{ needs.get-version.outputs.version }} created successfully!"
         echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.get-version.outputs.version }}"
-        echo "📦 PyPI: https://pypi.org/project/your-package-name/${{ needs.get-version.outputs.version }}/"
+        echo "📦 PyPI: https://pypi.org/project/graphene-django-extras/${{ needs.get-version.outputs.version }}/"
 
   notify-success:
     needs: [ publish, create-release ]
