@@ -1,0 +1,37 @@
+name: Publish
+
+on:
+  push:
+    branches: ["develop", "release"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:        
+  publish:
+    if: github.event_name != 'workflow_dispatch' || contains(fromJSON(vars.WORKFLOW_DISPATCH_ALLOWED_USERS), github.actor)
+    runs-on: runs-on=${{ github.run_id }}/runner=ubuntu
+      
+    env:
+      CODE_FORMAT: obfuscated
+      BRANCH_NAME: ${{ github.ref_name }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Semantic Release
+        uses: quarticai/semantic-release-action@main
+        with:
+          repository_type: python
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAKE_OBFUSCATE: true
+          OBFUSCATE_DIR: '../graphene-django-extras-obfuscated'
+          PERMISSION_CHECK: false
