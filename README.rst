@@ -1,7 +1,7 @@
 Graphene-Django-Extras
 ======================
 
-|build-status| |coverage-status| |python-support| |license| |code-style| |pypi-downloads|
+|coverage-status| |python-support| |license| |code-style| |pypi-downloads|
 
 This package adds some extra functionalities to graphene-django to facilitate the graphql use without Relay:
 
@@ -10,6 +10,13 @@ This package adds some extra functionalities to graphene-django to facilitate th
 3. Allow using Directives on Queries and Fragments.
 
 **NOTE:** Subscription support was moved to `graphene-django-subscriptions <https://github.com/eamigo86/graphene-django-subscriptions>`_
+
+Requirements
+------------
+
+- **Python:** 3.12+ (3.13 and 3.14 supported)
+- **Django:** 4.0+ (4.2, 5.0, 5.1, 5.2, and 6.0 supported)
+- **Graphene-Django:** 3.2+
 
 Quick Start
 -----------
@@ -189,9 +196,6 @@ MIT License - see `LICENSE <https://github.com/eamigo86/graphene-django-extras/b
 .. |latest-version| image:: https://img.shields.io/pypi/v/graphene-django-extras.svg
     :target: https://pypi.python.org/pypi/graphene-django-extras/
     :alt: Latest version
-.. |build-status| image:: https://img.shields.io/travis/eamigo86/graphene-django-extras/master.svg
-    :target: https://travis-ci.org/eamigo86/graphene-django-extras
-    :alt: Build status
 .. |coverage-status| image:: https://codecov.io/gh/eamigo86/graphene-django-extras/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/eamigo86/graphene-django-extras
     :alt: Coverage status

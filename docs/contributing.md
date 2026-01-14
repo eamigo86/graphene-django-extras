@@ -23,9 +23,12 @@ We welcome contributions to graphene-django-extras! This guide will help you get
 
 ### Prerequisites
 
-- Python 3.10, 3.11, or 3.12
+- Python 3.12, 3.13, or 3.14
 - Poetry for dependency management
 - Git
+
+!!! note "Python Version Requirement"
+    The project requires Python 3.12 or higher. Make sure you have one of the supported versions installed.
 
 ### Installation
 

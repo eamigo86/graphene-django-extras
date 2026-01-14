@@ -27,9 +27,14 @@ pip install graphene-django-extras[date]
 
 ## Requirements
 
-- **Python**: 3.10, 3.11, 3.12
-- **Django**: 3.2, 4.0, 4.2, 5.0, 5.1
+- **Python**: 3.12, 3.13, 3.14
+- **Django**: 4.0, 4.2, 5.0, 5.1, 5.2, 6.0
 - **graphene-django**: ^3.2
+
+!!! info "Version Support"
+    - **Minimum Python version**: 3.12+
+    - **Minimum Django version**: 4.0+
+    - Full compatibility tested with all combinations of supported versions
 
 ## Development Installation
 

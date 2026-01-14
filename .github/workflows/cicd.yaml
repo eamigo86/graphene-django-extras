@@ -31,30 +31,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - python-version: '3.10'
+        # Python 3.12
+        - python-version: '3.12'
           django-version: '4.0'
-          toxenv: 'py310-django40'
-        - python-version: '3.10'
-          django-version: '4.2'
-          toxenv: 'py310-django42'
-        - python-version: '3.10'
-          django-version: '5.0'
-          toxenv: 'py310-django50'
-        - python-version: '3.10'
-          django-version: '5.1'
-          toxenv: 'py310-django51'
-        - python-version: '3.11'
-          django-version: '4.0'
-          toxenv: 'py311-django40'
-        - python-version: '3.11'
-          django-version: '4.2'
-          toxenv: 'py311-django42'
-        - python-version: '3.11'
-          django-version: '5.0'
-          toxenv: 'py311-django50'
-        - python-version: '3.11'
-          django-version: '5.1'
-          toxenv: 'py311-django51'
+          toxenv: 'py312-django40'
         - python-version: '3.12'
           django-version: '4.2'
           toxenv: 'py312-django42'
@@ -64,6 +44,50 @@ jobs:
         - python-version: '3.12'
           django-version: '5.1'
           toxenv: 'py312-django51'
+        - python-version: '3.12'
+          django-version: '5.2'
+          toxenv: 'py312-django52'
+        - python-version: '3.12'
+          django-version: '6.0'
+          toxenv: 'py312-django60'
+        # Python 3.13
+        - python-version: '3.13'
+          django-version: '4.0'
+          toxenv: 'py313-django40'
+        - python-version: '3.13'
+          django-version: '4.2'
+          toxenv: 'py313-django42'
+        - python-version: '3.13'
+          django-version: '5.0'
+          toxenv: 'py313-django50'
+        - python-version: '3.13'
+          django-version: '5.1'
+          toxenv: 'py313-django51'
+        - python-version: '3.13'
+          django-version: '5.2'
+          toxenv: 'py313-django52'
+        - python-version: '3.13'
+          django-version: '6.0'
+          toxenv: 'py313-django60'
+        # Python 3.14
+        - python-version: '3.14-dev'
+          django-version: '4.0'
+          toxenv: 'py314-django40'
+        - python-version: '3.14-dev'
+          django-version: '4.2'
+          toxenv: 'py314-django42'
+        - python-version: '3.14-dev'
+          django-version: '5.0'
+          toxenv: 'py314-django50'
+        - python-version: '3.14-dev'
+          django-version: '5.1'
+          toxenv: 'py314-django51'
+        - python-version: '3.14-dev'
+          django-version: '5.2'
+          toxenv: 'py314-django52'
+        - python-version: '3.14-dev'
+          django-version: '6.0'
+          toxenv: 'py314-django60'
 
     steps:
     - name: Checkout code
@@ -109,7 +133,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Cache pip dependencies
       uses: actions/cache@v4
@@ -140,7 +164,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Cache pip dependencies
       uses: actions/cache@v4
@@ -182,7 +206,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Install poetry
       run: |
@@ -222,7 +246,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |

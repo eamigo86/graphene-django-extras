@@ -15,6 +15,12 @@ This package adds some extra functionalities to graphene-django to facilitate th
 
 **NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions).
 
+## Requirements
+
+- **Python:** 3.12+ (3.13 and 3.14 supported)
+- **Django:** 4.0+ (4.2, 5.0, 5.1, 5.2, and 6.0 supported)
+- **Graphene-Django:** 3.2+
+
 ## Quick Start
 
 ### Installation
