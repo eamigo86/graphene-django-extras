@@ -1,91 +1,38 @@
 # Graphene-Django-Extras
 
-![Codecov](https://img.shields.io/codecov/c/github/eamigo86/graphene-django-extras)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/graphene-django-extras)
-![PyPI](https://img.shields.io/pypi/v/graphene-django-extras?color=blue)
-![PyPI - License](https://img.shields.io/pypi/l/graphene-django-extras)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/graphene-django-extras?style=flat)
-![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+> [!WARNING]
+> ## ⚠️ This project is deprecated and no longer maintained
+>
+> `graphene-django-extras` has been **rewritten from the ground up and renamed** to
+> **[django-graphex](https://github.com/eamigo86/django-graphex)**.
+>
+> | | |
+> |---|---|
+> | **New repository** | https://github.com/eamigo86/django-graphex |
+> | **New PyPI package** | https://pypi.org/project/django-graphex/ |
+> | **Migration guide** | [docs/migration.md](https://github.com/eamigo86/django-graphex/blob/main/docs/migration.md) |
+>
+> Please migrate to `django-graphex`:
+>
+> ```bash
+> uv add django-graphex          # or: pip install django-graphex
+> ```
+>
+> This repository is kept **read-only, for historical reference**. No further
+> releases, fixes or support will be provided here.
 
-This package adds some extra functionalities to graphene-django to facilitate the graphql use without Relay:
+---
 
-  1. Allow pagination and filtering on Queries
-  2. Allow defining DjangoRestFramework serializers based on Mutations.
-  3. Allow using Directives on Queries and Fragments.
+`graphene-django-extras` added pagination, filtering, DRF-serializer mutations and
+directives on top of `graphene-django`. Its successor, **django-graphex**, keeps the
+same ideas but is rebuilt on graphene + Pydantic (no DRF, no `graphene-django`
+dependency), with automatic N+1 optimization, three pagination strategies, a
+uniform nested-list shape, and an optional Channels-based subscriptions extra.
 
-**NOTE:** Subscription support was moved to [graphene-django-subscriptions](https://github.com/eamigo86/graphene-django-subscriptions).
-
-## Requirements
-
-- **Python:** 3.12+ (3.13 and 3.14 supported)
-- **Django:** 4.0+ (4.2, 5.0, 5.1, 5.2, and 6.0 supported)
-- **Graphene-Django:** 3.2+
-
-## Quick Start
-
-### Installation
-
-```bash
-pip install graphene-django-extras
-```
-
-### Basic Usage
-
-```python
-from graphene_django_extras import DjangoListObjectType, DjangoSerializerMutation
-
-class UserListType(DjangoListObjectType):
-    class Meta:
-        model = User
-
-class UserMutation(DjangoSerializerMutation):
-    class Meta:
-        serializer_class = UserSerializer
-```
-
-## Documentation
-
-📚 **[Full Documentation](https://eamigo86.github.io/graphene-django-extras/)**
-
-The complete documentation includes:
-
-- **[Installation Guide](https://eamigo86.github.io/graphene-django-extras/installation.html)** - Getting started
-- **[Quick Start](https://eamigo86.github.io/graphene-django-extras/quickstart.html)** - Basic setup and examples
-- **[Usage Guide](https://eamigo86.github.io/graphene-django-extras/usage/index.html)** - Detailed feature documentation
-- **[Directives](https://eamigo86.github.io/graphene-django-extras/directives.html)** - GraphQL directives for data formatting
-- **[API Reference](https://eamigo86.github.io/graphene-django-extras/api/index.html)** - Complete API documentation
-- **[Changelog](https://eamigo86.github.io/graphene-django-extras/changelog.html)** - Version history
-
-## Key Features
-
-### 🔍 **Fields**
-- DjangoObjectField
-- DjangoFilterListField
-- DjangoFilterPaginateListField
-- DjangoListObjectField *(Recommended)*
-
-### 🧬 **Types**
-- DjangoListObjectType *(Recommended)*
-- DjangoInputObjectType
-- DjangoSerializerType *(Recommended)*
-
-### ⚡ **Mutations**
-- DjangoSerializerMutation *(Recommended)*
-
-### 📄 **Pagination**
-- LimitOffsetGraphqlPagination
-- PageGraphqlPagination
-
-### 🎯 **Directives**
-- String formatting (case, encoding, manipulation)
-- Number formatting (currency, math operations)
-- Date formatting (with python-dateutil)
-- List operations (shuffle, sample)
-
-## Development
-
-See our [Development Guide](https://eamigo86.github.io/graphene-django-extras/contributing.html) for contributing guidelines.
+> **Subscriptions:** the standalone `graphene-django-subscriptions` package is also
+> deprecated — subscriptions now ship inside `django-graphex` as the optional
+> `[subscriptions]` extra.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
